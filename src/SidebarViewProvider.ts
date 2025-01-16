@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from 'fs';
 import * as path from 'path';
-import { Coverage } from "./pytest";
+import { Coverage } from "./dashboard-metrics/pytest";
 
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "dashboard.openview";
