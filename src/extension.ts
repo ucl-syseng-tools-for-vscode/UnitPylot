@@ -73,6 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
         'fix-coverage.fixCoverage',
         handleFixCoverageCommand
     );
+    context.subscriptions.push(fixCoverageCommand);
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
