@@ -7,7 +7,7 @@ import { handleAnnotateCommand } from './copilot-features/annotations';
 
 const jsonStore: Map<string, any> = new Map();
 
-// Activation method for the extension
+// Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
 
+    // Register the runTests command
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
         try {
             const { passed, failed } = await runPytest();
@@ -35,6 +36,29 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(runTests);
+
+
+    // Register the getCoverage command
+    const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
+        try {
+            const { coverage } = await runCoverageCheck();
+            jsonStore.set('coverage', coverage);
+            handleFileOpen(vscode.window.activeTextEditor!);
+            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run coverage check.');
+        }
+    });
+
+    context.subscriptions.push(getCoverage);
+
+    // Register the annotate command
+    const annotateCommand = vscode.commands.registerTextEditorCommand(
+        'code-tutor.annotate',
+        handleAnnotateCommand
+    );
+    context.subscriptions.push(annotateCommand);
+
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
@@ -55,29 +79,9 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(openWebView);
-
-
-    const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
-        try {
-            const { coverage } = await runCoverageCheck();
-            jsonStore.set('coverage', coverage);
-            handleFileOpen(vscode.window.activeTextEditor!);
-            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
-        } catch (error) {
-            vscode.window.showErrorMessage('Failed to run coverage check.');
-        }
-    });
-
-    context.subscriptions.push(getCoverage);
-
-    // Register the annotate command
-    const annotateCommand = vscode.commands.registerTextEditorCommand(
-        'code-tutor.annotate',
-        handleAnnotateCommand
-    );
-    context.subscriptions.push(annotateCommand);
 }
 
+// Handles file open event
 export function handleFileOpen(editor: vscode.TextEditor) {
     const fileName = editor.document.fileName;
     if (fileName.endsWith('.py')) {
@@ -85,4 +89,5 @@ export function handleFileOpen(editor: vscode.TextEditor) {
     }
 }
 
+// Deactivation Method for the Extension
 export function deactivate() {}
