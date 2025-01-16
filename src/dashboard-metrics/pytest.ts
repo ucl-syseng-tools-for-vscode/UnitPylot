@@ -43,7 +43,7 @@ type FileCoverageRaw = {
 }
 
 // Get the Python Extension API
-async function getPythonPath(): Promise<string | undefined> {
+export async function getPythonPath(): Promise<string | undefined> {
     const extension = vscode.extensions.getExtension('ms-python.python');
     if (extension) {
         const pythonAPI = await extension.activate();
@@ -75,6 +75,8 @@ export function runPytest(): Promise<{ passed: number; failed: number }> {
                     return reject(error);
                 }
 
+                console.log(stdout);
+              
                 console.log(stdout.match(/(\d+) passed/g));
                 console.log(stdout.match(/(\d+) failed/g));
                 const passed = (stdout.match(/(\d+) passed/g) || []).reduce((sum, match) => sum + parseInt(match.split(' ')[0]), 0);
@@ -171,6 +173,10 @@ function parseCoverage(): Coverage {
             percentCovered: coverageData.totals.percent_covered,
         },
     };
+    console.log(coverageData);
 
     return coverage;
 }
+
+
+
