@@ -4,6 +4,8 @@ import { runPytest, runCoverageCheck } from './dashboard-metrics/pytest';
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
+import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
+import { handleFixCoverageCommand } from './copilot-features/fix-coverage'; 
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -59,6 +61,18 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(annotateCommand);
 
+     // Register the fix failing tests command
+     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
+        'fix-failing-tests.fixFailingTests',
+        handleFixFailingTestsCommand
+    );
+    context.subscriptions.push(fixFailingTestsCommand);
+
+    // Register the fix coverage command
+    const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
+        'fix-coverage.fixCoverage',
+        handleFixCoverageCommand
+    );
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
