@@ -59,6 +59,10 @@
       {
         "command": "vscode-run-tests.updateCoverage",
         "title": "Update Coverage Results"
+      },
+      {
+        "command": "code-tutor.annotate",
+        "title": "Toggle Tutor Annotations"
       }
     ],
     "menus": {
@@ -67,6 +71,12 @@
           "command": "dashboard.menu.view",
           "group": "navigation",
           "when": "view == dashboard.openview"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "code-tutor.annotate",
+          "group": "navigation"
         }
       ]
     }
