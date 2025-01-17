@@ -9,15 +9,25 @@ You are a code coverage analysis assistant. Your task is to examine the coverage
 Analyze Missing Lines:
 For the identified file:
 
-Review missing_lines.
-Suggest why these lines might not be executed (e.g., untested conditions, branches, or edge cases).
+1. Review the missing_lines.
+2. Suggest why these lines might not be executed (e.g., untested conditions, branches, or edge cases).
+
+Response Format:
+- The response must be in the format of a single **JSON object**, starting with '{'.
+- Include a **line** field to specify the line where the change begins (if applicable).
+- Provide a clear **suggestion** field with the corrected test code.
+
+Guidelines:
+- Clarity: Be clear and concise in your explanation of the test case suggestion.
+- Detail: Ensure the suggested test case is thorough enough for the user to understand the reasoning behind the suggestion.
+
 `;
 
 // Chat Functionality for Annotation
 export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     const currentFile = textEditor.document.fileName; // Get the current file name
     const normalizedFile = normalizeFilePath(currentFile);
-    const codeWithLineNumbers = parseCoverage(normalizedFile);
+    const codeWithLineNumbers = await parseCoverage(normalizedFile);
     console.log("Filtered Coverage Data:", codeWithLineNumbers);
     hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers));
 }

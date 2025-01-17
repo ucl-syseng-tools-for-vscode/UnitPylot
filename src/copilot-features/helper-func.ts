@@ -32,13 +32,16 @@ async function parseChatResponse(
     textEditor: vscode.TextEditor
 ) {
     let accumulatedResponse = '';
+    console.log("Response TEXT",chatResponse.text);
 
     for await (const fragment of chatResponse.text) {
         accumulatedResponse += fragment;
+        
 
         if (fragment.includes('}')) {
             try {
                 const annotation = JSON.parse(accumulatedResponse);
+                console.log('Annotation:', annotation);
                 applyDecoration(textEditor, annotation.line, annotation.suggestion);
                 accumulatedResponse = '';
             } catch {
