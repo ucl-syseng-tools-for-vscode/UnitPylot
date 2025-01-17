@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { getPythonPath } from '../dashboard-metrics/pytest';
 import { exec } from 'child_process';
+import * as hf from '../copilot-features/helper-func';
 
 
 const ANNOTATION_PROMPT = `You are an expert Python debugger specializing in refactoring failing test cases. Your role is to analyze a block of Python test code and the provided debug console output, then return the corrected and refactored test code.
@@ -20,79 +21,18 @@ Here is an example of the expected response format:
 // Chat Functionality for Annotation
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor) {
     const codeWithLineNumbers = await getVisibleCodeWithLineNumbers(textEditor);
-
-    let [model] = await vscode.lm.selectChatModels({
-        vendor: 'copilot',
-        family: 'gpt-4o',
-    });
-
-    const messages = [
-        vscode.LanguageModelChatMessage.User(ANNOTATION_PROMPT),
-        vscode.LanguageModelChatMessage.User(await codeWithLineNumbers),
-    ];
-
-    if (model) {
-        const chatResponse = await model.sendRequest(
-            messages,
-            {},
-            new vscode.CancellationTokenSource().token
-        );
-
-        await parseChatResponse(chatResponse, textEditor);
-    }
+    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, codeWithLineNumbers);
 }
 
-// Applies decoration to the editor
-function applyDecoration(editor: vscode.TextEditor, line: number, suggestion: string) {
-    const decorationType = vscode.window.createTextEditorDecorationType({
-        after: {
-            contentText: ` ${suggestion.substring(0, 25) + '...'}`,
-            color: 'grey',
-        },
-    });
-
-    const lineLength = editor.document.lineAt(line - 1).text.length;
-    const range = new vscode.Range(
-        new vscode.Position(line - 1, lineLength),
-        new vscode.Position(line - 1, lineLength)
-    );
-
-    const decoration = { range: range, hoverMessage: suggestion };
-
-    vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
-}
-
-// Parses chat response and applies decoration
-async function parseChatResponse(
-    chatResponse: vscode.LanguageModelChatResponse,
-    textEditor: vscode.TextEditor
-) {
-    let accumulatedResponse = '';
-
-    for await (const fragment of chatResponse.text) {
-        accumulatedResponse += fragment;
-
-        if (fragment.includes('}')) {
-            try {
-                const annotation = JSON.parse(accumulatedResponse);
-                applyDecoration(textEditor, annotation.line, annotation.suggestion);
-                accumulatedResponse = '';
-            } catch {
-                // Ignore parse errors
-            }
-        }
-    }
-}
 
 // Retrives code with line numbers
 function getVisibleCodeWithLineNumbers(textEditor: vscode.TextEditor) {
     function runPytest(): Promise<{ stdout: string }> {
         return new Promise(async (resolve, reject) => {
 
-            console.log('Running Pytest...');
             const pythonPath = await getPythonPath();
             const workspaceFolders = vscode.workspace.workspaceFolders;
-            console.log(pythonPath);
+
             if (workspaceFolders) {
                 const workspacePath = workspaceFolders[0].uri.fsPath;
                 const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest --tb=short || true"`; // The || true is to prevent the command from failing if there are failed tests
