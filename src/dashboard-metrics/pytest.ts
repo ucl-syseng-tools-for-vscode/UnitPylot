@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 
-type FileCoverage = {
+export type FileCoverage = {
     filename: string;
     lines: {
         covered: [number];
@@ -29,7 +29,7 @@ export type Coverage = {
     };
 };
 
-type FileCoverageRaw = {
+export type FileCoverageRaw = {
     excluded_lines: [number];
     executed_lines: [number];
     missing_lines: [number];
@@ -121,7 +121,7 @@ export function runCoverageCheck(): Promise<{ coverage: Coverage }> {
     });
 }
 
-function readJsonFile(filePath: string): any {
+export function readJsonFile(filePath: string): any {
     try {
         const rawData = fs.readFileSync(filePath, 'utf-8');
         return JSON.parse(rawData);
