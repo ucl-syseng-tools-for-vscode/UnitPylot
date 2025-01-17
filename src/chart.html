@@ -13,23 +13,10 @@
             margin: 0;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            justify-content: left;
             align-items: center;
             height: 100vh;
             flex-direction: column;
-            /* justify-content: flex-start; */
-        }
-
-        #chart-container {
-            background: #252526;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 500px;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            transition: height 0.3s ease;
         }
 
         .btn {
@@ -57,45 +44,51 @@
 
         #chart {
             display: none;
-            margin-top: 20px;
             width: 100%;
             height: auto;
-        }
-
-        .results-bar {
-            margin-top: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            color: #ffffff;
-            display: none;
         }
 
         #coverage-chart-container {
-            background: #252526;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 500px;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            transition: height 0.3s ease;
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            height: auto;
         }
 
         #coverage-chart {
-            display: none;
-            margin-top: 20px;
-            width: 100%;
-            height: auto;
+            max-width: 105px;
+            max-height: 105px;
+        }
+
+        #coverage-results {
+            margin-left: 20px;
+            line-height: 0.5;
         }
     </style>
 </head>
 
 <body>
+    <div id="coverage-chart-container">
+        <canvas id="coverage-chart"></canvas>
+        <div id="coverage-results">
+            <span><strong>Line Coverage</strong></span>
+            <span>
+                <p id="coverage-results-covered">Covered</p>
+            </span>
+            <span></span>
+            <p id="coverage-results-missed">Missed</p>
+            </span>
+            <span>
+                <p id="coverage-results-skipped">Skipped</p>
+            </span>
+            <span><strong>Branch Coverage</strong></span>
+            <span>
+                <p id="coverage-results-branches-covered"></p>
+            </span>
+        </div>
+    </div>
     <div id="chart-container">
-        <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button>
+        <!-- <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button> -->
         <canvas id="chart"></canvas>
     </div>
     <style>
@@ -107,14 +100,41 @@
             height: auto;
         }
     </style>
-    <div id="coverage-chart-container">
-        <canvas id="coverage-chart"></canvas>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel"></script>
     <script>
         const vscode = acquireVsCodeApi();
+
+        let state = {
+            testResults: null,
+            coverageResults: null,
+        };
+
+        function saveState() {
+            vscode.setState(state);
+            console.log('State saved:', state);
+        }
+
+        function restoreState() {
+            const savedState = vscode.getState();
+            if (savedState) {
+                state = savedState;
+                console.log('State restored:', state);
+                if (state.testResults) {
+                    updateChart(state.testResults);
+                }
+                if (state.coverageResults) {
+                    updateCoverage(state.coverageResults);
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            restoreState();
+        });
+
         const runTestsBtn = document.getElementById('run-tests-btn');
         const chart = document.getElementById('chart');
         const chartContainer = document.getElementById('chart-container');
@@ -131,6 +151,11 @@
         window.addEventListener('message', (event) => {
             if (event.data.command === 'updateResults') {
                 console.log('Updating chart with results:', event.data.results);
+                console.log('State before update:', state);
+                state.testResults = structuredClone(event.data.results);
+                console.log('State after update:', state);
+                saveState();
+                console.log('State after save:', state);
                 updateChart(event.data.results);
             }
         });
@@ -148,22 +173,16 @@
                 data: {
                     labels: ['Passed', 'Failed'],
                     datasets: [
-                        // {
-                        //     label: 'Test Results',
-                        //     data: [passed, failed],
-                        //     backgroundColor: ['#0e8a16', '#d73a49'],
-                        //     borderWidth: 0,
-                        // },
                         {
                             label: 'Passed',
                             data: [passed],
-                            backgroundColor: ['#0e8a16'],
+                            backgroundColor: ['#327e36'],
                             maxBarThickness: 30,
                         },
                         {
                             label: 'Failed',
                             data: [failed],
-                            backgroundColor: ['#d73a49'],
+                            backgroundColor: ['#f14c4c'],
                             maxBarThickness: 30,
                         },
                     ],
@@ -204,7 +223,7 @@
                                     return `${percentage}%`; // Customize the tooltip label
                                 },
                             }
-                        }
+                        },
                     },
                     scales: {
                         x: {
@@ -228,6 +247,8 @@
         window.addEventListener('message', (event) => {
             if (event.data.command === 'updateCoverage') {
                 console.log('Updating chart with coverage:', event.data.coverage);
+                state.coverageResults = structuredClone(event.data.coverage);
+                saveState();
                 updateCoverage(event.data.coverage);
             }
         });
@@ -241,6 +262,11 @@
                 return;
             }
 
+            // Update coverage results
+            document.getElementById('coverage-results-covered').innerText = `${totals.covered} Covered`;
+            document.getElementById('coverage-results-missed').innerText = `${totals.missed} Missed`;
+            document.getElementById('coverage-results-skipped').innerText = `${totals.skipped} Skipped`;
+            document.getElementById('coverage-results-branches-covered').innerText = `${totals.branches_covered} / ${totals.branches_total}`;
             // Generate coverage chart
             const ctx = coverageChart.getContext('2d');
             if (!ctx) return;
@@ -248,12 +274,12 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Covered', 'Uncovered', 'Skipped'],
+                    labels: ['Covered', 'Skipped', 'Uncovered'],
                     datasets: [
                         {
                             label: 'Code Coverage',
-                            data: [totals.covered, totals.missed, totals.skipped],
-                            backgroundColor: ['#0e8a16', '#d73a49', '#f0ad4e'],
+                            data: [totals.covered, totals.skipped, totals.missed],
+                            backgroundColor: ['#007acb', '#ed9c28', '#f14c4c'],
                             borderWidth: 0,
                         },
                     ],
@@ -269,18 +295,46 @@
                                     size: 14,
                                 },
                             },
+                            display: false,
                         },
                         datalabels: {
-                            formatter: (value) => `${((value / total) * 100).toFixed(1)}%`,
-                            color: '#ffffff',
-                            font: {
-                                weight: 'bold',
-                                size: 14,
-                            },
+                            display: false,
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function (context) {
+                                    return context[0].dataset.label;
+                                },
+                                label: function (context) {
+                                    const value = context.raw; // Current bar value
+                                    const percentage = ((value / total) * 100).toFixed(1); // Calculate percentage
+                                    return `${percentage}%`; // Customize the tooltip label
+                                },
+                            }
                         },
                     },
                 },
-                plugins: [ChartDataLabels],
+                plugins: [{
+                    ChartDataLabels,
+                    beforeDraw: (chart) => {
+                        const { width } = chart;
+                        const { height } = chart;
+                        const ctx = chart.ctx;
+                        ctx.restore();
+
+                        const fontSize = (height / 50).toFixed(2);
+                        ctx.font = `${fontSize}em sans-serif`;
+                        ctx.fillStyle = 'white';
+                        ctx.textBaseline = 'middle';
+
+                        const text = `${(totals.covered / total * 100).toFixed(0)}`;
+                        const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                        const textY = height / 2;
+
+                        ctx.fillText(text, textX, textY);
+                        ctx.save();
+                    },
+                }],
             });
         }
     </script>

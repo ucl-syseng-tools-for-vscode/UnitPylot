@@ -26,6 +26,9 @@ export type Coverage = {
         missed: number;
         total: number;
         percentCovered: number;
+        branches_covered?: number;
+        branches_missed?: number;
+        branches_total?: number;
     };
 };
 
@@ -99,7 +102,7 @@ export function runCoverageCheck(): Promise<{ coverage: Coverage }> {
             const workspacePath = workspaceFolders[0].uri.fsPath;
             const pythonPath = await getPythonPath();
 
-            const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest --cov --cov-report=json || true"`;
+            const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest --cov --cov-report=json --cov-branch || true"`;
 
             exec(command, (error, stdout, stderr) => {
                 if (error) {
@@ -133,6 +136,7 @@ function mapFileCoverage(fileCoverage: [FileCoverageRaw], workspacePath: string)
     let files: FileCoverage[] = [];
     let n = 0;
     for (let [key, file] of Object.entries(fileCoverage)) {
+
         files.push({
             filename: workspacePath + '/' + key,
             lines: {
@@ -169,6 +173,9 @@ function parseCoverage(): Coverage {
             missed: coverageData.totals.missing_lines,
             total: coverageData.totals.num_statements,
             percentCovered: coverageData.totals.percent_covered,
+            branches_covered: coverageData.totals.covered_branches,
+            branches_missed: coverageData.totals.missing_branches,
+            branches_total: coverageData.totals.num_branches,
         },
     };
 
