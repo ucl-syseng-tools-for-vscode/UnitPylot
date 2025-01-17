@@ -1,24 +1,38 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import * as hf from '../copilot-features/helper-func';
 import { Coverage, readJsonFile } from '../dashboard-metrics/pytest';
 
 const ANNOTATION_PROMPT = `
-You are a Python debugger specializing in refactoring test cases based on coverage data provided. 
+You are a code coverage analysis assistant. Your task is to examine the coverage data for a specific file that the user is working on. Based on the provided file coverage details, you will analyze the missing lines in the file and suggest appropriate test cases to ensure complete coverage.
 
-Instructions:
-1. If the percentage covered for the file is 100, respond: "The coverage of the code is 100%."
-2. If less than 100, refactor the test to cover the missing lines.
+Analyze Missing Lines:
+For the identified file:
+
+Review missing_lines.
+Suggest why these lines might not be executed (e.g., untested conditions, branches, or edge cases).
 `;
 
 // Chat Functionality for Annotation
 export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
-    const codeWithLineNumbers = parseCoverage();
-    console.log("This is the data", codeWithLineNumbers);
+    const currentFile = textEditor.document.fileName; // Get the current file name
+    const normalizedFile = normalizeFilePath(currentFile);
+    const codeWithLineNumbers = parseCoverage(normalizedFile);
+    console.log("Filtered Coverage Data:", codeWithLineNumbers);
     hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers));
 }
 
+function normalizeFilePath(filePath: string): string {
+    // Normalize the file path relative to the workspace folder
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+        throw new Error('No workspace folder found');
+    }
+    const workspacePath = workspaceFolders[0].uri.fsPath;
+    return path.relative(workspacePath, filePath); // Get relative path from workspace
+}
 
-export function parseCoverage(): Coverage {
+export function parseCoverage(currentFile: string): { filename: string; missingLines: number[] } | null {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
         throw new Error('No workspace folder found');
@@ -26,7 +40,17 @@ export function parseCoverage(): Coverage {
     const workspacePath = workspaceFolders[0].uri.fsPath;
     const coveragePath = `${workspacePath}/coverage.json`;
     const coverageData = readJsonFile(coveragePath);
-    console.log(coverageData);
+    console.log("Full Coverage Data:", coverageData);
 
-    return coverageData;
+    // Find the specific file's coverage details
+    const fileCoverage = coverageData.files[currentFile];
+    if (fileCoverage) {
+        return {
+            filename: currentFile,
+            missingLines: fileCoverage.missing_lines || [],
+        };
+    }
+
+    // Return null if no coverage data is found for the file
+    return null;
 }

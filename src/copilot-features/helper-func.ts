@@ -21,6 +21,7 @@ export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATIO
         );
 
         await parseChatResponse(chatResponse, textEditor);
+        console.log("Response", chatResponse);
     }
 }
 
