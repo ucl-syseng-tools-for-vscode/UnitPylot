@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 
-type FileCoverage = {
+export type FileCoverage = {
     filename: string;
     lines: {
         covered: [number];
@@ -29,7 +29,7 @@ export type Coverage = {
     };
 };
 
-type FileCoverageRaw = {
+export type FileCoverageRaw = {
     excluded_lines: [number];
     executed_lines: [number];
     missing_lines: [number];
@@ -43,7 +43,7 @@ type FileCoverageRaw = {
 }
 
 // Get the Python Extension API
-async function getPythonPath(): Promise<string | undefined> {
+export async function getPythonPath(): Promise<string | undefined> {
     const extension = vscode.extensions.getExtension('ms-python.python');
     if (extension) {
         const pythonAPI = await extension.activate();
@@ -75,6 +75,8 @@ export function runPytest(): Promise<{ passed: number; failed: number }> {
                     return reject(error);
                 }
 
+                console.log(stdout);
+              
                 console.log(stdout.match(/(\d+) passed/g));
                 console.log(stdout.match(/(\d+) failed/g));
                 const passed = (stdout.match(/(\d+) passed/g) || []).reduce((sum, match) => sum + parseInt(match.split(' ')[0]), 0);
@@ -119,7 +121,7 @@ export function runCoverageCheck(): Promise<{ coverage: Coverage }> {
     });
 }
 
-function readJsonFile(filePath: string): any {
+export function readJsonFile(filePath: string): any {
     try {
         const rawData = fs.readFileSync(filePath, 'utf-8');
         return JSON.parse(rawData);
@@ -171,6 +173,10 @@ function parseCoverage(): Coverage {
             percentCovered: coverageData.totals.percent_covered,
         },
     };
+    console.log(coverageData);
 
     return coverage;
 }
+
+
+

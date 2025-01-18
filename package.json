@@ -63,6 +63,14 @@
       {
         "command": "code-tutor.annotate",
         "title": "Toggle Tutor Annotations"
+      },
+      {
+        "command": "fix-failing-tests.fixFailingTests",
+        "title": "Fix Failing Tests"
+      },
+      {
+        "command": "fix-coverage.fixCoverage",
+        "title": "Fix Coverage"
       }
     ],
     "menus": {
