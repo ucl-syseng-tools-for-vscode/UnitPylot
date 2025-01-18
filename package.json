@@ -61,6 +61,14 @@
         "title": "Update Coverage Results"
       },
       {
+        "command": "vscode-slowest-tests.slowestTests",
+        "title": "Find Slowest Tests"
+      },
+      {
+        "command": "vscode-slowest-tests.updateSlowestTests",
+        "title": "Update Slowest Tests Results"
+      },
+      {
         "command": "code-tutor.annotate",
         "title": "Toggle Tutor Annotations"
       },
