@@ -7,6 +7,7 @@ import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage'; 
 import {runSlowestTests} from './dashboard-metrics/slowest';
+import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -88,6 +89,13 @@ export function activate(context: vscode.ExtensionContext) {
         handleFixCoverageCommand
     );
     context.subscriptions.push(fixCoverageCommand);
+
+    // Register the optimise slowest tests command
+    const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
+        'optimise-slowest.optimiseSlowest',
+        handleOptimiseSlowestTestsCommand
+    );
+    context.subscriptions.push(optimiseSlowestTestsCommand);
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
