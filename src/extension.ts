@@ -123,10 +123,10 @@ export function handleFileOpen(editor: vscode.TextEditor) {
     }
 }
 
-// get python files
 async function getPythonFiles(): Promise<string[]> {
     const pythonFiles: string[] = [];
-    const uris = await vscode.workspace.findFiles('**/*.py');
+    // find Python files while excluding files in venv or other virtual environment folders
+    const uris = await vscode.workspace.findFiles('**/*.py', '**/venv/**');
     for (const uri of uris) {
         const content = (await vscode.workspace.fs.readFile(uri)).toString();
         pythonFiles.push(`File: ${uri.fsPath}\n${content}`);
