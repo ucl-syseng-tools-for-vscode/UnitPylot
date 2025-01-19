@@ -79,6 +79,10 @@
       {
         "command": "fix-coverage.fixCoverage",
         "title": "Fix Coverage"
+      },
+      {
+        "command": "optimise-slowest.optimiseSlowest",
+        "title": "Optimise Slowest Tests"
       }
     ],
     "menus": {
