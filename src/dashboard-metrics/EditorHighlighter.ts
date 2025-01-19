@@ -35,5 +35,5 @@ export function highlightCodeCoverage(fileName: string, coverage: Coverage) {
 
     // Apply decoration
     editor?.setDecorations(decorationTypeMissed, missedLines);
-    editor?.setDecorations(decorationTypeCovered, coveredLines);
+    // editor?.setDecorations(decorationTypeCovered, coveredLines);
 }

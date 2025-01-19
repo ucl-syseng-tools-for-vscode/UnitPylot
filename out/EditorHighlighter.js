@@ -29,7 +29,7 @@ function highlightCodeCoverage(fileName, coverage) {
     const coveredLines = fileCoverage.lines.covered.map((line) => editor.document.lineAt(line - 1).range);
     // Apply decoration
     editor?.setDecorations(decorationTypeMissed, missedLines);
-    editor?.setDecorations(decorationTypeCovered, coveredLines);
+    // editor?.setDecorations(decorationTypeCovered, coveredLines);
 }
 exports.highlightCodeCoverage = highlightCodeCoverage;
 //# sourceMappingURL=EditorHighlighter.js.map
