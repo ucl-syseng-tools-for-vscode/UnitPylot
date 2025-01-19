@@ -67,13 +67,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Code coverage command
 	const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
+		console.log('Backend getCoverage command started');
 		try {
 			const { coverage } = await runCoverageCheck();
+			console.log('Coverage data received:', coverage);
 			jsonStore.set('coverage', coverage);
 			handleFileOpen(vscode.window.activeTextEditor!);
-			// Show coverage in the sidebar
 			vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
 		} catch (error) {
+			console.error('Error during getCoverage execution:', error);
 			vscode.window.showErrorMessage('Failed to run coverage check.');
 		}
 	});

@@ -90,6 +90,8 @@
     <div id="chart-container">
         <!-- <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button> -->
         <canvas id="chart"></canvas>
+        <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button>
+        <button id="get-coverage-btn" class="btn" onclick="getCoverage()">Get Coverage</button>
     </div>
     <style>
         body {
@@ -140,6 +142,7 @@
         const chartContainer = document.getElementById('chart-container');
 
         function runTests() {
+            console.log("called");
             vscode.postMessage({ command: 'runTests' });
 
             // Adjust the layout
@@ -160,15 +163,20 @@
             }
         });
 
+        let testResultsChart; // Declare a variable to store the chart instance
+
         function updateChart(results) {
             const { passed, failed } = results;
             const total = passed + failed;
 
-            // Generate chart
+            if (testResultsChart) {
+                testResultsChart.destroy();
+            }
+
             const ctx = chart.getContext('2d');
             if (!ctx) return;
 
-            new Chart(ctx, {
+            testResultsChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Passed', 'Failed'],
@@ -218,9 +226,9 @@
                                     return context[0].dataset.label;
                                 },
                                 label: function (context) {
-                                    const value = context.raw; // Current bar value
-                                    const percentage = ((value / total) * 100).toFixed(1); // Calculate percentage
-                                    return `${percentage}%`; // Customize the tooltip label
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${percentage}%`;
                                 },
                             }
                         },
@@ -241,25 +249,40 @@
         }
     </script>
     <script>
+        const getCoverageBtn = document.getElementById('get-coverage-btn');
         const coverageChartContainer = document.getElementById('coverage-chart-container');
         const coverageChart = document.getElementById('coverage-chart');
 
+        function getCoverage() {
+            console.log("Get Coverage button clicked");
+            vscode.postMessage({ command: 'getCoverage' });
+            getCoverageBtn.style.marginTop = '0';  // Adjust layout for the coverage button
+            coverageChart.style.display = 'block';  // Show the coverage chart
+        }
+
         window.addEventListener('message', (event) => {
             if (event.data.command === 'updateCoverage') {
-                console.log('Updating chart with coverage:', event.data.coverage);
+                console.log('Frontend received updateCoverage message:', event.data.coverage);
                 state.coverageResults = structuredClone(event.data.coverage);
                 saveState();
                 updateCoverage(event.data.coverage);
             }
-        });
+        });        
+
+        let coverageResultsChart; // Declare a variable to store the coverage chart instance
 
         function updateCoverage(coverage) {
             console.log('Updating coverage chart with:', coverage);
             const totals = coverage.coverage.totals;
             const total = totals.total;
+
             if (!totals) {
                 console.error('Coverage totals are undefined');
                 return;
+            }
+
+            if (coverageResultsChart) {
+                coverageResultsChart.destroy();
             }
 
             // Update coverage results
@@ -267,11 +290,12 @@
             document.getElementById('coverage-results-missed').innerText = `${totals.missed} Missed`;
             document.getElementById('coverage-results-skipped').innerText = `${totals.skipped} Skipped`;
             document.getElementById('coverage-results-branches-covered').innerText = `${totals.branches_covered} / ${totals.branches_total}`;
-            // Generate coverage chart
+
+            // Generate a new coverage chart
             const ctx = coverageChart.getContext('2d');
             if (!ctx) return;
 
-            new Chart(ctx, {
+            coverageResultsChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Covered', 'Skipped', 'Uncovered'],
@@ -306,9 +330,9 @@
                                     return context[0].dataset.label;
                                 },
                                 label: function (context) {
-                                    const value = context.raw; // Current bar value
-                                    const percentage = ((value / total) * 100).toFixed(1); // Calculate percentage
-                                    return `${percentage}%`; // Customize the tooltip label
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${percentage}%`;
                                 },
                             }
                         },
