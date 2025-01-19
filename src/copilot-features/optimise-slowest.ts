@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
 import { runSlowestTests } from '../dashboard-metrics/slowest';
 
+// Annotation Prompt for Optimising the slowest tests in the test suite
 const ANNOTATION_PROMPT = `
 You are a test optimization assistant. Your task is to analyze the performance of a given test suite and suggest ways to optimize the slowest tests.
 
-Analyze Slow Tests:
+Analyse Slow Tests:
 For the provided test suite:
 
 1. Review the slowest tests based on the execution time. The following are the slowest tests in the suite:
@@ -17,8 +18,8 @@ For the provided test suite:
 Response Format:
 - The response must be in the format of a **JSON object**, starting with '{'.
 - Do no include any markdown syntax 
-- Include a **test_name** field to specify the name of the slowest test.
-- Provide a **suggestion** field with a detailed recommendation on how to optimize the test.
+- Must include a **test_name** field to specify the name of the slowest test.
+- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test.
 - If applicable, include a **code_snippet** field with an optimized version of the test code.
 
 Guidelines:

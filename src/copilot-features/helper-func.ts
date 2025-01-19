@@ -84,7 +84,7 @@ function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string
     });
 
     const documentText = editor.document.getText();
-    const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`);
+    const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`); // Pattern to match python function definition
     const match = documentText.match(functionRegex);
 
     if (match) {
