@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import {getPythonPath} from './pytest';
 
 // Runs pytest and returns the 5 slowest tests (passing and failing) 
-export function runSlowestTests(): Promise<{ slowest: string}> {
+export function runSlowestTests(): Promise<string[]> {
     return new Promise(async (resolve, reject) => {
         console.log('Running Pytest...');
         const pythonPath = await getPythonPath();
@@ -27,9 +27,8 @@ export function runSlowestTests(): Promise<{ slowest: string}> {
                     throw new Error('No slow tests found');
                 }
                 console.log(`Slowest Tests: ${slowestTests}`);
-
                 vscode.window.showInformationMessage(`Pytest Results: ${slowestTests} slowest tests`);
-                return { slowest: slowestTests };
+                return resolve(slowestTests);
             });
         } else {
             vscode.window.showErrorMessage('No workspace folder found');
