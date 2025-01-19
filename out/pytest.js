@@ -56,7 +56,7 @@ function runCoverageCheck() {
         if (workspaceFolders) {
             const workspacePath = workspaceFolders[0].uri.fsPath;
             const pythonPath = await getPythonPath();
-            const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest --cov --cov-report=json || true"`;
+            const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest --cov --cov-report=json --cov-branch || true"`;
             (0, child_process_1.exec)(command, (error, stdout, stderr) => {
                 if (error) {
                     vscode.window.showErrorMessage(`Coverage Error: ${stderr}`);
@@ -124,6 +124,9 @@ function parseCoverage() {
             missed: coverageData.totals.missing_lines,
             total: coverageData.totals.num_statements,
             percentCovered: coverageData.totals.percent_covered,
+            branches_covered: coverageData.totals.covered_branches,
+            branches_missed: coverageData.totals.missing_branches,
+            branches_total: coverageData.totals.num_branches,
         },
     };
     return coverage;
