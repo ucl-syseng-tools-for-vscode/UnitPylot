@@ -21,7 +21,7 @@ Here is an example of the expected response format:
 // Chat Functionality for Annotation
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor) {
     const codeWithLineNumbers = await getVisibleCodeWithLineNumbers(textEditor);
-    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, codeWithLineNumbers);
+    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, codeWithLineNumbers, true);
 }
 
 

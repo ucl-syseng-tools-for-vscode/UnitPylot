@@ -6,6 +6,8 @@ import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage'; 
+import {runSlowestTests} from './dashboard-metrics/slowest';
+import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -73,6 +75,19 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(getCoverage);
 
+
+    // Register the slowestTests command
+    const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
+        try {
+            runSlowestTests();
+            // const { slowest } = await runSlowestTests();
+            // vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest.');
+        }
+    });
+    context.subscriptions.push(slowestTests);
+
     // Register the annotate command
     const annotateCommand = vscode.commands.registerTextEditorCommand(
         'code-tutor.annotate',
@@ -93,6 +108,13 @@ export function activate(context: vscode.ExtensionContext) {
         handleFixCoverageCommand
     );
     context.subscriptions.push(fixCoverageCommand);
+
+    // Register the optimise slowest tests command
+    const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
+        'optimise-slowest.optimiseSlowest',
+        handleOptimiseSlowestTestsCommand
+    );
+    context.subscriptions.push(optimiseSlowestTestsCommand);
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
