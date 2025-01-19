@@ -26,7 +26,7 @@
     "chatParticipants": [
       {
         "id": "vscode-testing-chat",
-        "name": "expert-tester",
+        "name": "python-tester",
         "description": "Specialised chat for building and editing good testing infrastructure"
       }
     ],
