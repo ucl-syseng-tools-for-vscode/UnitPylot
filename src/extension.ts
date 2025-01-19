@@ -5,8 +5,8 @@ import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
-import { handleFixCoverageCommand } from './copilot-features/fix-coverage'; 
-import {runSlowestTests} from './dashboard-metrics/slowest';
+import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
+import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 
 const jsonStore: Map<string, any> = new Map();
@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         const pythonFiles = await getPythonFiles();
         const contextContent = pythonFiles.join('\n\n');
 
-        const chatModels = await vscode.lm.selectChatModels({family: 'gpt-4'});
+        const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
         const messages = [
             vscode.LanguageModelChatMessage.User(
                 `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
@@ -44,8 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
         const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
 
         for await (const token of chatRequest.text) {
-                response.markdown(token);
-            }
+            response.markdown(token);
+        }
     });
 
     // Register the runTests command
@@ -75,7 +75,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(getCoverage);
 
-
     // Register the slowestTests command
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
@@ -95,8 +94,8 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(annotateCommand);
 
-     // Register the fix failing tests command
-     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
+    // Register the fix failing tests command
+    const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
         'fix-failing-tests.fixFailingTests',
         handleFixFailingTestsCommand
     );
@@ -157,4 +156,4 @@ async function getPythonFiles(): Promise<string[]> {
 }
 
 // Deactivation Method for the Extension
-export function deactivate() {}
+export function deactivate() { }
