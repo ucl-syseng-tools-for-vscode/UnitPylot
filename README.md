@@ -12,4 +12,4 @@
 - Ctrl/Cmd + Shift + P => Get Coverage
 
 ## Notes
-Currently all lines are highlighted but this is just for the demo.
+Please note, you must run the "Fix Coverage" command from the main code files and "Fix Failing Tests" and "Optimise Slowest Tests" commands from the test case files.
