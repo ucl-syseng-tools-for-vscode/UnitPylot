@@ -26,6 +26,25 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    vscode.chat.createChatParticipant("vscode-testing-chat", async (request, context, response, token) => {
+        const userQuery = request.prompt;
+
+        // Context - python files and tests 
+        const pythonFiles = await getPythonFiles();
+        const contextContent = pythonFiles.join('\n\n');
+
+        const chatModels = await vscode.lm.selectChatModels({family: 'gpt-4'});
+        const messages = [
+            vscode.LanguageModelChatMessage.User(
+                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
+            )
+        ];
+        const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
+
+        for await (const token of chatRequest.text) {
+                response.markdown(token);
+            }
+    });
 
     // Register the runTests command
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
@@ -102,6 +121,17 @@ export function handleFileOpen(editor: vscode.TextEditor) {
     if (fileName.endsWith('.py')) {
         highlightCodeCoverage(fileName, jsonStore.get('coverage') || '{}');
     }
+}
+
+// get python files
+async function getPythonFiles(): Promise<string[]> {
+    const pythonFiles: string[] = [];
+    const uris = await vscode.workspace.findFiles('**/*.py');
+    for (const uri of uris) {
+        const content = (await vscode.workspace.fs.readFile(uri)).toString();
+        pythonFiles.push(`File: ${uri.fsPath}\n${content}`);
+    }
+    return pythonFiles;
 }
 
 // Deactivation Method for the Extension
