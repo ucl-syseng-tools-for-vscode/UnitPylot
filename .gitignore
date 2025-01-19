@@ -1,0 +1,13 @@
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
+**/__pycache__/
+venv/
+*.pyc
+examples/fizzbuzz_example/.coverage
+examples/fizzbuzz_example/coverage.json
+examples/fizzbuzz_example/fizzbuzz.egg-info/
+out/editorHighlighter.js
+out/editorHighlighter.js.map

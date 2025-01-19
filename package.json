@@ -23,6 +23,13 @@
         }
       ]
     },
+    "chatParticipants": [
+      {
+        "id": "vscode-testing-chat",
+        "name": "python-tester",
+        "description": "Specialised chat for building and editing good testing infrastructure"
+      }
+    ],
     "views": {
       "custom-activitybar": [
         {
@@ -59,6 +66,30 @@
       {
         "command": "vscode-run-tests.updateCoverage",
         "title": "Update Coverage Results"
+      },
+      {
+        "command": "vscode-slowest-tests.slowestTests",
+        "title": "Find Slowest Tests"
+      },
+      {
+        "command": "vscode-slowest-tests.updateSlowestTests",
+        "title": "Update Slowest Tests Results"
+      },
+      {
+        "command": "code-tutor.annotate",
+        "title": "Toggle Tutor Annotations"
+      },
+      {
+        "command": "fix-failing-tests.fixFailingTests",
+        "title": "Fix Failing Tests"
+      },
+      {
+        "command": "fix-coverage.fixCoverage",
+        "title": "Fix Coverage"
+      },
+      {
+        "command": "optimise-slowest.optimiseSlowest",
+        "title": "Optimise Slowest Tests"
       }
     ],
     "menus": {
@@ -67,6 +98,12 @@
           "command": "dashboard.menu.view",
           "group": "navigation",
           "when": "view == dashboard.openview"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "code-tutor.annotate",
+          "group": "navigation"
         }
       ]
     }
