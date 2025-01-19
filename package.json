@@ -23,6 +23,13 @@
         }
       ]
     },
+    "chatParticipants": [
+      {
+        "id": "vscode-testing-chat",
+        "name": "expert-tester",
+        "description": "Specialised chat for building and editing good testing infrastructure"
+      }
+    ],
     "views": {
       "custom-activitybar": [
         {
