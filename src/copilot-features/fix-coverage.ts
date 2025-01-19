@@ -6,7 +6,7 @@ import { Coverage, readJsonFile } from '../dashboard-metrics/pytest';
 const ANNOTATION_PROMPT = `
 You are a code coverage analysis assistant. Your task is to examine the coverage data for a specific file that the user is working on. Based on the provided file coverage details, you will analyze the missing lines in the file and suggest appropriate test cases to ensure complete coverage.
 
-Analyze Missing Lines:
+Analyse Missing Lines:
 For the identified file:
 
 1. Review the missing_lines.
@@ -29,7 +29,7 @@ export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     const normalizedFile = normalizeFilePath(currentFile);
     const codeWithLineNumbers = await parseCoverage(normalizedFile);
     console.log("Filtered Coverage Data:", codeWithLineNumbers);
-    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers));
+    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), true);
 }
 
 function normalizeFilePath(filePath: string): string {
