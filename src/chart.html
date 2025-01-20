@@ -42,6 +42,14 @@
             transform: translateY(1px);
         }
 
+        #chart-container {
+            margin: 10px 0;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 30px;
+            margin-bottom: 0px;
+        }
+
         #chart {
             display: none;
             width: 100%;
@@ -64,52 +72,84 @@
             margin-left: 20px;
             line-height: 0.5;
         }
-
-        .card {
-            border: 1px solid #ccc;
-            padding: 5px;
-            margin-top: 2px;
+        
+        #slowest-results-card {
+            border: 1px solid #555;
+            padding: 15px;
+            margin-top: 0px;
+            margin-bottom: 20px;
             border-radius: 8px;
+            background-color: #2a2a2a;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            max-height: 300px;
+            width: 100%;
+            max-width: 1200px;
+        }
+    
+        #slowest-results-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #ffffff;
+        }
+    
+        #slowest-results-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    
+        #slowest-results-content p {
+            margin: 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #3e3e3e;
+            color: #ffffff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+    
+        #slowest-results-content p:hover::after {
+            content: attr(data-full-text);
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         #button-container {
+            margin-top: 10px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px; 
-            margin-top: 40px;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
-    <div id="coverage-chart-container">
+    <div id="coverage-chart-container" class="card">
         <canvas id="coverage-chart"></canvas>
         <div id="coverage-results">
-            <span><strong>Line Coverage</strong></span>
-            <span>
-                <p id="coverage-results-covered">Covered</p>
-            </span>
-            <span></span>
+            <strong>Line Coverage</strong>
+            <p id="coverage-results-covered">Covered</p>
             <p id="coverage-results-missed">Missed</p>
-            </span>
-            <span>
-                <p id="coverage-results-skipped">Skipped</p>
-            </span>
-            <span><strong>Branch Coverage</strong></span>
-            <span>
-                <p id="coverage-results-branches-covered"></p>
-            </span>
+            <p id="coverage-results-skipped">Skipped</p>
+            <strong>Branch Coverage</strong>
+            <p id="coverage-results-branches-covered">Covered Branches</p>
         </div>
     </div>
 
-
     <div id="chart-container">
-        <!-- <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button> -->
         <canvas id="chart"></canvas>
     </div>
-    <div id="slowest-results-card" class="card" style="display: none;">
+
+    <div id="slowest-results-card" class="card">
         <h3>Slowest Tests</h3>
         <div id="slowest-results-content"></div>
     </div>
