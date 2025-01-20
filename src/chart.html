@@ -120,16 +120,6 @@
         <button id="find-slowest-btn" class="btn" onclick="slowestTests()">Slowest Tests</button>
     </div>
 
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: auto;
-        }
-    </style>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel"></script>
@@ -401,8 +391,6 @@
 
             // Adjust the layout
             slowestTestsBtn.style.marginTop = '0';
-            chart.style.display = 'block';
-            resultsBar.style.display = 'flex';
         }
 
         window.addEventListener('message', (event) => {
