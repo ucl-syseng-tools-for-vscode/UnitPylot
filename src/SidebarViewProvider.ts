@@ -30,6 +30,9 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       if (msg.command === 'getCoverage'){
         vscode.commands.executeCommand('vscode-run-tests.getCoverage');
       }
+      if (msg.command === 'slowestTests') {
+        vscode.commands.executeCommand('vscode-slowest-tests.slowestTests');
+      }
     });
 
     vscode.commands.registerCommand('vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {
@@ -40,6 +43,11 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
     vscode.commands.registerCommand('vscode-run-tests.updateCoverage', (coverage: Coverage) => {
       console.log('Updating coverage:', coverage);
       this.updateCoverage(coverage);
+    });
+
+    vscode.commands.registerCommand('vscode-slowest-tests.updateSlowestTests', (slowest) => {
+      console.log('Updating slowest tests:', slowest);
+      this.updateSlowestTests(slowest); 
     });
   }
 
@@ -52,6 +60,12 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
   private updateCoverage(coverage: Coverage): void {
     if (this._view) {
       this._view.webview.postMessage({ command: 'updateCoverage', coverage });
+    }
+  }
+
+  private updateSlowestTests(slowest: any): void {
+    if (this._view) {
+      this._view.webview.postMessage({ command: 'updateSlowestTests', slowest });
     }
   }
 }
