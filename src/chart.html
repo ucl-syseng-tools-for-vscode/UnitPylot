@@ -64,6 +64,22 @@
             margin-left: 20px;
             line-height: 0.5;
         }
+
+        .card {
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin-top: 2px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; 
+            margin-top: 40px;
+        }
     </style>
 </head>
 
@@ -87,12 +103,23 @@
             </span>
         </div>
     </div>
+
+
     <div id="chart-container">
         <!-- <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button> -->
         <canvas id="chart"></canvas>
+    </div>
+    <div id="slowest-results-card" class="card" style="display: none;">
+        <h3>Slowest Tests</h3>
+        <div id="slowest-results-content"></div>
+    </div>
+
+    <div id="button-container">
         <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button>
         <button id="get-coverage-btn" class="btn" onclick="getCoverage()">Get Coverage</button>
+        <button id="find-slowest-btn" class="btn" onclick="slowestTests()">Slowest Tests</button>
     </div>
+
     <style>
         body {
             display: flex;
@@ -112,6 +139,7 @@
         let state = {
             testResults: null,
             coverageResults: null,
+            slowestResults: null,
         };
 
         function saveState() {
@@ -129,6 +157,9 @@
                 }
                 if (state.coverageResults) {
                     updateCoverage(state.coverageResults);
+                }
+                if (state.slowestResults) {
+                    updateSlowestTests(state.slowestResults);
                 }
             }
         }
@@ -361,6 +392,45 @@
                 }],
             });
         }
+
+        const slowestTestsBtn = document.getElementById('find-slowest-btn');
+
+        function slowestTests() {
+            console.log("called");
+            vscode.postMessage({ command: 'slowestTests' });
+
+            // Adjust the layout
+            slowestTestsBtn.style.marginTop = '0';
+            chart.style.display = 'block';
+            resultsBar.style.display = 'flex';
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.command === 'updateSlowestTests') {
+                console.log('Frontend received updateSlowestTests message:', event.data.slowest);
+                state.slowestResults = structuredClone(event.data.slowest);
+                saveState();
+                updateSlowestTests(event.data.slowest);
+            }
+        });  
+
+        
+        function updateSlowestTests(slowest) {
+            const card = document.getElementById('slowest-results-card');
+            const content = document.getElementById('slowest-results-content');
+            content.innerHTML = '';
+
+            slowest.slowest.forEach(test => {
+                console.log('Updating slowest tests:', test);
+                const testElement = document.createElement('p');
+                testElement.textContent = test;
+                content.appendChild(testElement);
+            });
+
+            card.style.display = 'block';
+        }
+
+        
     </script>
 </body>
 
