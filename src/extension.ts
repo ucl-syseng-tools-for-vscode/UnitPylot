@@ -78,9 +78,9 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the slowestTests command
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
-            runSlowestTests();
-            // const { slowest } = await runSlowestTests();
-            // vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+            // runSlowestTests();
+            const slowest = await runSlowestTests();
+            vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
         }
