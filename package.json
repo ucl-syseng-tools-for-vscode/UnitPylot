@@ -37,6 +37,12 @@
           "id": "dashboard.openview",
           "name": "Dashboard",
           "contextualTitle": "View"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.treeview",
+          "name": "Dependency Tree View",
+          "contextualTitle": "Tree"
         }
       ]
     },
@@ -94,6 +100,10 @@
       {
         "command": "dependencies.getDependencies",
         "title": "Get Dependencies"
+      },
+      {
+        "command": "dependencies.refreshView",
+        "title": "Refresh Dependencies View"
       }
     ],
     "menus": {

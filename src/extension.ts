@@ -9,8 +9,10 @@ import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { getTestDependencies } from './dependency-management/dependencies';
+import { DependenciesProvider } from './dependency-management/tree-view-provider';
+import { get } from 'http';
 
-const jsonStore: Map<string, any> = new Map();
+export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
@@ -119,8 +121,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the getDependencies command
     context.subscriptions.push(vscode.commands.registerCommand(
-        'dependencies.getDependencies',
-        getTestDependencies
+        'dependencies.getDependencies', async () => {
+            const dependencies = await getTestDependencies();
+            jsonStore.set('dependencies', dependencies);
+        }
     ));
 
     const provider = new SidebarViewProvider(context.extensionUri);
@@ -142,6 +146,15 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(openWebView);
+
+    // Register the dependency tree view
+    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
+    vscode.window.createTreeView('dashboard.treeview', {
+        treeDataProvider: dependenciesProvider
+    });
+
+    // Register the refresh command
+    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
 }
 
 // Handles file open event
