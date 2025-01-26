@@ -71,6 +71,23 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 
     const decoration = { range: range, hoverMessage: suggestion };
     vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
+
+    vscode.window.showInformationMessage(
+        `Suggestion at line ${line}. Accept or Reject?`,
+        "Accept",
+        "Reject"
+    ).then(choice => {
+        if (choice === "Accept") {
+            // Apply the suggestion
+            applySuggestionText(editor, line, suggestion);
+
+            // Clear the decoration after applying
+            editor.setDecorations(decorationType, []);
+        } else if (choice === "Reject") {
+            // Remove the decoration
+            editor.setDecorations(decorationType, []);
+        }
+    });
 }
 
 
@@ -99,7 +116,44 @@ function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string
 
         const decoration = { range: range, hoverMessage: suggestion };
         vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
+
+        vscode.window.showInformationMessage(
+            `Suggestion for function "${functionName}". Accept or Reject?`,
+            "Accept",
+            "Reject"
+        ).then(choice => {
+            if (choice === "Accept") {
+                // We’ll just insert the suggestion at the end of the function definition line,
+                // but you may adapt the insertion as needed.
+                editor.edit(editBuilder => {
+                    editBuilder.insert(range.start, `  # Applied suggestion:\n${suggestion}\n`);
+                });
+    
+                // Clear the decoration
+                editor.setDecorations(decorationType, []);
+            } else if (choice === "Reject") {
+                // Remove the decoration
+                editor.setDecorations(decorationType, []);
+            }
+        });
     } else {
         vscode.window.showErrorMessage(`Function "${functionName}" not found.`);
     }
+}
+
+function applySuggestionText(
+    editor: vscode.TextEditor, 
+    line: number, 
+    text: string
+) {
+    // Convert to zero-based index
+    const zeroBasedLine = Math.max(line - 1, 0);
+    // We'll simply insert the suggestion on a new line below the target.
+    // You can adjust this to replace the line or do other transformations.
+    editor.edit(editBuilder => {
+        const insertPos = new vscode.Position(zeroBasedLine + 1, 0);
+        // You might want to parse out "Here is the corrected code:" or similar from text
+        // if the model is returning that as part of the suggestion. 
+        editBuilder.insert(insertPos, `# Applied suggestion:\n${text}\n`);
+    });
 }
