@@ -29,7 +29,7 @@ export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     const normalizedFile = normalizeFilePath(currentFile);
     const codeWithLineNumbers = await parseCoverage(normalizedFile);
     console.log("Filtered Coverage Data:", codeWithLineNumbers);
-    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), true);
+    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 0);
 }
 
 function normalizeFilePath(filePath: string): string {
