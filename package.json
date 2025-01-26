@@ -90,6 +90,10 @@
       {
         "command": "optimise-slowest.optimiseSlowest",
         "title": "Optimise Slowest Tests"
+      },
+      {
+        "command": "generate-pydoc.generatePydoc",
+        "title": "Generate Pydoc"
       }
     ],
     "menus": {
