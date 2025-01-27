@@ -6,7 +6,7 @@ import { Coverage, readJsonFile } from '../dashboard-metrics/pytest';
 const ANNOTATION_PROMPT = `
 You are a code coverage analysis assistant. Your task is to examine the coverage data for a specific file that the user is working on. Based on the provided file coverage details, you will analyze the missing lines in the file and suggest appropriate test cases to ensure complete coverage.
 
-Analyse Missing Lines:
+Given all the missing lines, provide a suggestion for a test case that would cover these lines.:
 For the identified file:
 
 1. Review the missing_lines.
@@ -16,6 +16,17 @@ Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
 - Include a **line** field to specify the line where the change begins (if applicable).
 - Provide a clear **suggestion** field with the corrected test code.
+
+Here is an example of the expected response format:
+
+{
+  "line": 1,
+  "suggestion": "Add a test case to cover the edge case where the input is an empty list."
+}, 
+{
+  "line": 2,
+  "suggestion": "Add a test case to cover the edge case where the input is a list with a single element."
+}
 
 Guidelines:
 - Clarity: Be clear and concise in your explanation of the test case suggestion.

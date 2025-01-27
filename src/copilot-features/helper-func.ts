@@ -32,13 +32,18 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
     console.log("Response TEXT",chatResponse.text);
 
     for await (const fragment of chatResponse.text) {
-        accumulatedResponse += fragment;
+        if (fragment.includes('},')) {
+            accumulatedResponse += '}';
+        }
+        else{
+            accumulatedResponse += fragment;
+        }
         
         if (fragment.includes('}')) {
             try {
+                console.log("AR", accumulatedResponse);
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
-                console.log('func name:', annotation.test_name);
             
                 if (decorationMethod) {
                     applyDecorationLineNumbers(textEditor, annotation.line, annotation.suggestion);
@@ -146,12 +151,8 @@ function applySuggestionText(
 ) {
     // Convert to zero-based index
     const zeroBasedLine = Math.max(line - 1, 0);
-    // We'll simply insert the suggestion on a new line below the target.
-    // You can adjust this to replace the line or do other transformations.
     editor.edit(editBuilder => {
         const insertPos = new vscode.Position(zeroBasedLine + 1, 0);
-        // You might want to parse out "Here is the corrected code:" or similar from text
-        // if the model is returning that as part of the suggestion. 
         editBuilder.insert(insertPos, `# Applied suggestion:\n${text}\n`);
     });
 }
