@@ -123,8 +123,6 @@ function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string
             "Reject"
         ).then(choice => {
             if (choice === "Accept") {
-                // We’ll just insert the suggestion at the end of the function definition line,
-                // but you may adapt the insertion as needed.
                 editor.edit(editBuilder => {
                     editBuilder.insert(range.start, `  # Applied suggestion:\n${suggestion}\n`);
                 });
