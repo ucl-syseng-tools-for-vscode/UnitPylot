@@ -4,17 +4,21 @@ import { exec } from 'child_process';
 import * as hf from '../copilot-features/helper-func';
 
 
-const ANNOTATION_PROMPT = `You are an expert Python debugger specializing in refactoring failing test cases. Your role is to analyze a block of Python test code and the provided debug console output, then return the corrected and refactored test code.
+const ANNOTATION_PROMPT = `You are an expert Python debugger specializing in refactoring failing test cases. Your role is to analyze a block of Python test code and the provided debug console output, then return the corrected and refactored code in the corresponsing source file based on the failing test. Suggest changes to the function that is being tested, not the test case itself, unless its entirely necessary and the test case is itself wrong. You must to do the following:
 
 - The response must be in the format of a single JSON object.
 - Include a "line" field to specify the line where the change begins (if applicable).
-- Provide a clear "suggestion" field with the corrected test code.
+- Provide a clear "suggestion" field with the corrected code.
 
 Here is an example of the expected response format:
 
 {
   "line": 1,
-  "suggestion": "Here is the corrected test case: <corrected_code>"
+  "suggestion": "Here is the corrected code: <corrected_code>"
+},
+{
+  "line": 5,
+  "suggestion": "Here is the corrected code: <corrected_code>"
 }
 `;
 

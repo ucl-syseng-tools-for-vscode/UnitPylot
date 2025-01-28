@@ -32,13 +32,18 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
     console.log("Response TEXT",chatResponse.text);
 
     for await (const fragment of chatResponse.text) {
-        accumulatedResponse += fragment;
+        if (fragment.includes('},')) {
+            accumulatedResponse += '}';
+        }
+        else{
+            accumulatedResponse += fragment;
+        }
         
         if (fragment.includes('}')) {
             try {
+                console.log("AR", accumulatedResponse);
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
-                console.log('func name:', annotation.test_name);
             
                 if (decorationMethod) {
                     applyDecorationLineNumbers(textEditor, annotation.line, annotation.suggestion);
@@ -71,6 +76,23 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 
     const decoration = { range: range, hoverMessage: suggestion };
     vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
+
+    vscode.window.showInformationMessage(
+        `Suggestion at line ${line}. Accept or Reject?`,
+        "Accept",
+        "Reject"
+    ).then(choice => {
+        if (choice === "Accept") {
+            // Apply the suggestion
+            applySuggestionText(editor, line, suggestion);
+
+            // Clear the decoration after applying
+            editor.setDecorations(decorationType, []);
+        } else if (choice === "Reject") {
+            // Remove the decoration
+            editor.setDecorations(decorationType, []);
+        }
+    });
 }
 
 
@@ -99,7 +121,38 @@ function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string
 
         const decoration = { range: range, hoverMessage: suggestion };
         vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
+
+        vscode.window.showInformationMessage(
+            `Suggestion for function "${functionName}". Accept or Reject?`,
+            "Accept",
+            "Reject"
+        ).then(choice => {
+            if (choice === "Accept") {
+                editor.edit(editBuilder => {
+                    editBuilder.insert(range.start, `  # Applied suggestion:\n${suggestion}\n`);
+                });
+    
+                // Clear the decoration
+                editor.setDecorations(decorationType, []);
+            } else if (choice === "Reject") {
+                // Remove the decoration
+                editor.setDecorations(decorationType, []);
+            }
+        });
     } else {
         vscode.window.showErrorMessage(`Function "${functionName}" not found.`);
     }
+}
+
+function applySuggestionText(
+    editor: vscode.TextEditor, 
+    line: number, 
+    text: string
+) {
+    // Convert to zero-based index
+    const zeroBasedLine = Math.max(line - 1, 0);
+    editor.edit(editBuilder => {
+        const insertPos = new vscode.Position(zeroBasedLine + 1, 0);
+        editBuilder.insert(insertPos, `# Applied suggestion:\n${text}\n`);
+    });
 }
