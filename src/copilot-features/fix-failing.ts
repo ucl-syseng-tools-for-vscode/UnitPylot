@@ -15,6 +15,10 @@ Here is an example of the expected response format:
 {
   "line": 1,
   "suggestion": "Here is the corrected code: <corrected_code>"
+},
+{
+  "line": 5,
+  "suggestion": "Here is the corrected code: <corrected_code>"
 }
 `;
 
