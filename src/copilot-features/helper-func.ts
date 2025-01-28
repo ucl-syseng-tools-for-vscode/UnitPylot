@@ -148,10 +148,12 @@ function applySuggestionText(
     line: number, 
     text: string
 ) {
+    const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     // Convert to zero-based index
     const zeroBasedLine = Math.max(line - 1, 0);
+
     editor.edit(editBuilder => {
         const insertPos = new vscode.Position(zeroBasedLine + 1, 0);
-        editBuilder.insert(insertPos, `# Applied suggestion:\n${text}\n`);
+        editBuilder.insert(insertPos, `# Applied suggestion:\n${cleanedText}\n`);
     });
 }
