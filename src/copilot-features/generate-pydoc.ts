@@ -1,21 +1,15 @@
 import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
 
-// Annotation Prompt for generating pydoc suggestions tests in the currently open file
+// Annotation Prompt for generating docstring suggestions for tests in the currently open file
 
 // Added suggestion field in order to reuse previous functions
 const ANNOTATION_PROMPT = `
-You are a Python documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed pydoc annotations for its functions and classes.
+You are a Python documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed docstring for the test case.
 
 For each test case provided, based on its start and end line numbers:
 1. Analyse the test case to understand its purpose, inputs, and expected behavior.
-2. Generate a concise and accurate pydoc suggestion that describes what the test case does.
-
-A pydoc-compliant docstring typically includes:
-- **A brief description**: Summarize what the function or class does.
-- **Parameters**: List the names, types, and descriptions of input parameters.
-- **Returns**: Specify the type and description of the returned value.
-- **Raises**: Document any exceptions the function might raise.
+2. Generate a concise and accurate docstring suggestion that describes what the test case does.
 
 Include all this in the suggestion field.
 
