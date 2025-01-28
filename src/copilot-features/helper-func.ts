@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 // Includes helper function to annotate chat response in-line
 
-export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATION_PROMPT: string, codeWithLineNumbers: string, decorationMethod: boolean) {
+export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATION_PROMPT: string, codeWithLineNumbers: string, decorationMethod: number) {
     let [model] = await vscode.lm.selectChatModels({
         vendor: 'copilot',
         family: 'gpt-4o',
@@ -27,9 +27,8 @@ export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATIO
 
 
 // Parses chat response and applies decoration
-async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse, textEditor: vscode.TextEditor, decorationMethod: boolean) {
+async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse, textEditor: vscode.TextEditor, decorationMethod: number) {
     let accumulatedResponse = '';
-    console.log("Response TEXT",chatResponse.text);
 
     for await (const fragment of chatResponse.text) {
         if (fragment.includes('},')) {
@@ -45,9 +44,9 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
             
-                if (decorationMethod) {
+                if (decorationMethod == 0) {
                     applyDecorationLineNumbers(textEditor, annotation.line, annotation.suggestion);
-                } else {
+                } else if (decorationMethod == 1)  {
                     applyDecorationFuncName(textEditor, annotation.test_name, annotation.suggestion);
                 }
                 accumulatedResponse = '';

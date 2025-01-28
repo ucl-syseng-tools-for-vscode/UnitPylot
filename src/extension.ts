@@ -8,6 +8,7 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
+import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -114,6 +115,13 @@ export function activate(context: vscode.ExtensionContext) {
         handleOptimiseSlowestTestsCommand
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
+
+    // Register the generate Pydoc command
+    const generatePydocCommand = vscode.commands.registerTextEditorCommand(
+        'generate-pydoc.generatePydoc',
+        handleGeneratePydocCommand
+    );
+    context.subscriptions.push(generatePydocCommand);
 
     const provider = new SidebarViewProvider(context.extensionUri);
 

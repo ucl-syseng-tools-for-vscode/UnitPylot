@@ -34,7 +34,7 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
     try {
         const codeWithLineNumbers = await getSlowestTests(textEditor);
         console.log("CODE2", codeWithLineNumbers); 
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), false);
+        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
     } catch (error) {
         console.error("Error in handleOptimiseSlowestTestsCommand:", error);
     }
