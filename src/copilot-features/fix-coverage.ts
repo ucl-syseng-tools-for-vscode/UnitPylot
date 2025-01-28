@@ -10,7 +10,7 @@ Given all the missing lines, provide a suggestion for a test case that would cov
 For the identified file:
 
 1. Review the missing_lines.
-2. Suggest why these lines might not be executed (e.g., untested conditions, branches, or edge cases).
+2. Suggest code that covers untested conditions, branches, or edge cases.
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
@@ -21,11 +21,11 @@ Here is an example of the expected response format:
 
 {
   "line": 1,
-  "suggestion": "Add a test case to cover the edge case where the input is an empty list."
+  "suggestion": "Here is the corrected code: <corrected_code>"
 }, 
 {
   "line": 2,
-  "suggestion": "Add a test case to cover the edge case where the input is a list with a single element."
+  "suggestion": "Here is the corrected code: <corrected_code>"
 }
 
 Guidelines:
