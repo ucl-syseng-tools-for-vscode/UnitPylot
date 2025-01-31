@@ -144,7 +144,7 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     const currentFileUri = editor.document.uri;
     const currentFilePath = currentFileUri.fsPath;
-    const currentFileName = path.basename(currentFilePath);
+    const currentFileName = path.basename(currentFilePath, '.py'); 
 
     // Find project root
     let projectRoot = path.dirname(currentFilePath);
@@ -152,31 +152,42 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
         projectRoot = path.dirname(projectRoot);
     }
 
-    // Correctly point to 'tests/' folder
+    // Locate the 'tests/' folder
     const projectParentDir = path.dirname(projectRoot);
     const testsFolderPath = path.join(projectParentDir, 'tests');
-    const testFileName = `test_${currentFileName}`;
-    const testFilePath = path.join(testsFolderPath, testFileName);
+
+    const testFilePreferred = path.join(testsFolderPath, `${currentFileName}_test.py`); 
+    const testFileFallback = path.join(testsFolderPath, `test_${currentFileName}.py`); 
+
+    let testFilePath = testFileFallback; // Default to test_<currentname>.py
+
+    try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(testFilePreferred)); // Check for <currentname>_test.py
+        testFilePath = testFilePreferred;
+    } catch {
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(testFileFallback)); // Check for test_<currentname>.py
+            testFilePath = testFileFallback;
+        } catch {
+            vscode.window.showWarningMessage(`No existing test file found. Creating new: ${path.basename(testFileFallback)}`);
+        }
+    }
+
     const testFileUri = vscode.Uri.file(testFilePath);
 
     try {
         let existingText = "";
 
-        // Ensure the correct test file is accessed
         try {
             const existingContent = await vscode.workspace.fs.readFile(testFileUri);
             existingText = Buffer.from(existingContent).toString('utf8');
-        } catch (readError) {
-            vscode.window.showWarningMessage(`Test file ${testFileName} not found in tests/. Creating a new one.`);
+        } catch {
+            // If the file doesn’t exist, it will be created
         }
-
-        // Append the suggestion at the bottom of the test file
         const updatedText = existingText.trim() + `\n\n# Applied suggestion:\n${cleanedText}\n`;
-
-        // Write the updated content back to the test file
         await vscode.workspace.fs.writeFile(testFileUri, Buffer.from(updatedText, 'utf8'));
 
-        vscode.window.showInformationMessage(`Suggestion applied to ${testFileName} in tests/ successfully!`);
+        vscode.window.showInformationMessage(`Suggestion applied to ${path.basename(testFilePath)} in tests/ successfully!`);
     } catch (error) {
         vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
     }
