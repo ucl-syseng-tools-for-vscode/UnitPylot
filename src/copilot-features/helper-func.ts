@@ -65,19 +65,29 @@ function handleAnnotation(
     } else if (decorationMethod === 1) { // based on function name
         applyDecorationFuncName(editor, test_name!, suggestion);
     } else if (decorationMethod === 2) { // for get coverage
-        applyDecorationLineNumbers(editor, line, suggestion);
-        const decorationType = displayAnnotation(editor, line, suggestion);
-        vscode.window.showInformationMessage(
-            `Line ${line}: ${suggestion}`,
-            "Accept",
-            "Reject"
-        ).then(choice => {
-            if (choice === "Accept") {
-                addToTestFile(editor, suggestion);
-            } else if (choice === "Reject") {
-                decorationType.dispose(); 
-            }
+        const decorationType = vscode.window.createTextEditorDecorationType({
+            after: {
+                contentText: ` ${suggestion.substring(0, 25) + '...'}`, 
+                color: 'grey',
+            },
         });
+
+        const lineLength = editor.document.lineAt(line - 1).text.length;
+        const range = new vscode.Range(
+            new vscode.Position(line - 1, lineLength),
+            new vscode.Position(line - 1, lineLength)
+        );
+
+        // Create hover message with Accept/Reject buttons
+        const hoverMessage = new vscode.MarkdownString();
+        hoverMessage.isTrusted = true; // Allows button-like links
+        hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n`);
+        hoverMessage.appendMarkdown(
+            `[✔ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, suggestion, decorationType }))})  ` +
+            `[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+        );
+
+        editor.setDecorations(decorationType, [{ range, hoverMessage }]);
     }
 }
 
