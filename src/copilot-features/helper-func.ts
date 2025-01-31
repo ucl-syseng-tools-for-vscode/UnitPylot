@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 // Includes helper function to annotate chat response in-line
-
 export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATION_PROMPT: string, codeWithLineNumbers: string, decorationMethod: number) {
     let [model] = await vscode.lm.selectChatModels({
         vendor: 'copilot',
@@ -25,7 +25,6 @@ export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATIO
     }
 }
 
-
 // Parses chat response and applies decoration
 async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse, textEditor: vscode.TextEditor, decorationMethod: number) {
     let accumulatedResponse = '';
@@ -44,11 +43,8 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
             
-                if (decorationMethod == 0) {
-                    applyDecorationLineNumbers(textEditor, annotation.line, annotation.suggestion);
-                } else if (decorationMethod == 1)  {
-                    applyDecorationFuncName(textEditor, annotation.test_name, annotation.suggestion);
-                }
+                // added a function to display the annotations according to the command
+                handleAnnotation(textEditor, annotation, decorationMethod);
                 accumulatedResponse = '';
             } catch {
                 // Ignore parse errors
@@ -57,9 +53,35 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
     }
 }
 
+function handleAnnotation(
+    editor: vscode.TextEditor,
+    annotation: { line: number; suggestion: string; test_name?: string },
+    decorationMethod: number
+) {
+    const { line, suggestion, test_name } = annotation;
 
-// Applies decoration to the editor based off line numbers
-function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, suggestion: string) {
+    if (decorationMethod === 0) { // based on line numbers
+        applyDecorationLineNumbers(editor, line, suggestion);
+    } else if (decorationMethod === 1) { // based on function name
+        applyDecorationFuncName(editor, test_name!, suggestion);
+    } else if (decorationMethod === 2) { // for get coverage
+        applyDecorationLineNumbers(editor, line, suggestion);
+        const decorationType = displayAnnotation(editor, line, suggestion);
+        vscode.window.showInformationMessage(
+            `Line ${line}: ${suggestion}`,
+            "Accept",
+            "Reject"
+        ).then(choice => {
+            if (choice === "Accept") {
+                addToTestFile(editor, suggestion);
+            } else if (choice === "Reject") {
+                decorationType.dispose(); 
+            }
+        });
+    }
+}
+
+function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: string) {
     const decorationType = vscode.window.createTextEditorDecorationType({
         after: {
             contentText: ` ${suggestion.substring(0, 25) + '...'}`,
@@ -74,86 +96,78 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
     );
 
     const decoration = { range: range, hoverMessage: suggestion };
-    vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
+    editor.setDecorations(decorationType, [decoration]);
 
-    vscode.window.showInformationMessage(
-        `Suggestion at line ${line}. Accept or Reject?`,
-        "Accept",
-        "Reject"
-    ).then(choice => {
-        if (choice === "Accept") {
-            // Apply the suggestion
-            applySuggestionText(editor, line, suggestion);
-
-            // Clear the decoration after applying
-            editor.setDecorations(decorationType, []);
-        } else if (choice === "Reject") {
-            // Remove the decoration
-            editor.setDecorations(decorationType, []);
-        }
-    });
+    return decorationType; // Return to allow clearing later
 }
 
+function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, suggestion: string) {
+    displayAnnotation(editor, line, suggestion);
+}
 
-// Applies decoration to the editor based off function name
 function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string, suggestion: string) {
-    const decorationType = vscode.window.createTextEditorDecorationType({
-        after: {
-            contentText: ` ${suggestion.substring(0, 25) + '...'}`,
-            color: 'grey',
-        },
-    });
-
     const documentText = editor.document.getText();
-    const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`); // Pattern to match python function definition
+    const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`);
     const match = documentText.match(functionRegex);
 
     if (match) {
         const functionStart = match.index!;
         const startPos = editor.document.positionAt(functionStart + match[0].length);
         const lineLength = editor.document.lineAt(startPos.line).text.length;
-        
+
         const range = new vscode.Range(
             new vscode.Position(startPos.line, lineLength),
             new vscode.Position(startPos.line, lineLength)
         );
 
-        const decoration = { range: range, hoverMessage: suggestion };
-        vscode.window.activeTextEditor?.setDecorations(decorationType, [decoration]);
-
-        vscode.window.showInformationMessage(
-            `Suggestion for function "${functionName}". Accept or Reject?`,
-            "Accept",
-            "Reject"
-        ).then(choice => {
-            if (choice === "Accept") {
-                editor.edit(editBuilder => {
-                    editBuilder.insert(range.start, `  # Applied suggestion:\n${suggestion}\n`);
-                });
-    
-                // Clear the decoration
-                editor.setDecorations(decorationType, []);
-            } else if (choice === "Reject") {
-                // Remove the decoration
-                editor.setDecorations(decorationType, []);
-            }
+        const decorationType = vscode.window.createTextEditorDecorationType({
+            after: { contentText: ` ${suggestion.substring(0, 25) + '...'}`, color: 'grey' },
         });
+
+        editor.setDecorations(decorationType, [{ range, hoverMessage: suggestion }]);
     } else {
         vscode.window.showErrorMessage(`Function "${functionName}" not found.`);
     }
 }
 
-function applySuggestionText(
-    editor: vscode.TextEditor, 
-    line: number, 
-    text: string
-) {
+export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
-    // Convert to zero-based index
-    const zeroBasedLine = Math.max(line - 1, 0);
+    const currentFileUri = editor.document.uri;
+    const currentFilePath = currentFileUri.fsPath;
+    const currentFileName = path.basename(currentFilePath);
 
-    editor.edit(editBuilder => {
-        const insertPos = new vscode.Position(zeroBasedLine + 1, 0);
-        editBuilder.insert(insertPos, `# Applied suggestion:\n${cleanedText}\n`);
-    });
+    // Find project root
+    let projectRoot = path.dirname(currentFilePath);
+    while (!path.basename(projectRoot).includes('src') && path.dirname(projectRoot) !== projectRoot) {
+        projectRoot = path.dirname(projectRoot);
+    }
+
+    // Correctly point to 'tests/' folder
+    const projectParentDir = path.dirname(projectRoot);
+    const testsFolderPath = path.join(projectParentDir, 'tests');
+    const testFileName = `test_${currentFileName}`;
+    const testFilePath = path.join(testsFolderPath, testFileName);
+    const testFileUri = vscode.Uri.file(testFilePath);
+
+    try {
+        let existingText = "";
+
+        // Ensure the correct test file is accessed
+        try {
+            const existingContent = await vscode.workspace.fs.readFile(testFileUri);
+            existingText = Buffer.from(existingContent).toString('utf8');
+        } catch (readError) {
+            vscode.window.showWarningMessage(`Test file ${testFileName} not found in tests/. Creating a new one.`);
+        }
+
+        // Append the suggestion at the bottom of the test file
+        const updatedText = existingText.trim() + `\n\n# Applied suggestion:\n${cleanedText}\n`;
+
+        // Write the updated content back to the test file
+        await vscode.workspace.fs.writeFile(testFileUri, Buffer.from(updatedText, 'utf8'));
+
+        vscode.window.showInformationMessage(`Suggestion applied to ${testFileName} in tests/ successfully!`);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
+    }
 }
