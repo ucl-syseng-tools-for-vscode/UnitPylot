@@ -94,6 +94,14 @@
       {
         "command": "generate-pydoc.generatePydoc",
         "title": "Generate Pydoc"
+      },
+      {
+        "command": "extension.acceptSuggestion",
+        "title": "Accept Annotation"
+      },
+      {
+        "command": "extension.rejectSuggestion",
+        "title": "Reject Annotation"
       }
     ],
     "menus": {
