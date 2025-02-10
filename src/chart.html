@@ -473,7 +473,7 @@
             slowest.slowest.forEach(test => {
                 console.log('Updating slowest tests:', test);
                 const testElement = document.createElement('p');
-                testElement.textContent = test;
+                testElement.textContent = `${test.filePath} - ${test.testName} (${test.time}s)`;
                 content.appendChild(testElement);
             });
 

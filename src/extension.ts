@@ -1,6 +1,5 @@
 // Import the VS Code API
 import * as vscode from 'vscode';
-import { runPytest, runCoverageCheck } from './dashboard-metrics/pytest';
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
@@ -11,19 +10,25 @@ import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-s
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { get } from 'http';
+import { TestRunner } from './test-runner/test-runner';
 
 export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
+
+    // Use this TestRunner instance
+    const testRunner = TestRunner.getInstance(context.workspaceState);
+    testRunner.runTests();  // TODO: REMOVE THIS LINE !!!
+
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
-            handleFileOpen(editor);
+            handleFileOpen(editor, testRunner);
         }
     });
 
     if (vscode.window.activeTextEditor) {
-        handleFileOpen(vscode.window.activeTextEditor);
+        handleFileOpen(vscode.window.activeTextEditor, testRunner);
     }
 
     const disposable = vscode.commands.registerCommand('test.helloWorld', () => {
@@ -54,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the runTests command
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
         try {
-            const { passed, failed } = await runPytest();
+            const { passed, failed } = testRunner.getResultsSummary();
             vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -67,9 +72,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the getCoverage command
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
         try {
-            const { coverage } = await runCoverageCheck();
-            jsonStore.set('coverage', coverage);
-            handleFileOpen(vscode.window.activeTextEditor!);
+            const coverage = testRunner.getCoverage();
+            handleFileOpen(vscode.window.activeTextEditor!, testRunner);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run coverage check.');
@@ -83,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
             // runSlowestTests();
-            const slowest = await runSlowestTests();
+            const slowest = await testRunner.getSlowestTests(5);
             vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -115,7 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        handleOptimiseSlowestTestsCommand
+        (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, testRunner.getSlowestTests(5))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
@@ -158,10 +162,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // Handles file open event
-export function handleFileOpen(editor: vscode.TextEditor) {
+export function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
     if (fileName.endsWith('.py')) {
-        highlightCodeCoverage(fileName, jsonStore.get('coverage') || '{}');
+        highlightCodeCoverage(fileName, testRunner.getCoverage());
     }
 }
 

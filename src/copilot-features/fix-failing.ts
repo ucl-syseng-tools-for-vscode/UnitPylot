@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getPythonPath } from '../dashboard-metrics/pytest';
+import { getPythonPath } from '../test-runner/helper-functions';
 import { exec } from 'child_process';
 import * as hf from '../copilot-features/helper-func';
 
@@ -18,7 +18,7 @@ Here is an example of the expected response format:
 }
 `;
 
-// Chat Functionality for Annotation
+// Chat Functionality for annotations
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor) {
     const codeWithLineNumbers = await getVisibleCodeWithLineNumbers(textEditor);
     hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, codeWithLineNumbers, true);

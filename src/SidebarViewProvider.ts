@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from 'fs';
 import * as path from 'path';
-import { Coverage } from "./dashboard-metrics/pytest";
+import { Coverage } from "./test-runner/coverage";
 
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "dashboard.openview";
@@ -27,7 +27,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       if (msg.command === 'runTests') {
         vscode.commands.executeCommand('vscode-run-tests.runTests');
       }
-      if (msg.command === 'getCoverage'){
+      if (msg.command === 'getCoverage') {
         vscode.commands.executeCommand('vscode-run-tests.getCoverage');
       }
       if (msg.command === 'slowestTests') {
@@ -47,7 +47,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
 
     vscode.commands.registerCommand('vscode-slowest-tests.updateSlowestTests', (slowest) => {
       console.log('Updating slowest tests:', slowest);
-      this.updateSlowestTests(slowest); 
+      this.updateSlowestTests(slowest);
     });
   }
 

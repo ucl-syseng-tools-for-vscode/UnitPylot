@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
-import { Coverage } from './pytest';
+import { Coverage } from '../test-runner/coverage';
 
-export function highlightCodeCoverage(fileName: string, coverage: Coverage) {
+export function highlightCodeCoverage(fileName: string, coverage: Coverage | undefined): void {
+    if (!coverage || !coverage.files) {
+        return;
+    }
     if (!coverage.files) {
         return;
     }

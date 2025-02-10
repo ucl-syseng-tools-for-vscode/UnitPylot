@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getPythonPath } from '../dashboard-metrics/pytest';
+import { getPythonPath } from '../test-runner/helper-functions';
 import { exec } from 'child_process';
 
 function getTestDirectory() {

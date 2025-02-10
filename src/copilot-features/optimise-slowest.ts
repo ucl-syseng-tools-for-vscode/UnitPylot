@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
-import { runSlowestTests } from '../dashboard-metrics/slowest';
+import { TestFunctionResults } from '../test-runner/results';
+
 
 // Annotation Prompt for Optimising the slowest tests in the test suite
 const ANNOTATION_PROMPT = `
@@ -30,23 +31,16 @@ Guidelines:
 `;
 
 // Chat Functionality for Annotation
-export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor) {
+export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResults[]) {
     try {
-        const codeWithLineNumbers = await getSlowestTests(textEditor);
-        console.log("CODE2", codeWithLineNumbers); 
+        var codeWithLineNumbers: string[] = [];
+        for (const test of slowestTests) {
+            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+        }
+
+        console.log("CODE2", codeWithLineNumbers);
         hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), false);
     } catch (error) {
         console.error("Error in handleOptimiseSlowestTestsCommand:", error);
     }
 }
-
-async function getSlowestTests(textEditor: vscode.TextEditor) {
-    try {
-        const slowestTimes = await runSlowestTests();  
-        return slowestTimes;
-    } catch (error) {
-        console.error("Error in finding slowest tests:", error);
-        throw error;  
-    }
-}
-
