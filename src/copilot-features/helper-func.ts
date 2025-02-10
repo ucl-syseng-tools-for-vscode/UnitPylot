@@ -96,13 +96,22 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 
 
 // Applies decoration to the editor based off function name
-function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string, suggestion: string) {
+function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string) {
     const decorationType = vscode.window.createTextEditorDecorationType({
         after: {
             contentText: ` ${suggestion.substring(0, 25) + '...'}`,
             color: 'grey',
         },
     });
+
+
+    let functionName: string = '';
+    const funcMatch = pathToFunctionName.match(/::([^:]+)$/);
+
+    if (funcMatch) {
+        functionName = funcMatch[1];  // Extracted function name
+        console.log(functionName);  
+    }
 
     const documentText = editor.document.getText();
     const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`); // Pattern to match python function definition
