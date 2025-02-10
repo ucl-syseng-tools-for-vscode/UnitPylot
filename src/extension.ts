@@ -9,7 +9,7 @@ import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
-import { addToTestFile } from './copilot-features/helper-func';
+import { addToTestFile, addToSameFile } from './copilot-features/helper-func';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -127,10 +127,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the in-line accept and reject commands
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.acceptSuggestion', (args) => {
-            const { line, suggestion, decorationType } = args;
+            const { line, code_snippet, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
-                addToTestFile(editor, suggestion);
+                addToTestFile(editor, code_snippet);
                 editor.setDecorations(decorationType, []);
                 decorationType.dispose(); // Remove the annotation
             }
@@ -142,6 +142,18 @@ export function activate(context: vscode.ExtensionContext) {
             const { line, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.addSuggestiontoSameFile', (args) => {
+            const { line, code_snippet, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToSameFile(editor, code_snippet);
                 editor.setDecorations(decorationType, []);
                 decorationType.dispose(); // Remove the annotation
             }
