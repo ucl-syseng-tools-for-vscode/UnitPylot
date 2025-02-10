@@ -15,17 +15,20 @@ For the identified file:
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
 - Include a **line** field to specify the line where the change begins (if applicable).
-- Provide a clear field with the corrected test code.
+- Please provide a **suggestion** field with the issue related to the coverage
+- Must include a **code_snippet** field with the corrected test code.
 
 Here is an example of the expected response format:
 
 {
   "line": 1,
-  "suggestion": <corrected_code>
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
 }, 
 {
   "line": 2,
-  "suggestion": <corrected_code>
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
 }
 `;
 
