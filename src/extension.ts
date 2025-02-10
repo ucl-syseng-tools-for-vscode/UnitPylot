@@ -9,6 +9,7 @@ import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
+import { addToTestFile } from './copilot-features/helper-func';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -122,6 +123,30 @@ export function activate(context: vscode.ExtensionContext) {
         handleGeneratePydocCommand
     );
     context.subscriptions.push(generatePydocCommand);
+
+    // Register the in-line accept and reject commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.acceptSuggestion', (args) => {
+            const { line, suggestion, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToTestFile(editor, suggestion);
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.rejectSuggestion', (args) => {
+            const { line, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
