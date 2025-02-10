@@ -131,6 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 addToTestFile(editor, suggestion);
+                editor.setDecorations(decorationType, []);
                 decorationType.dispose(); // Remove the annotation
             }
         })
@@ -141,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
             const { line, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
+                editor.setDecorations(decorationType, []);
                 decorationType.dispose(); // Remove the annotation
             }
         })
