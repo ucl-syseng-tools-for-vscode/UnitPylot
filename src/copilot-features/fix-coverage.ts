@@ -10,7 +10,7 @@ Given all the missing lines, provide a test case that would cover these lines.:
 For the identified file:
 
 1. Review the missing_lines.
-2. Suggest code that covers untested conditions, branches, or edge cases.
+2. You must suggest code that covers untested conditions, branches, or edge cases.
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
