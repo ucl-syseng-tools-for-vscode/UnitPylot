@@ -9,9 +9,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 Analyse Slow Tests:
 For the provided test suite:
 
-1. Review the slowest tests based on the execution time. The following are the slowest tests in the suite:
-   - test_fizzbuzz_output: 0.02s
-   - test_error_shown_for_negative: 0.00s
+1. Review the slowest tests based on the execution time. 
 
 2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
 
