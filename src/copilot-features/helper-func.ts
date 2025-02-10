@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -146,15 +147,21 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     const currentFilePath = currentFileUri.fsPath;
     const currentFileName = path.basename(currentFilePath, '.py'); 
 
-    // Find project root
-    let projectRoot = path.dirname(currentFilePath);
-    while (!path.basename(projectRoot).includes('src') && path.dirname(projectRoot) !== projectRoot) {
-        projectRoot = path.dirname(projectRoot);
-    }
+    // Find project root dynamically
+    let projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(currentFilePath);
 
-    // Locate the 'tests/' folder
-    const projectParentDir = path.dirname(projectRoot);
-    const testsFolderPath = path.join(projectParentDir, 'tests');
+    let testsFolderPath = path.join(projectRoot, 'tests');
+
+    // If 'tests' is not found in the assumed location, search for it
+    if (!fs.existsSync(testsFolderPath)) {
+        let parentDir = path.dirname(projectRoot);
+        while (parentDir !== projectRoot && !fs.existsSync(path.join(parentDir, 'tests'))) {
+            parentDir = path.dirname(parentDir);
+        }
+        if (fs.existsSync(path.join(parentDir, 'tests'))) {
+            testsFolderPath = path.join(parentDir, 'tests');
+        }
+    }
 
     const testFilePreferred = path.join(testsFolderPath, `${currentFileName}_test.py`); 
     const testFileFallback = path.join(testsFolderPath, `test_${currentFileName}.py`); 
@@ -162,11 +169,11 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     let testFilePath = testFileFallback; // Default to test_<currentname>.py
 
     try {
-        await vscode.workspace.fs.stat(vscode.Uri.file(testFilePreferred)); // Check for <currentname>_test.py
+        await vscode.workspace.fs.stat(vscode.Uri.file(testFilePreferred));
         testFilePath = testFilePreferred;
     } catch {
         try {
-            await vscode.workspace.fs.stat(vscode.Uri.file(testFileFallback)); // Check for test_<currentname>.py
+            await vscode.workspace.fs.stat(vscode.Uri.file(testFileFallback));
             testFilePath = testFileFallback;
         } catch {
             vscode.window.showWarningMessage(`No existing test file found. Creating new: ${path.basename(testFileFallback)}`);
@@ -184,6 +191,7 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
         } catch {
             // If the file doesn’t exist, it will be created
         }
+
         const updatedText = existingText.trim() + `\n\n# Applied suggestion:\n${cleanedText}\n`;
         await vscode.workspace.fs.writeFile(testFileUri, Buffer.from(updatedText, 'utf8'));
 
