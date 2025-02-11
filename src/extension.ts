@@ -9,7 +9,7 @@ import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
-import { addToTestFile, addToSameFile } from './copilot-features/helper-func';
+import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 
 const jsonStore: Map<string, any> = new Map();
 
@@ -154,6 +154,18 @@ export function activate(context: vscode.ExtensionContext) {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 addToSameFile(editor, code_snippet);
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.addSuggestiontoMainFile', (args) => {
+            const { line, code_snippet, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToMainFile(editor, code_snippet);
                 editor.setDecorations(decorationType, []);
                 decorationType.dispose(); // Remove the annotation
             }
