@@ -56,15 +56,15 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
 function handleAnnotation(
     editor: vscode.TextEditor,
-    annotation: { line: number; suggestion: string; test_name?: string },
+    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string },
     decorationMethod: number
 ) {
-    const { line, suggestion, test_name } = annotation;
+    const { line, suggestion, test_name, code_snippet } = annotation;
 
     if (decorationMethod === 0) { // based on line numbers
         applyDecorationLineNumbers(editor, line, suggestion);
     } else if (decorationMethod === 1) { // based on function name
-        applyDecorationFuncName(editor, test_name!, suggestion);
+        applyDecorationFuncName(editor, test_name!, suggestion, code_snippet!);
     } else if (decorationMethod === 2) { // for get coverage
         const decorationType = vscode.window.createTextEditorDecorationType({
             after: {
@@ -82,10 +82,12 @@ function handleAnnotation(
         // Create hover message with Accept/Reject buttons
         const hoverMessage = new vscode.MarkdownString();
         hoverMessage.isTrusted = true; // Allows button-like links
-        hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n`);
+
+        hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
+
         hoverMessage.appendMarkdown(
-            `[✔ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, suggestion, decorationType }))})  ` +
-            `[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+            `\n[✔ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
+            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
         );
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
@@ -116,7 +118,24 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
     displayAnnotation(editor, line, suggestion);
 }
 
-function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string, suggestion: string) {
+
+function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string) {
+    const decorationType = vscode.window.createTextEditorDecorationType({
+        after: {
+            contentText: ` ${suggestion.substring(0, 25) + '...'}`,
+            color: 'grey',
+        },
+    });
+
+
+    let functionName: string = '';
+    const funcMatch = pathToFunctionName.match(/::([^:]+)$/);
+
+    if (funcMatch) {
+        functionName = funcMatch[1];  // Extracted function name
+        console.log(functionName);  
+    }
+
     const documentText = editor.document.getText();
     const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`);
     const match = documentText.match(functionRegex);
@@ -124,18 +143,27 @@ function applyDecorationFuncName(editor: vscode.TextEditor, functionName: string
     if (match) {
         const functionStart = match.index!;
         const startPos = editor.document.positionAt(functionStart + match[0].length);
+
+        const line = startPos.line +1;
         const lineLength = editor.document.lineAt(startPos.line).text.length;
 
         const range = new vscode.Range(
             new vscode.Position(startPos.line, lineLength),
             new vscode.Position(startPos.line, lineLength)
+        ); //CHECK??
+
+        const hoverMessage = new vscode.MarkdownString();
+        hoverMessage.isTrusted = true;
+
+
+        hoverMessage.appendMarkdown(`${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
+        hoverMessage.appendMarkdown(
+            `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
+            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
         );
 
-        const decorationType = vscode.window.createTextEditorDecorationType({
-            after: { contentText: ` ${suggestion.substring(0, 25) + '...'}`, color: 'grey' },
-        });
+        editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 
-        editor.setDecorations(decorationType, [{ range, hoverMessage: suggestion }]);
     } else {
         vscode.window.showErrorMessage(`Function "${functionName}" not found.`);
     }
@@ -196,6 +224,31 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
         await vscode.workspace.fs.writeFile(testFileUri, Buffer.from(updatedText, 'utf8'));
 
         vscode.window.showInformationMessage(`Suggestion applied to ${path.basename(testFilePath)} in tests/ successfully!`);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
+    }
+}
+
+
+
+export async function addToSameFile(editor: vscode.TextEditor, text: string) {
+    const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
+    const currentFileUri = editor.document.uri;
+    const currentFilePath = currentFileUri.fsPath;
+
+    try {
+        let existingText = "";
+        try {
+            const existingContent = await vscode.workspace.fs.readFile(currentFileUri);
+            existingText = Buffer.from(existingContent).toString('utf8');
+        } catch {
+            // If the file doesn’t exist, it will be created
+        }
+
+        const updatedText = existingText.trim() + `\n\n# Applied suggestion:\n${cleanedText}\n`;
+        await vscode.workspace.fs.writeFile(currentFileUri, Buffer.from(updatedText, 'utf8'));
+
+        vscode.window.showInformationMessage(`Suggestion applied to ${path.basename(currentFilePath)} in tests/ successfully!`);
     } catch (error) {
         vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
     }

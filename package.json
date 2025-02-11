@@ -102,6 +102,10 @@
       {
         "command": "extension.rejectSuggestion",
         "title": "Reject Annotation"
+      },       
+      {
+        "command": "extension.addSuggestiontoSameFile",
+        "title": "Add Annotation to Same File"
       }
     ],
     "menus": {
