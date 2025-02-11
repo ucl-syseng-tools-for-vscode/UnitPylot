@@ -97,7 +97,7 @@
       },
       {
         "command": "extension.acceptSuggestion",
-        "title": "Accept Annotation"
+        "title": "Accept Annotation onto corresponding test file for coverage"
       },
       {
         "command": "extension.rejectSuggestion",
@@ -106,6 +106,10 @@
       {
         "command": "extension.addSuggestiontoSameFile",
         "title": "Add Annotation to Same File"
+      }, 
+      {
+        "command": "extension.addSuggestiontoMainFile",
+        "title": "Add Annotation to corresponding Main File"
       }
     ],
     "menus": {
