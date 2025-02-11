@@ -56,10 +56,10 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
 function handleAnnotation(
     editor: vscode.TextEditor,
-    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string },
+    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string, file: string },
     decorationMethod: number
 ) {
-    const { line, suggestion, test_name, code_snippet } = annotation;
+    const { line, suggestion, test_name, code_snippet, file} = annotation;
 
     if (decorationMethod === 0) { // based on line numbers
         applyDecorationLineNumbers(editor, line, suggestion);
@@ -91,6 +91,8 @@ function handleAnnotation(
         );
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
+    } else if (decorationMethod === 3) { // for fix failing
+        applyDecorationFixFailing(editor, line, suggestion, code_snippet, file);
     }
 }
 
@@ -229,7 +231,43 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     }
 }
 
+function applyDecorationFixFailing(
+    editor: vscode.TextEditor,
+    line: number,
+    suggestion: string,
+    code_snippet: string,
+    file: string
+) {
+    const decorationType = vscode.window.createTextEditorDecorationType({
+        after: {
+            contentText: ` ${suggestion.substring(0, 25) + '...'}`,
+            color: 'grey',
+        },
+    });
 
+    const lineLength = editor.document.lineAt(line - 1).text.length;
+    const range = new vscode.Range(
+        new vscode.Position(line - 1, lineLength),
+        new vscode.Position(line - 1, lineLength)
+    );
+
+    // Create hover message with Accept/Reject buttons
+    const hoverMessage = new vscode.MarkdownString();
+    hoverMessage.isTrusted = true;
+
+    hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
+
+    const acceptCommand = file === "test" 
+        ? "extension.addSuggestiontoSameFile" 
+        : "extension.addSuggestiontoMainFile";
+
+    hoverMessage.appendMarkdown(
+        `\n[✔ Accept](command:${acceptCommand}?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
+        `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+    );
+
+    editor.setDecorations(decorationType, [{ range, hoverMessage }]);
+}
 
 export async function addToSameFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
@@ -249,6 +287,59 @@ export async function addToSameFile(editor: vscode.TextEditor, text: string) {
         await vscode.workspace.fs.writeFile(currentFileUri, Buffer.from(updatedText, 'utf8'));
 
         vscode.window.showInformationMessage(`Suggestion applied to ${path.basename(currentFilePath)} in tests/ successfully!`);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
+    }
+}
+
+export async function addToMainFile(editor: vscode.TextEditor, text: string) {
+    const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
+    const currentFileUri = editor.document.uri;
+    const currentFilePath = currentFileUri.fsPath;
+    const currentFileName = path.basename(currentFilePath, '.py');
+
+    // Determine the possible main file names by removing test prefixes/suffixes
+    const possibleMainFileNames = [
+        currentFileName.replace(/^test_/, '') + ".py",
+        currentFileName.replace(/_test$/, '') + ".py"
+    ];
+
+    let mainFilePath: string | undefined;
+
+    // Search the workspace for a matching main file
+    if (vscode.workspace.workspaceFolders) {
+        for (const folder of vscode.workspace.workspaceFolders) {
+            const searchPattern = new vscode.RelativePattern(folder, `**/{${possibleMainFileNames.join(',')}}`);
+            const files = await vscode.workspace.findFiles(searchPattern, '**/tests/**', 1); // Ignore test folders
+
+            if (files.length > 0) {
+                mainFilePath = files[0].fsPath;
+                break;
+            }
+        }
+    }
+
+    if (!mainFilePath) {
+        vscode.window.showWarningMessage(`No existing main file found. Creating a new one: ${possibleMainFileNames[0]}`);
+        mainFilePath = path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(currentFilePath), possibleMainFileNames[0]);
+    }
+
+    const mainFileUri = vscode.Uri.file(mainFilePath);
+
+    try {
+        let existingText = "";
+        
+        try {
+            const existingContent = await vscode.workspace.fs.readFile(mainFileUri);
+            existingText = Buffer.from(existingContent).toString('utf8');
+        } catch {
+            // If the file doesn’t exist, it will be created
+        }
+
+        const updatedText = existingText.trim() + `\n\n# Applied suggestion:\n${cleanedText}\n`;
+        await vscode.workspace.fs.writeFile(mainFileUri, Buffer.from(updatedText, 'utf8'));
+
+        vscode.window.showInformationMessage(`Suggestion applied to ${path.basename(mainFilePath)} successfully!`);
     } catch (error) {
         vscode.window.showErrorMessage(`Failed to append suggestion: ${error}`);
     }
