@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as hf from '../copilot-features/helper-func';
 import { readJsonFile } from '../test-runner/helper-functions';
-import { Coverage } from '../test-runner/coverage';
 
 const ANNOTATION_PROMPT = `
 You are a code coverage analysis assistant. Your task is to examine the coverage data for a specific file that the user is working on. Based on the provided file coverage details, you will analyze the missing lines in the file and suggest appropriate test cases to ensure complete coverage.
