@@ -1,12 +1,12 @@
-export type TestResults = {
-    [key: string]: TestFileResults  // File path : TestFileResults
+export type TestResult = {
+    [key: string]: TestFileResult  // File path : TestFileResults
 }
 
-export type TestFileResults = {
-    [key: string]: TestFunctionResults  // Test function : TestFunctionResults
+export type TestFileResult = {
+    [key: string]: TestFunctionResult  // Test function : TestFunctionResults
 }
 
-export type TestFunctionResults = {
+export type TestFunctionResult = {
     passed: boolean;
     time: number;
     errorMessage?: string;
