@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
-import { TestFunctionResults } from '../test-runner/results';
+import { TestFunctionResult } from '../test-runner/results';
 
 
 // Annotation Prompt for Optimising the slowest tests in the test suite
@@ -31,7 +31,7 @@ Guidelines:
 `;
 
 // Chat Functionality for Annotation
-export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResults[]) {
+export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
     try {
         var codeWithLineNumbers: string[] = [];
         for (const test of slowestTests) {
