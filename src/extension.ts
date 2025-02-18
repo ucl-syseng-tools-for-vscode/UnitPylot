@@ -16,10 +16,8 @@ export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
-
     // Use this TestRunner instance
     const testRunner = TestRunner.getInstance(context.workspaceState);
-    testRunner.runTests();  // TODO: REMOVE THIS LINE !!!
 
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
@@ -59,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the runTests command
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
         try {
-            const { passed, failed } = testRunner.getResultsSummary();
+            const { passed, failed } = await testRunner.getResultsSummary();
             vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -72,7 +70,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the getCoverage command
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
         try {
-            const coverage = testRunner.getCoverage();
+            const coverage = await testRunner.getCoverage();
+            jsonStore.set('coverage', coverage);
             handleFileOpen(vscode.window.activeTextEditor!, testRunner);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         } catch (error) {
@@ -120,7 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, testRunner.getSlowestTests(5))
+        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
@@ -163,10 +162,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // Handles file open event
-export function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
+export async function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
     if (fileName.endsWith('.py')) {
-        highlightCodeCoverage(fileName, testRunner.getCoverage());
+        highlightCodeCoverage(fileName, jsonStore.get('coverage'));
     }
 }
 
