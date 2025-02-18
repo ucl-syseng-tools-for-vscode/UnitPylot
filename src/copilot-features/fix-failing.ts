@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TestFunctionResults } from '../test-runner/results';
+import { TestFunctionResult } from '../test-runner/results';
 import * as hf from '../copilot-features/helper-func';
 
 
@@ -19,7 +19,7 @@ Here is an example of the expected response format:
 `;
 
 // Chat Functionality for annotations
-export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResults[] ) {
-    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), true);
+export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResult[]) {
+  hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), true);
 
 }

@@ -104,8 +104,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the fix failing tests command
     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
         'fix-failing-tests.fixFailingTests',
-        (editor, edit, ...args) => handleFixFailingTestsCommand(editor, testRunner.getAllFailingTests())
-        
+        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests())
+
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
