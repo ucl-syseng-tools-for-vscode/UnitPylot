@@ -106,7 +106,8 @@ class Dependency extends vscode.TreeItem {
         public file: string,
         private type: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public isFunction?: boolean
+        public isFunction?: boolean,
+        public passes?: boolean
     ) {
         super(label, collapsibleState);
         this.tooltip = `${this.label}-${this.type}`;

@@ -82,6 +82,9 @@ export class TestRunner {
     // Get coverage data
     public getCoverage(): Coverage | undefined {
         this.runNeccecaryTests();
+        if (!this.coverage) {
+            return undefined
+        }
         return this.coverage;
     }
 
