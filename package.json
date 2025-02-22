@@ -98,12 +98,32 @@
         "title": "Optimise Slowest Tests"
       },
       {
+
         "command": "dependencies.getDependencies",
         "title": "Get Dependencies"
       },
       {
         "command": "dependencies.refreshView",
         "title": "Refresh Dependencies View"
+      },
+        "command": "generate-pydoc.generatePydoc",
+        "title": "Generate Pydoc"
+      },
+      {
+        "command": "extension.acceptSuggestion",
+        "title": "Accept Annotation onto corresponding test file for coverage"
+      },
+      {
+        "command": "extension.rejectSuggestion",
+        "title": "Reject Annotation"
+      },       
+      {
+        "command": "extension.addSuggestiontoSameFile",
+        "title": "Add Annotation to Same File"
+      }, 
+      {
+        "command": "extension.addSuggestiontoMainFile",
+        "title": "Add Annotation to corresponding Main File"
       }
     ],
     "menus": {

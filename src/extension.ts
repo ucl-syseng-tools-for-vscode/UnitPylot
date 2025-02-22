@@ -7,10 +7,15 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
+
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { get } from 'http';
 import { TestRunner } from './test-runner/test-runner';
+
+import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
+import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
+
 
 export const jsonStore: Map<string, any> = new Map();
 
@@ -123,6 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
+
     // Register the getDependencies command
     context.subscriptions.push(vscode.commands.registerCommand(
         'dependencies.getDependencies', async () => {
@@ -130,6 +136,62 @@ export function activate(context: vscode.ExtensionContext) {
             jsonStore.set('dependencies', dependencies);
         }
     ));
+
+    // Register the generate Pydoc command
+    const generatePydocCommand = vscode.commands.registerTextEditorCommand(
+        'generate-pydoc.generatePydoc',
+        handleGeneratePydocCommand
+    );
+    context.subscriptions.push(generatePydocCommand);
+
+    // Register the in-line accept and reject commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.acceptSuggestion', (args) => {
+            const { line, code_snippet, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToTestFile(editor, code_snippet);
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.rejectSuggestion', (args) => {
+            const { line, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.addSuggestiontoSameFile', (args) => {
+            const { line, code_snippet, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToSameFile(editor, code_snippet);
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.addSuggestiontoMainFile', (args) => {
+            const { line, code_snippet, decorationType } = args;
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                addToMainFile(editor, code_snippet);
+                editor.setDecorations(decorationType, []);
+                decorationType.dispose(); // Remove the annotation
+            }
+        })
+    );
+
 
     const provider = new SidebarViewProvider(context.extensionUri);
 

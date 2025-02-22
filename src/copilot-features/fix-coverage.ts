@@ -6,21 +6,30 @@ import { readJsonFile } from '../test-runner/helper-functions';
 const ANNOTATION_PROMPT = `
 You are a code coverage analysis assistant. Your task is to examine the coverage data for a specific file that the user is working on. Based on the provided file coverage details, you will analyze the missing lines in the file and suggest appropriate test cases to ensure complete coverage.
 
-Analyse Missing Lines:
+Given all the missing lines, provide a test case that would cover these lines.:
 For the identified file:
 
 1. Review the missing_lines.
-2. Suggest why these lines might not be executed (e.g., untested conditions, branches, or edge cases).
+2. You must suggest code that covers untested conditions, branches, or edge cases.
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
 - Include a **line** field to specify the line where the change begins (if applicable).
-- Provide a clear **suggestion** field with the corrected test code.
+- Please provide a **suggestion** field with the issue related to the coverage
+- Must include a **code_snippet** field with the corrected test code.
 
-Guidelines:
-- Clarity: Be clear and concise in your explanation of the test case suggestion.
-- Detail: Ensure the suggested test case is thorough enough for the user to understand the reasoning behind the suggestion.
+Here is an example of the expected response format:
 
+{
+  "line": 1,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}, 
+{
+  "line": 2,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}
 `;
 
 // Chat Functionality for Annotation
@@ -29,7 +38,7 @@ export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     const normalizedFile = normalizeFilePath(currentFile);
     const codeWithLineNumbers = await parseCoverage(normalizedFile);
     console.log("Filtered Coverage Data:", codeWithLineNumbers);
-    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), true);
+    hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 2);
 }
 
 function normalizeFilePath(filePath: string): string {
