@@ -106,6 +106,7 @@
         "command": "dependencies.refreshView",
         "title": "Refresh Dependencies View"
       },
+      {
         "command": "generate-pydoc.generatePydoc",
         "title": "Generate Pydoc"
       },
