@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import {getPythonPath} from './pytest';
+import { getPythonPath } from '../test-runner/helper-functions';
 
 // Runs pytest and returns the 5 slowest tests (passing and failing) 
 export function runSlowestTests(): Promise<string[]> {
@@ -11,7 +11,7 @@ export function runSlowestTests(): Promise<string[]> {
         console.log(pythonPath);
 
         if (workspaceFolders) {
-            const workspacePath = workspaceFolders[0].uri.fsPath; 
+            const workspacePath = workspaceFolders[0].uri.fsPath;
             const command = `bash -c "cd ${workspacePath} && ${pythonPath} -m pytest -vv --durations=5 --maxfail=0 || true"`; // maxfail = 0 means pytest continues running even if some tests fail, -vv for tests <0.005s
             console.log(command);
 

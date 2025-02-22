@@ -1,6 +1,5 @@
 // Import the VS Code API
 import * as vscode from 'vscode';
-import { runPytest, runCoverageCheck } from './dashboard-metrics/pytest';
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
@@ -8,21 +7,31 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
+
+import { getTestDependencies } from './dependency-management/dependencies';
+import { DependenciesProvider } from './dependency-management/tree-view-provider';
+import { get } from 'http';
+import { TestRunner } from './test-runner/test-runner';
+
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 
-const jsonStore: Map<string, any> = new Map();
+
+export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
+    // Use this TestRunner instance
+    const testRunner = TestRunner.getInstance(context.workspaceState);
+
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
-            handleFileOpen(editor);
+            handleFileOpen(editor, testRunner);
         }
     });
 
     if (vscode.window.activeTextEditor) {
-        handleFileOpen(vscode.window.activeTextEditor);
+        handleFileOpen(vscode.window.activeTextEditor, testRunner);
     }
 
     const disposable = vscode.commands.registerCommand('test.helloWorld', () => {
@@ -53,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the runTests command
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
         try {
-            const { passed, failed } = await runPytest();
+            const { passed, failed } = await testRunner.getResultsSummary();
             vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -66,9 +75,9 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the getCoverage command
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
         try {
-            const { coverage } = await runCoverageCheck();
+            const coverage = await testRunner.getCoverage();
             jsonStore.set('coverage', coverage);
-            handleFileOpen(vscode.window.activeTextEditor!);
+            handleFileOpen(vscode.window.activeTextEditor!, testRunner);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run coverage check.');
@@ -77,11 +86,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(getCoverage);
 
+
     // Register the slowestTests command
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
             // runSlowestTests();
-            const slowest = await runSlowestTests();
+            const slowest = await testRunner.getSlowestTests(5);
             vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -99,7 +109,8 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the fix failing tests command
     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
         'fix-failing-tests.fixFailingTests',
-        handleFixFailingTestsCommand
+        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests())
+
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
@@ -113,9 +124,18 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        handleOptimiseSlowestTestsCommand
+        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
+
+
+    // Register the getDependencies command
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'dependencies.getDependencies', async () => {
+            const dependencies = await getTestDependencies();
+            jsonStore.set('dependencies', dependencies);
+        }
+    ));
 
     // Register the generate Pydoc command
     const generatePydocCommand = vscode.commands.registerTextEditorCommand(
@@ -172,6 +192,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+
     const provider = new SidebarViewProvider(context.extensionUri);
 
     context.subscriptions.push(
@@ -191,13 +212,22 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(openWebView);
+
+    // Register the dependency tree view
+    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
+    vscode.window.createTreeView('dashboard.treeview', {
+        treeDataProvider: dependenciesProvider
+    });
+
+    // Register the refresh command
+    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
 }
 
 // Handles file open event
-export function handleFileOpen(editor: vscode.TextEditor) {
+export async function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
     if (fileName.endsWith('.py')) {
-        highlightCodeCoverage(fileName, jsonStore.get('coverage') || '{}');
+        highlightCodeCoverage(fileName, jsonStore.get('coverage'));
     }
 }
 

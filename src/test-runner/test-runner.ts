@@ -1,0 +1,354 @@
+import * as vscode from 'vscode';
+import { exec } from 'child_process';
+import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { TestResult, TestFileResult, TestFunctionResult } from './results';
+import { Coverage, FileCoverage, mergeCoverage } from './coverage';
+import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
+import { parsePytestOutput } from './parser';
+import { fail } from 'assert';
+
+type TestRunnerState = {
+    results: TestResult;
+    coverage: Coverage;
+    hash: Hash;
+}
+
+/*
+    * Class to hold test results and coverage data for the whole project.
+    * Only one instance of this class should exist at any given time.
+*/
+
+export class TestRunner {
+    private static instance: TestRunner;
+    private results: TestResult | undefined;
+    private coverage: Coverage | undefined;
+    private readonly stateKey: string = 'testResultsState';
+    private hash: Hash = {};
+    private testDurationsToRun: number = 5;
+
+    private constructor(private workspaceState: vscode.Memento) {
+        this.loadState();
+    }
+
+    public static getInstance(workspaceState: vscode.Memento): TestRunner {
+        if (!TestRunner.instance) {
+            TestRunner.instance = new TestRunner(workspaceState);
+        }
+        return TestRunner.instance;
+    }
+
+    private loadState(): void {
+        const state = this.workspaceState.get(this.stateKey);
+        const typedState = state as TestRunnerState;
+        if (typedState) {
+            this.results = typedState.results;
+            this.coverage = typedState.coverage;
+            this.hash = typedState.hash;
+        } else {
+            this.results = undefined; // Initialize with default values
+            this.coverage = undefined; // Initialize with default values
+        }
+    }
+
+    public saveState(): void {
+        const state = {
+            results: this.results,
+            coverage: this.coverage,
+            hash: this.hash
+        };
+        this.workspaceState.update(this.stateKey, state);
+    }
+
+    public setTestDurationsToRun(n: number): void {
+        if (Number.isInteger(n)) {
+            this.testDurationsToRun = n;
+        } else {
+            throw new Error('Test durations to run must be an integer');
+        }
+    }
+
+    public resetState(): void {
+        this.results = undefined;
+        this.coverage = undefined;
+        this.hash = {};
+        this.saveState();
+    }
+
+    // Get n slowest tests (default n = 5)
+    public async getSlowestTests(n: number = 5): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+
+        const slowestTests: TestFunctionResult[] = [];
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    slowestTests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        slowestTests.sort((a, b) => (b.time || 0) - (a.time || 0));
+        return slowestTests.slice(0, n);
+    }
+
+    // Get coverage data
+    public async getCoverage(): Promise<Coverage | undefined> {
+        await this.runNeccecaryTests();
+        return this.coverage;
+    }
+
+    // Get overall pass / fail results
+    public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
+        await this.runNeccecaryTests();
+
+        let passed = 0;
+        let failed = 0;
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    if (this.results[filePath][test].passed) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                }
+            }
+        }
+        return { passed, failed };
+    }
+
+    // Get pass / fail results for a specific file
+    public async getResultsForFile(filePath: string): Promise<TestFileResult> {
+        await this.runNeccecaryTests();
+
+        if (this.results) {
+            return this.results[filePath];
+        }
+        return {};
+    }
+
+    // Get failing tests with their line numbers
+    public async getAllFailingTests(): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+
+        const failingTests: TestFunctionResult[] = [];
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    if (!this.results[filePath][test].passed) {
+                        failingTests.push(this.results[filePath][test]);
+                    }
+                }
+            }
+        }
+        return failingTests;
+    }
+
+    // Remove deleted test results for deleted tests
+    private removeDeletedTests(deletedFiles: Hash): void {
+        // Remove deleted tests
+        for (const [filePath, file] of Object.entries(deletedFiles)) {
+            if (!file.isTestFile) {
+                continue;  // Skip non-test files
+            }
+            if (this.results && this.results[filePath]) {
+                // The test name in file.functions does not include the test suffix
+                // Make dict of test name to test name in results
+                const normalisedTestNames: { [key: string]: string[] } = {};
+                for (const testName in this.results[filePath]) {
+                    const normalisedName = testName.split('[')[0];
+                    if (!normalisedTestNames[normalisedName]) {
+                        normalisedTestNames[normalisedName] = [];
+                    }
+                    normalisedTestNames[normalisedName].push(testName);
+                }
+
+                for (const test in file.functions) {
+                    // Delete the test from the results
+                    if (normalisedTestNames[test]) {
+                        for (const testName of normalisedTestNames[test]) {
+                            delete this.results[filePath][testName];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Get modified tests and remove deleted tests
+    private async getModifiedTests(): Promise<Set<TestFunctionResult>> {
+        const newHash = await getWorkspaceHash();
+        const diff = await getModifiedFiles(this.hash, newHash);
+        const testsForFunctions = await getTestsForFunctions();
+        const modifiedTests: Set<TestFunctionResult> = new Set();
+
+        // Remove deleted tests
+        this.removeDeletedTests(diff.deleted);
+
+        // Add new/modified tests
+        for (const [filePath, file] of Object.entries(diff.added)) {
+            if (file.isTestFile) {
+                for (const functionName in file.functions) {
+                    modifiedTests.add(
+                        {
+                            filePath: filePath,
+                            testName: functionName,
+                            passed: false,
+                            errorMessage: '',
+                            time: NaN,
+                        }
+                    )
+                }
+            } else { // Modified non-test file so add relevant tests
+                for (const functionName in file.functions) {
+                    for (const testName of getTestsForFunction(functionName, testsForFunctions)) {
+                        modifiedTests.add(
+                            {
+                                filePath: testName.split('::')[0],
+                                testName: testName.split('::').slice(1).join('::'),
+                                passed: false,
+                                errorMessage: '',
+                                time: NaN,
+                            }
+                        )
+                    }
+
+                }
+
+            }
+        }
+        this.hash = newHash;
+        return modifiedTests;
+    }
+
+    // Run necessary tests
+    private async runNeccecaryTests(): Promise<void> {
+        if (!this.results || !this.coverage || !this.hash) {
+            vscode.window.showInformationMessage('Running all tests...');
+            this.runTests();
+            return;
+        }
+
+        const testsToRun: Set<TestFunctionResult> = await this.getModifiedTests();
+        let testsToRunUnique: TestFunctionResult[] = Array.from(testsToRun); // Convert to list
+
+        // Pytest only runs functions that start with test_
+        // OR methods that start with test_ in classes that start with Test
+        // We filter out the tests that don't match this pattern
+        testsToRunUnique = testsToRunUnique.filter(test =>
+            test.testName?.startsWith('test_')
+            || (test.testName?.startsWith('Test')
+                && test.testName?.split('::')[1]?.startsWith('test_'))
+        );
+
+        // Ouput the tests that need to be run as notifications
+        if (testsToRunUnique.length === 0) {
+            vscode.window.showInformationMessage('No test diffs found...');
+        } else {
+            const testsInFiles: { [key: string]: string[] } = {};
+
+            for (const test of testsToRunUnique) {
+                if (test.filePath === undefined || test.testName === undefined) {
+                    continue;
+                }
+                if (!testsInFiles[test.filePath]) {
+                    testsInFiles[test.filePath] = [];
+                }
+                testsInFiles[test.filePath].push(test.testName);
+            }
+
+            for (const [filePath, tests] of Object.entries(testsInFiles)) {
+                vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
+            }
+        }
+
+        this.runTests(testsToRunUnique);
+    }
+
+    // Get coverage data
+    private updateCoverage(rewrite: boolean): void {
+        // Process coverage data
+        const newCoverage = parseCoverage();  // Implemented in helper-functions.ts
+        if (!this.coverage) {
+            this.coverage = newCoverage;
+            return;
+        }
+        if (rewrite) {
+            this.coverage = newCoverage;
+        } else {
+            // Merge the new and old coverage data
+            this.coverage = mergeCoverage(this.coverage, newCoverage);  // Implemented in coverage.ts
+        }
+    }
+
+    // Parse test results
+    private updateTestResults(output: string, rewrite: boolean): void {
+        const newResults: TestResult = parsePytestOutput(output);
+        // If all tests are to be rewritten, overwrite the results
+        if (rewrite) {
+            this.results = newResults;
+            return;
+        }
+        // Otherwise, update the results
+        if (!this.results) {
+            this.results = newResults;
+            return;
+        }
+        for (const filePath in newResults) {
+            if (!this.results[filePath]) {
+                this.results[filePath] = newResults[filePath];
+                continue;
+            }
+            for (const test in newResults[filePath]) {
+                this.results[filePath][test] = newResults[filePath][test];
+            }
+        }
+    }
+
+    /*
+        * Run tests
+        * Only run tests that have changes since the last run
+        * OR run tests that correspond to code that has changed since the last run
+    */
+
+    public async runTests(testsToRun?: TestFunctionResult[]): Promise<void> {
+        if (testsToRun && testsToRun.length === 0) {  // No tests to run
+            return;
+        }
+
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            throw new Error('No workspace folder found');
+        }
+        const pythonPath = await getPythonPath();
+        const workspacePath = workspaceFolders[0].uri.fsPath;
+        const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
+        const command =
+            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --tb=short ${testsToRunString}|| true`;
+
+        // The || true is to prevent the command from failing if there are failed tests
+        // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
+        // Example: tests/fizzbuzz_test.py::test_error_shown_for_negative
+
+        exec(command, { cwd: workspacePath }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing command: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+            }
+            console.log(`stdout: ${stdout}`);
+            // Process the output
+            this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
+
+            this.updateCoverage(testsToRun ? false : true);
+
+            this.saveState();
+        });
+        // Save hash manunally if all tests were run
+        if (!testsToRun) {
+            this.hash = await getWorkspaceHash();
+            this.saveState();
+        }
+    }
+}

@@ -72,7 +72,7 @@
             margin-left: 20px;
             line-height: 0.5;
         }
-        
+
         #slowest-results-card {
             border: 1px solid #555;
             padding: 15px;
@@ -86,19 +86,19 @@
             width: 100%;
             max-width: 1200px;
         }
-    
+
         #slowest-results-card h3 {
             margin: 0 0 10px 0;
             font-size: 18px;
             color: #ffffff;
         }
-    
+
         #slowest-results-content {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-    
+
         #slowest-results-content p {
             margin: 0;
             padding: 10px;
@@ -111,7 +111,7 @@
             white-space: nowrap;
             cursor: pointer;
         }
-    
+
         #slowest-results-content p:hover::after {
             content: attr(data-full-text);
             position: absolute;
@@ -226,9 +226,28 @@
 
         let testResultsChart; // Declare a variable to store the chart instance
 
+        // Function to modify results to make display better
+        function prettifyResults(results) {
+            const { passed, failed } = results;
+            console.log('Prettifying results:', passed, failed);
+            const ratio = passed / (passed + failed);
+            console.log('Ratio:', ratio);
+            if (ratio < 0.2) {
+                return { passed: 1, failed: 4 };
+            }
+            if (ratio > 0.8) {
+                console.log('Returning 4 passed, 1 failed');
+                return { passed: 4, failed: 1 };
+            }
+            else {
+                return results;
+            }
+        }
+
         function updateChart(results) {
             const { passed, failed } = results;
             const total = passed + failed;
+            const { passed: prettyPassed, failed: prettyFailed } = prettifyResults({ passed, failed });
 
             if (testResultsChart) {
                 testResultsChart.destroy();
@@ -244,13 +263,13 @@
                     datasets: [
                         {
                             label: 'Passed',
-                            data: [passed],
+                            data: [prettyPassed],
                             backgroundColor: ['#327e36'],
                             maxBarThickness: 30,
                         },
                         {
                             label: 'Failed',
-                            data: [failed],
+                            data: [prettyFailed],
                             backgroundColor: ['#f14c4c'],
                             maxBarThickness: 30,
                         },
@@ -272,8 +291,9 @@
                         },
                         datalabels: {
                             formatter: (value, context) => {
-                                const label = context.chart.data.labels[context.datasetIndex];
-                                return `${value} ${label}`;
+                                const label = context.dataset.label;
+                                const actualValue = results[label.toLowerCase()];
+                                return `${actualValue} ${label}`;
                             },
                             color: '#ffffff',
                             font: {
@@ -287,8 +307,10 @@
                                     return context[0].dataset.label;
                                 },
                                 label: function (context) {
-                                    const value = context.raw;
-                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    const label = context.dataset.label;
+                                    const actualValue = results[label.toLowerCase()];
+
+                                    const percentage = ((actualValue / total) * 100).toFixed(1);
                                     return `${percentage}%`;
                                 },
                             }
@@ -328,7 +350,7 @@
                 saveState();
                 updateCoverage(event.data.coverage);
             }
-        });        
+        });
 
         let coverageResultsChart; // Declare a variable to store the coverage chart instance
 
@@ -440,9 +462,9 @@
                 saveState();
                 updateSlowestTests(event.data.slowest);
             }
-        });  
+        });
 
-        
+
         function updateSlowestTests(slowest) {
             const card = document.getElementById('slowest-results-card');
             const content = document.getElementById('slowest-results-content');
@@ -451,14 +473,14 @@
             slowest.slowest.forEach(test => {
                 console.log('Updating slowest tests:', test);
                 const testElement = document.createElement('p');
-                testElement.textContent = test;
+                testElement.textContent = `${test.filePath} - ${test.testName} (${test.time}s)`;
                 content.appendChild(testElement);
             });
 
             card.style.display = 'block';
         }
 
-        
+
     </script>
 </body>
 
