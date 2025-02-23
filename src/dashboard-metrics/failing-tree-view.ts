@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import { jsonStore, testRunner } from '../extension';
-import { Coverage } from '../test-runner/coverage';
+import { TestResult } from '../test-runner/results';
 
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
     private _onDidChangeTreeData: vscode.EventEmitter<FailingTest | undefined | void> = new vscode.EventEmitter<FailingTest | undefined | void>();
@@ -40,45 +39,48 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
     }
 
+    private getCollapsibleState(file: string, testResults: TestResult): vscode.TreeItemCollapsibleState {
+        for (const test in testResults[file]) {
+            const testResult = testResults[file][test];
+            if (!testResult.passed) {
+                return vscode.TreeItemCollapsibleState.Collapsed;
+            }
+        }
+        return vscode.TreeItemCollapsibleState.None;
+    }
+
     private async getRootFiles(): Promise<FailingTest[]> {
-        const failingTests = await testRunner.getAllFailingTests();
-        const coverage = await testRunner.getCoverage();
-        const uniqueFiles = new Set<string>();
+        const testResults = await testRunner.getAllResults();
         const failingTestsOutput: FailingTest[] = [];
 
-        const coverageData: { [filePath: string]: { coverage: number } } = {};
-        if (coverage) {
-            for (const file of coverage.files) {
-                coverageData[file.filename] = { coverage: file.summary.percentCovered };
-            }
+        for (const file in testResults) {
+            failingTestsOutput.push(
+                new FailingTest(
+                    file,
+                    file,
+                    'file',
+                    this.getCollapsibleState(file, testResults),
+                )
+            )
         }
 
-        for (const test of failingTests) {
-            if (test.filePath && !uniqueFiles.has(test.filePath)) {
-                uniqueFiles.add(test.filePath);
-                const fileCoverage = coverageData[test.filePath]?.coverage ?? NaN;
-                failingTestsOutput.push(
-                    new FailingTest(this.snipPath(test.filePath), test.filePath, 'file', vscode.TreeItemCollapsibleState.Collapsed, undefined, undefined, false, undefined, fileCoverage)
-                );
-            }
-        }
         return failingTestsOutput;
     }
 
     private async getFunctionsInFile(file: string): Promise<FailingTest[]> {
-        const failingTests = await testRunner.getAllFailingTests();
+        const failingTests = await testRunner.getResultsForFile(file);
         const failingTestsOutput: FailingTest[] = [];
 
-        for (const test of failingTests) {
-            if (test.filePath === file) {
+        for (const [test, result] of Object.entries(failingTests)) {
+            if (!result.passed) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        test.testName || 'Unknown Test',
+                        result.testName || 'Unknown Test',
                         file,
                         'test function',
                         vscode.TreeItemCollapsibleState.None,
-                        test.failureLocation ? parseInt(test.failureLocation) : undefined,
-                        test.time,
+                        result.failureLocation ? parseInt(result.failureLocation) : undefined,
+                        result.time,
                         true
                     )
                 );
@@ -86,15 +88,6 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
 
         return failingTestsOutput;
-    }
-
-    private snipPath(p: string): string {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) {
-            return p;
-        }
-        const workspacePath = workspaceFolders[0].uri.fsPath;
-        return path.relative(workspacePath, p);
     }
 }
 
@@ -107,8 +100,7 @@ export class FailingTest extends vscode.TreeItem {
         public failureLocation?: number,
         public duration?: number,
         public isFunction?: boolean,
-        public passes?: boolean,
-        public coverage?: number
+        public passes?: boolean
     ) {
         super(label, collapsibleState);
         this.tooltip = `${this.label}-${this.type}`;
@@ -117,23 +109,21 @@ export class FailingTest extends vscode.TreeItem {
             if (this.duration !== undefined) {
                 this.description += ` (Duration: ${this.duration}s)`;
             }
-        } else {
-            if (this.coverage !== undefined) {
-                this.description += ` (Coverage: ${this.coverage}%)`;
-            } else {
-                this.description += ` (Coverage: NaN%)`;
-            }
-        }
+        } 
+
         this.command = {
             command: 'failingTestsProvider.openTestFile',
             title: 'Open Test File',
             arguments: [this.file, this.failureLocation]
         };
-        console.log(`FailingTest created: ${label}, file: ${file}, line: ${this.failureLocation}, duration: ${this.duration}, coverage: ${this.coverage}`);
-    }
+        console.log(`FailingTest created: ${label}, file: ${file}, line: ${this.failureLocation}, duration: ${this.duration}`);
 
-    iconPath = {
-        light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg')),
-        dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg'))
-    };
+        if (!this.isFunction) {
+            const iconFileName = this.collapsibleState === vscode.TreeItemCollapsibleState.None ? 'pass.svg' : 'fail.svg';
+            this.iconPath = {
+                light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName)),
+                dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName))
+            };
+        }
+    }
 }
