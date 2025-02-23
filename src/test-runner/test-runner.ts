@@ -323,7 +323,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --memray --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
@@ -345,7 +345,7 @@ export class TestRunner {
 
             this.saveState();
         });
-        // Save hash manunally if all tests were run
+        // Save hash manually if all tests were run
         if (!testsToRun) {
             this.hash = await getWorkspaceHash();
             this.saveState();
