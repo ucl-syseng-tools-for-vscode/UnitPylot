@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { jsonStore } from '../extension';
-import { testRunner } from '../extension';
+import { jsonStore, testRunner } from '../extension';
 import { Coverage } from '../test-runner/coverage';
 
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
@@ -41,9 +40,9 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
     }
 
-    private getRootFiles(): FailingTest[] {
-        const failingTests = testRunner.getAllFailingTests();
-        const coverage = testRunner.getCoverage();
+    private async getRootFiles(): Promise<FailingTest[]> {
+        const failingTests = await testRunner.getAllFailingTests();
+        const coverage = await testRunner.getCoverage();
         const uniqueFiles = new Set<string>();
         const failingTestsOutput: FailingTest[] = [];
 
@@ -66,8 +65,8 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         return failingTestsOutput;
     }
 
-    private getFunctionsInFile(file: string): FailingTest[] {
-        const failingTests = testRunner.getAllFailingTests();
+    private async getFunctionsInFile(file: string): Promise<FailingTest[]> {
+        const failingTests = await testRunner.getAllFailingTests();
         const failingTestsOutput: FailingTest[] = [];
 
         for (const test of failingTests) {
@@ -130,7 +129,7 @@ export class FailingTest extends vscode.TreeItem {
             title: 'Open Test File',
             arguments: [this.file, this.failureLocation]
         };
-        console.log(`FailingTest created: ${label}, file: ${file}, line: ${failureLocation}, duration: ${this.duration}, coverage: ${this.coverage}`);
+        console.log(`FailingTest created: ${label}, file: ${file}, line: ${this.failureLocation}, duration: ${this.duration}, coverage: ${this.coverage}`);
     }
 
     iconPath = {

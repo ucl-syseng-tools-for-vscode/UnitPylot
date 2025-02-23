@@ -25,7 +25,7 @@ export var testRunner: TestRunner;
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
-    const testRunner = TestRunner.getInstance(context.workspaceState);
+    testRunner = TestRunner.getInstance(context.workspaceState);
 
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
