@@ -104,12 +104,33 @@
         "title": "Optimise Slowest Tests"
       },
       {
+
         "command": "dependencies.getDependencies",
         "title": "Get Dependencies"
       },
       {
         "command": "dependencies.refreshView",
         "title": "Refresh Dependencies View"
+      },
+      {
+        "command": "generate-pydoc.generatePydoc",
+        "title": "Generate Pydoc"
+      },
+      {
+        "command": "extension.acceptSuggestion",
+        "title": "Accept Annotation onto corresponding test file for coverage"
+      },
+      {
+        "command": "extension.rejectSuggestion",
+        "title": "Reject Annotation"
+      },       
+      {
+        "command": "extension.addSuggestiontoSameFile",
+        "title": "Add Annotation to Same File"
+      }, 
+      {
+        "command": "extension.addSuggestiontoMainFile",
+        "title": "Add Annotation to corresponding Main File"
       },
       {
         "command": "failingtests.refreshView",
@@ -133,9 +154,9 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
+    "compile": "tsc -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
+    "watch": "tsc -watch -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"

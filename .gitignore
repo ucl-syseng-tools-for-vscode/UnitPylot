@@ -5,6 +5,8 @@ node_modules
 *.vsix
 **/__pycache__/
 venv/
+.venv/
+*/.venv/
 *.pyc
 examples/fizzbuzz_example/.coverage
 examples/fizzbuzz_example/coverage.json

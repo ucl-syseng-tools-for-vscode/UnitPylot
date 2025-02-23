@@ -39,7 +39,7 @@ async function getTestFiles() {
 
 async function getTestDependenciesForFile(file: string) {
     const pythonPath = await getPythonPath();
-    const scriptPath = path.join(__dirname, '../scripts', 'python-parser.py');  // TODO: Make sure the python file is detected automatically
+    const scriptPath = path.join(__dirname, '..', 'scripts', 'python-parser.py');
 
     if (pythonPath) {
         const command = `${pythonPath} ${scriptPath} ${file}`;

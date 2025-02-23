@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import { getPythonPath, parseCoverage } from './helper-functions';
-import { TestResults, TestFileResults, TestFunctionResults } from './results';
-import { Coverage } from './coverage';
+import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { TestResult, TestFileResult, TestFunctionResult } from './results';
+import { Coverage, FileCoverage, mergeCoverage } from './coverage';
+import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
+import { parsePytestOutput } from './parser';
+import { fail } from 'assert';
 
 type TestRunnerState = {
-    results: TestResults;
+    results: TestResult;
     coverage: Coverage;
+    hash: Hash;
 }
 
 /*
@@ -16,9 +20,11 @@ type TestRunnerState = {
 
 export class TestRunner {
     private static instance: TestRunner;
-    private results: TestResults | undefined;
+    private results: TestResult | undefined;
     private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
+    private hash: Hash = {};
+    private testDurationsToRun: number = 5;
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
@@ -37,6 +43,7 @@ export class TestRunner {
         if (typedState) {
             this.results = typedState.results;
             this.coverage = typedState.coverage;
+            this.hash = typedState.hash;
         } else {
             this.results = undefined; // Initialize with default values
             this.coverage = undefined; // Initialize with default values
@@ -46,28 +53,32 @@ export class TestRunner {
     public saveState(): void {
         const state = {
             results: this.results,
-            coverage: this.coverage
+            coverage: this.coverage,
+            hash: this.hash
         };
         this.workspaceState.update(this.stateKey, state);
     }
 
-    // Example method to update results
-    public updateResults(newResults: any): void {
-        this.results = newResults;
-        this.saveState();
+    public setTestDurationsToRun(n: number): void {
+        if (Number.isInteger(n)) {
+            this.testDurationsToRun = n;
+        } else {
+            throw new Error('Test durations to run must be an integer');
+        }
     }
 
-    // Example method to update coverage
-    public updateCoverage(newCoverage: any): void {
-        this.coverage = newCoverage;
+    public resetState(): void {
+        this.results = undefined;
+        this.coverage = undefined;
+        this.hash = {};
         this.saveState();
     }
 
     // Get n slowest tests (default n = 5)
-    public getSlowestTests(n: number = 5): TestFunctionResults[] {
-        this.runNeccecaryTests();
+    public async getSlowestTests(n: number = 5): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
 
-        const slowestTests: TestFunctionResults[] = [];
+        const slowestTests: TestFunctionResult[] = [];
         if (this.results) {
             for (const filePath in this.results) {
                 for (const test in this.results[filePath]) {
@@ -75,22 +86,19 @@ export class TestRunner {
                 }
             }
         }
-        slowestTests.sort((a, b) => (a.time || 0) - (b.time || 0));
+        slowestTests.sort((a, b) => (b.time || 0) - (a.time || 0));
         return slowestTests.slice(0, n);
     }
 
     // Get coverage data
-    public getCoverage(): Coverage | undefined {
-        this.runNeccecaryTests();
-        if (!this.coverage) {
-            return undefined
-        }
+    public async getCoverage(): Promise<Coverage | undefined> {
+        await this.runNeccecaryTests();
         return this.coverage;
     }
 
     // Get overall pass / fail results
-    public getResultsSummary(): { passed: number, failed: number } {
-        this.runNeccecaryTests();
+    public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
+        await this.runNeccecaryTests();
 
         let passed = 0;
         let failed = 0;
@@ -109,8 +117,8 @@ export class TestRunner {
     }
 
     // Get pass / fail results for a specific file
-    public getResultsForFile(filePath: string): TestFileResults {
-        this.runNeccecaryTests();
+    public async getResultsForFile(filePath: string): Promise<TestFileResult> {
+        await this.runNeccecaryTests();
 
         if (this.results) {
             return this.results[filePath];
@@ -119,10 +127,10 @@ export class TestRunner {
     }
 
     // Get failing tests with their line numbers
-    public getAllFailingTests(): TestFunctionResults[] {
-        this.runNeccecaryTests();
+    public async getAllFailingTests(): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
 
-        const failingTests: TestFunctionResults[] = [];
+        const failingTests: TestFunctionResult[] = [];
         if (this.results) {
             for (const filePath in this.results) {
                 for (const test in this.results[filePath]) {
@@ -135,120 +143,165 @@ export class TestRunner {
         return failingTests;
     }
 
-    // Parse test times
-    private parseTestTimes(output: string): void {
-        var reachedDurations = false;
-
-        for (const line of output.split('\n')) {
-            if (reachedDurations) {
-                if (!line.includes('::')) {
-                    break;
-                }
-
-                const parts = line.split(' ');
-                const time = parseFloat(parts[0].slice(0, -1));
-                const filePathAndTest = parts[parts.length - 1];
-                const filePath = filePathAndTest.split('::')[0];
-                const test = filePathAndTest.split('::')[1];
-
-                // Save to existing test results
-                if (this.results) {
-                    this.results[filePath][test].time = time;
-                }
+    // Remove deleted test results for deleted tests
+    private removeDeletedTests(deletedFiles: Hash): void {
+        // Remove deleted tests
+        for (const [filePath, file] of Object.entries(deletedFiles)) {
+            if (!file.isTestFile) {
+                continue;  // Skip non-test files
             }
-            else {
-                const parts = line.split(' ');
-                if (parts.length == 5 && parts[3] == 'durations') {
-                    reachedDurations = true;
+            if (this.results && this.results[filePath]) {
+                // The test name in file.functions does not include the test suffix
+                // Make dict of test name to test name in results
+                const normalisedTestNames: { [key: string]: string[] } = {};
+                for (const testName in this.results[filePath]) {
+                    const normalisedName = testName.split('[')[0];
+                    if (!normalisedTestNames[normalisedName]) {
+                        normalisedTestNames[normalisedName] = [];
+                    }
+                    normalisedTestNames[normalisedName].push(testName);
+                }
+
+                for (const test in file.functions) {
+                    // Delete the test from the results
+                    if (normalisedTestNames[test]) {
+                        for (const testName of normalisedTestNames[test]) {
+                            delete this.results[filePath][testName];
+                        }
+                    }
                 }
             }
         }
     }
 
+    // Get modified tests and remove deleted tests
+    private async getModifiedTests(): Promise<Set<TestFunctionResult>> {
+        const newHash = await getWorkspaceHash();
+        const diff = await getModifiedFiles(this.hash, newHash);
+        const testsForFunctions = await getTestsForFunctions();
+        const modifiedTests: Set<TestFunctionResult> = new Set();
 
-    // Parse failure data
-    private parseFailureData(output: string): void {
+        // Remove deleted tests
+        this.removeDeletedTests(diff.deleted);
 
-        var reachedFailures = false;
-        var errorMessage = [];
-
-        for (const line of output.split('\n')) {
-            if (reachedFailures) {
-                if (line.includes('___') || line === '') {
-
-                    if (errorMessage.length === 0) {
-                        continue;
+        // Add new/modified tests
+        for (const [filePath, file] of Object.entries(diff.added)) {
+            if (file.isTestFile) {
+                for (const functionName in file.functions) {
+                    modifiedTests.add(
+                        {
+                            filePath: filePath,
+                            testName: functionName,
+                            passed: false,
+                            errorMessage: '',
+                            time: NaN,
+                        }
+                    )
+                }
+            } else { // Modified non-test file so add relevant tests
+                for (const functionName in file.functions) {
+                    for (const testName of getTestsForFunction(functionName, testsForFunctions)) {
+                        modifiedTests.add(
+                            {
+                                filePath: testName.split('::')[0],
+                                testName: testName.split('::').slice(1).join('::'),
+                                passed: false,
+                                errorMessage: '',
+                                time: NaN,
+                            }
+                        )
                     }
 
-                    const filePath = errorMessage[0].split(':')[0];
-                    const lineNum = errorMessage[0].split(':')[1];
-                    const testParts = errorMessage[0].split(' ');
-                    const test = testParts[testParts.length - 1];
-
-                    // Save to existing test results
-                    const message = errorMessage.join('\n');
-                    if (this.results) {
-                        this.results[filePath][test].errorMessage = message;
-                        this.results[filePath][test].failureLocation = `${filePath}:${lineNum}`;
-                    }
-
-                    if (line === '') {
-                        break;
-                    }
-
-                    errorMessage = [];
-                }
-                // Parse the failure data
-                else {
-                    errorMessage.push(line);
-                }
-            }
-            else if (line.includes('FAILURES')) {
-                reachedFailures = true;
-            }
-        }
-    }
-
-
-    // Parse basic test results
-    private parseTestResults(output: string): TestResults {
-        const results: TestResults = {};
-        // Parse the output and populate the results object
-        var prevFilePath = '';
-        for (const line of output.split('\n')) {
-            if (line.slice(-1) == ']') {  // Line is a result
-                const parts = line.split(' ');
-                const filePathAndTest = parts[0];
-                const testResult = parts[1];
-
-                const filePath = filePathAndTest.split('::')[0];
-                const test = filePathAndTest.split('::')[1];
-
-                if (filePath != prevFilePath) {
-                    results[filePath] = {};
                 }
 
-                const testResultObj: TestFunctionResults = {
-                    passed: testResult === 'PASSED',
-                    time: NaN,
-                    errorMessage: undefined,
-                    failureLocation: undefined,
-                    filePath: filePath,
-                    testName: test
-                };
-
-                results[filePath][test] = testResultObj;
-
-                prevFilePath = filePath;
             }
         }
-        return results;
+        this.hash = newHash;
+        return modifiedTests;
     }
 
     // Run necessary tests
-    private runNeccecaryTests(): void {  // TODO: Implement this method
-        // Maybe pass files+tests to run?
-        this.runTests();
+    private async runNeccecaryTests(): Promise<void> {
+        if (!this.results || !this.coverage || !this.hash) {
+            vscode.window.showInformationMessage('Running all tests...');
+            this.runTests();
+            return;
+        }
+
+        const testsToRun: Set<TestFunctionResult> = await this.getModifiedTests();
+        let testsToRunUnique: TestFunctionResult[] = Array.from(testsToRun); // Convert to list
+
+        // Pytest only runs functions that start with test_
+        // OR methods that start with test_ in classes that start with Test
+        // We filter out the tests that don't match this pattern
+        testsToRunUnique = testsToRunUnique.filter(test =>
+            test.testName?.startsWith('test_')
+            || (test.testName?.startsWith('Test')
+                && test.testName?.split('::')[1]?.startsWith('test_'))
+        );
+
+        // Ouput the tests that need to be run as notifications
+        if (testsToRunUnique.length === 0) {
+            vscode.window.showInformationMessage('No test diffs found...');
+        } else {
+            const testsInFiles: { [key: string]: string[] } = {};
+
+            for (const test of testsToRunUnique) {
+                if (test.filePath === undefined || test.testName === undefined) {
+                    continue;
+                }
+                if (!testsInFiles[test.filePath]) {
+                    testsInFiles[test.filePath] = [];
+                }
+                testsInFiles[test.filePath].push(test.testName);
+            }
+
+            for (const [filePath, tests] of Object.entries(testsInFiles)) {
+                vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
+            }
+        }
+
+        this.runTests(testsToRunUnique);
+    }
+
+    // Get coverage data
+    private updateCoverage(rewrite: boolean): void {
+        // Process coverage data
+        const newCoverage = parseCoverage();  // Implemented in helper-functions.ts
+        if (!this.coverage) {
+            this.coverage = newCoverage;
+            return;
+        }
+        if (rewrite) {
+            this.coverage = newCoverage;
+        } else {
+            // Merge the new and old coverage data
+            this.coverage = mergeCoverage(this.coverage, newCoverage);  // Implemented in coverage.ts
+        }
+    }
+
+    // Parse test results
+    private updateTestResults(output: string, rewrite: boolean): void {
+        const newResults: TestResult = parsePytestOutput(output);
+        // If all tests are to be rewritten, overwrite the results
+        if (rewrite) {
+            this.results = newResults;
+            return;
+        }
+        // Otherwise, update the results
+        if (!this.results) {
+            this.results = newResults;
+            return;
+        }
+        for (const filePath in newResults) {
+            if (!this.results[filePath]) {
+                this.results[filePath] = newResults[filePath];
+                continue;
+            }
+            for (const test in newResults[filePath]) {
+                this.results[filePath][test] = newResults[filePath][test];
+            }
+        }
     }
 
     /*
@@ -257,15 +310,21 @@ export class TestRunner {
         * OR run tests that correspond to code that has changed since the last run
     */
 
-    public async runTests(): Promise<void> {  // TODO: Currently runs all tests. Implement the logic to run only relevant tests.
+    public async runTests(testsToRun?: TestFunctionResult[]): Promise<void> {
+        if (testsToRun && testsToRun.length === 0) {  // No tests to run
+            return;
+        }
+
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
             throw new Error('No workspace folder found');
         }
         const pythonPath = await getPythonPath();
         const workspacePath = workspaceFolders[0].uri.fsPath;
+        const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=5 --maxfail=0 --cov --cov-report=json --cov-branch --tb=short || true`;
+            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --tb=short ${testsToRunString}|| true`;
+
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
         // Example: tests/fizzbuzz_test.py::test_error_shown_for_negative
@@ -280,14 +339,16 @@ export class TestRunner {
             }
             console.log(`stdout: ${stdout}`);
             // Process the output
-            this.results = this.parseTestResults(stdout);
-            this.parseFailureData(stdout);
-            this.parseTestTimes(stdout);
+            this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
 
-            // Process coverage data
-            this.coverage = parseCoverage();  // Implemented in helper-functions.ts
+            this.updateCoverage(testsToRun ? false : true);
 
             this.saveState();
         });
+        // Save hash manunally if all tests were run
+        if (!testsToRun) {
+            this.hash = await getWorkspaceHash();
+            this.saveState();
+        }
     }
 }
