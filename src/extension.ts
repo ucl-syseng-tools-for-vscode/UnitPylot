@@ -16,6 +16,9 @@ import { TestRunner } from './test-runner/test-runner';
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 
+import { HistoryManager } from './test-history/history-manager';
+import { HistoryProcessor } from './test-history/history-processor';
+
 
 export const jsonStore: Map<string, any> = new Map();
 
@@ -23,6 +26,8 @@ export const jsonStore: Map<string, any> = new Map();
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
     const testRunner = TestRunner.getInstance(context.workspaceState);
+    // Initialise HistoryManager
+    HistoryManager.initialise(context);
 
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
@@ -221,6 +226,23 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the refresh command
     vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
+}
+
+function startIntervalTask(context: vscode.ExtensionContext) {
+    const INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+    function myFunction() {
+        console.log('Running scheduled task...');
+        console.log('Saving snapshot...');
+        HistoryManager.saveSnapshot();
+    }
+
+    // Run immediately and schedule repeats
+    myFunction();
+    const interval = setInterval(myFunction, INTERVAL);
+
+    // Stop the interval when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
 }
 
 // Handles file open event
