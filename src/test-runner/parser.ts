@@ -230,6 +230,8 @@ export function parsePytestOutput(output: string): TestResult {
     let times: TestResult = {};
     let memoryData: TestResult = {};
 
+    console.log("memoryData1");
+
     for (const section in sections) {
         if ('test session starts' == section) {
             // Parse Pass / Fail data
@@ -250,6 +252,8 @@ export function parsePytestOutput(output: string): TestResult {
         else if ('MEMRAY REPORT' == section) {
             // Parse memory report
             memoryData = parseMemoryReport(sections[section]);
+            console.log("memoryData", memoryData);
+
         }
     }
 
@@ -272,6 +276,7 @@ export function parsePytestOutput(output: string): TestResult {
             results[filePath][test].totalAllocations = memoryData[filePath][test].totalAllocations;
             results[filePath][test].histogram = memoryData[filePath][test].histogram;
             results[filePath][test].biggestAllocations = memoryData[filePath][test].biggestAllocations;
+            // console.log("RESULTS", results[filePath][test].biggestAllocations);
         }
     }
     return results;
