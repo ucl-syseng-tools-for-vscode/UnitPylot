@@ -96,6 +96,12 @@ export class TestRunner {
         return this.coverage;
     }
 
+    // Get all test results
+    public async getAllResults(): Promise<TestResult | undefined> {
+        await this.runNeccecaryTests();
+        return this.results;
+    }
+
     // Get overall pass / fail results
     public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
         await this.runNeccecaryTests();

@@ -43,6 +43,12 @@
           "id": "dashboard.treeview",
           "name": "Dependency Tree View",
           "contextualTitle": "Tree"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.failingtreeview",
+          "name": "Failing Tests",
+          "contextualTitle": "Failing Tests"
         }
       ]
     },
@@ -125,6 +131,10 @@
       {
         "command": "extension.addSuggestiontoMainFile",
         "title": "Add Annotation to corresponding Main File"
+      },
+      {
+        "command": "failingtests.refreshView",
+        "title": "Refresh Failing Tests"
       }
     ],
     "menus": {

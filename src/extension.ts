@@ -1,4 +1,3 @@
-// Import the VS Code API
 import * as vscode from 'vscode';
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
@@ -10,19 +9,23 @@ import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-s
 
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
+import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
 import { get } from 'http';
+import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 
+import { FailingTest } from './dashboard-metrics/failing-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
+export var testRunner: TestRunner;
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
-    const testRunner = TestRunner.getInstance(context.workspaceState);
+    testRunner = TestRunner.getInstance(context.workspaceState);
 
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
@@ -221,6 +224,52 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the refresh command
     vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
+
+    // Register the failing test tree view
+    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
+    const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
+        treeDataProvider: failingTestsProvider
+    });
+    failingTreeView.onDidChangeSelection((e) => {
+        if (e.selection.length > 0) {
+            const selectedItem = e.selection[0] as FailingTest;
+
+            if (selectedItem.collapsibleState === vscode.TreeItemCollapsibleState.None) {
+                vscode.commands.executeCommand('failingTestsProvider.openTestFile', selectedItem.file, selectedItem.failureLocation)
+            }
+        }
+    });
+
+    // Register the refresh command
+    vscode.commands.registerCommand('failingtests.refreshView', () => failingTestsProvider.refresh());
+
+    // Register the open test file command
+    vscode.commands.registerCommand('failingTestsProvider.openTestFile', (file: string, lineNumber: number) => {
+        console.log(`Opening file: ${file} at line: ${lineNumber}`);
+        const workspaceRoot = vscode.workspace.rootPath;
+        if (!workspaceRoot) {
+            vscode.window.showErrorMessage('No workspace folder is open.');
+            return;
+        }
+
+        const filePath = path.join(workspaceRoot, file);
+        const fileUri = vscode.Uri.file(filePath);
+        const options: vscode.TextDocumentShowOptions = {};
+
+        if (!isNaN(lineNumber) && lineNumber !== undefined) {
+            options.selection = new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0));
+        }
+
+        vscode.workspace.openTextDocument(fileUri).then(doc => {
+            vscode.window.showTextDocument(doc, options).then(editor => {
+                console.log(`File opened: ${file} at line: ${lineNumber}`);
+            }, err => {
+                console.error(`Failed to show text document: ${err}`);
+            });
+        }, err => {
+            console.error(`Failed to open text document: ${err}`);
+        });
+    });
 }
 
 // Handles file open event
