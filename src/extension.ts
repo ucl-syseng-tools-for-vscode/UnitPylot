@@ -7,6 +7,7 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
+import { getWebviewContent } from './test-history/history-graph';
 
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
@@ -118,6 +119,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     );
     context.subscriptions.push(fixFailingTestsCommand);
+
+    const showGraphCommand = vscode.commands.registerCommand('test-history.showGraph', async () => {
+        HistoryManager.saveSnapshot();
+        const snapshots = HistoryManager.getSnapshots();
+        const graphData = HistoryProcessor.getPassFailHistory();
+        
+        const panel = vscode.window.createWebviewPanel(
+            'testHistoryGraph',
+            'Test Pass/Fail History',
+            vscode.ViewColumn.One,
+            { enableScripts: true }
+        );
+
+        console.log(snapshots);
+        console.log(graphData);
+        panel.webview.html = getWebviewContent(graphData);
+    });
+    
+    context.subscriptions.push(showGraphCommand);    
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
