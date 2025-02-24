@@ -6,6 +6,9 @@ import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
 import { parsePytestOutput } from './parser';
 import { fail } from 'assert';
+import { promisify } from 'util';
+
+const execPromise = promisify(exec);
 
 type TestRunnerState = {
     results: TestResult;
@@ -25,6 +28,7 @@ export class TestRunner {
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
     private testDurationsToRun: number = 5;
+    private notifications: boolean = true;
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
@@ -65,6 +69,10 @@ export class TestRunner {
         } else {
             throw new Error('Test durations to run must be an integer');
         }
+    }
+
+    public setNotifications(value: boolean): void {
+        this.notifications = value;
     }
 
     public resetState(): void {
@@ -223,8 +231,8 @@ export class TestRunner {
     // Run necessary tests
     private async runNeccecaryTests(): Promise<void> {
         if (!this.results || !this.coverage || !this.hash) {
-            vscode.window.showInformationMessage('Running all tests...');
-            this.runTests();
+            this.notifications ? vscode.window.showInformationMessage('Running all tests...') : null;
+            await this.runTests();
             return;
         }
 
@@ -242,7 +250,7 @@ export class TestRunner {
 
         // Ouput the tests that need to be run as notifications
         if (testsToRunUnique.length === 0) {
-            vscode.window.showInformationMessage('No test diffs found...');
+            this.notifications ? vscode.window.showInformationMessage('No test diffs found...') : null;
         } else {
             const testsInFiles: { [key: string]: string[] } = {};
 
@@ -257,11 +265,11 @@ export class TestRunner {
             }
 
             for (const [filePath, tests] of Object.entries(testsInFiles)) {
-                vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
+                this.notifications ? vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`) : null;
             }
         }
 
-        this.runTests(testsToRunUnique);
+        await this.runTests(testsToRunUnique);
     }
 
     // Get coverage data
@@ -329,23 +337,25 @@ export class TestRunner {
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
         // Example: tests/fizzbuzz_test.py::test_error_shown_for_negative
 
-        exec(command, { cwd: workspacePath }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error executing command: ${error.message}`);
-                return;
-            }
+        try {
+            const { stdout, stderr } = await execPromise(command, { cwd: workspacePath });
             if (stderr) {
                 console.error(`stderr: ${stderr}`);
             }
             console.log(`stdout: ${stdout}`);
             // Process the output
             this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
-
             this.updateCoverage(testsToRun ? false : true);
-
             this.saveState();
-        });
-        // Save hash manunally if all tests were run
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(`Error executing command: ${error.message}`);
+            } else {
+                console.error('Error executing command:', error);
+            }
+        }
+
+        // Save hash manually if all tests were run
         if (!testsToRun) {
             this.hash = await getWorkspaceHash();
             this.saveState();
