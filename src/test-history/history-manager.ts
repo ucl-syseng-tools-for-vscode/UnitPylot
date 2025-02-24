@@ -28,6 +28,9 @@ export class HistoryManager {
     }
 
     public static getSnapshots(numberOfSnapshots?: number): Snapshot[] {
+        if (!fs.existsSync(TEST_HISTORY_FILE)) {
+            fs.writeFileSync(TEST_HISTORY_FILE, JSON.stringify([]));
+        }
         // Read the json file and return the last n snapshots or all snapshots
         const snapshots: Snapshot[] = readJsonFile(TEST_HISTORY_FILE) || [];
         if (numberOfSnapshots) {
