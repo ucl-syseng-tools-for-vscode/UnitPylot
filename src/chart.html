@@ -232,10 +232,10 @@
             console.log('Prettifying results:', passed, failed);
             const ratio = passed / (passed + failed);
             console.log('Ratio:', ratio);
-            if (ratio < 0.2) {
+            if (ratio < 0.2 && passed > 0) {
                 return { passed: 1, failed: 4 };
             }
-            if (ratio > 0.8) {
+            if (ratio > 0.8 && failed > 0) {
                 console.log('Returning 4 passed, 1 failed');
                 return { passed: 4, failed: 1 };
             }
@@ -293,7 +293,7 @@
                             formatter: (value, context) => {
                                 const label = context.dataset.label;
                                 const actualValue = results[label.toLowerCase()];
-                                return `${actualValue} ${label}`;
+                                return actualValue > 0 ? `${actualValue} ${label}` : '';
                             },
                             color: '#ffffff',
                             font: {
