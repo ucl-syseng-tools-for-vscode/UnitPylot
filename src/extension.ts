@@ -198,6 +198,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
+    // Update dashboard on save
+    vscode.workspace.onDidSaveTextDocument(async (document) => {
+        // Call functions to update dashboard
+        testRunner.setNotifications(true);
+        const { passed, failed } = await testRunner.getResultsSummary();
+        vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
+
+        testRunner.setNotifications(false);
+        const coverage = await testRunner.getCoverage();
+        if (coverage) {
+            jsonStore.set('coverage', coverage);
+            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+        }
+        const slowest = await testRunner.getSlowestTests(5);
+        vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+
+        testRunner.setNotifications(true);
+    });
+
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
     );
