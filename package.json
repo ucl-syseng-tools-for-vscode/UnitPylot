@@ -43,6 +43,12 @@
           "id": "dashboard.treeview",
           "name": "Dependency Tree View",
           "contextualTitle": "Tree"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.failingtreeview",
+          "name": "Failing Tests",
+          "contextualTitle": "Failing Tests"
         }
       ]
     },
@@ -137,6 +143,10 @@
       {
         "command": "optimise-memory.optimiseMemory",
         "title": "Optimise Memory Usage of Tests"
+      },
+      {
+        "command": "failingtests.refreshView",
+        "title": "Refresh Failing Tests"
       }
     ],
     "menus": {
