@@ -124,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
-        
+
         const panel = vscode.window.createWebviewPanel(
             'testHistoryGraph',
             'Test Pass/Fail History',
@@ -136,8 +136,8 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(graphData);
         panel.webview.html = getWebviewContent(graphData);
     });
-    
-    context.subscriptions.push(showGraphCommand);    
+
+    context.subscriptions.push(showGraphCommand);
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
@@ -246,6 +246,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the refresh command
     vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
+
+    // Register the settings page command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.openSettings', () => {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'PyTastic');
+        })
+    );
+
 }
 
 function startIntervalTask(context: vscode.ExtensionContext) {
