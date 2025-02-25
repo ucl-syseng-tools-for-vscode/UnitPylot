@@ -13,4 +13,12 @@ export type TestFunctionResult = {
     failureLocation?: string;
     filePath?: string;
     testName?: string;
+    totalMemory?: string;
+    totalAllocations?: number;
+    histogram?: string;
+    biggestAllocations?: MemoryAllocation;
+}
+
+export type MemoryAllocation = {
+    [key: string]: string;  // Function name : Memory allocation (x.xKiB)
 }

@@ -56,15 +56,17 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
 function handleAnnotation(
     editor: vscode.TextEditor,
-    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string, file: string },
+    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string, file: string, bottleneck?: string },
     decorationMethod: number
 ) {
-    const { line, suggestion, test_name, code_snippet, file} = annotation;
+    const { line, suggestion, test_name, code_snippet, file, bottleneck} = annotation;
 
     if (decorationMethod === 0) { // based on line numbers
         applyDecorationLineNumbers(editor, line, suggestion);
     } else if (decorationMethod === 1) { // based on function name
-        applyDecorationFuncName(editor, test_name!, suggestion, code_snippet!);
+        applyDecorationFuncName(editor, test_name!, suggestion, code_snippet!, bottleneck!);
+    // } else if (decorationMethod === 3) { // for memory
+    //     applyDecorationMemory(editor, test_name!, suggestion, code_snippet!, bottleneck!);
     } else if (decorationMethod === 2) { // for get coverage
         const decorationType = vscode.window.createTextEditorDecorationType({
             after: {
@@ -121,7 +123,7 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 }
 
 
-function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string) {
+function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string, bottleneck?:string) {
     const decorationType = vscode.window.createTextEditorDecorationType({
         after: {
             contentText: ` ${suggestion.substring(0, 25) + '...'}`,
@@ -157,12 +159,28 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         const hoverMessage = new vscode.MarkdownString();
         hoverMessage.isTrusted = true;
 
+        hoverMessage.appendMarkdown(`${suggestion}\n\n`);
 
-        hoverMessage.appendMarkdown(`${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
-        hoverMessage.appendMarkdown(
-            `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
-            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
-        );
+    if (bottleneck) {
+        hoverMessage.appendMarkdown(`Bottleneck: ${bottleneck}\n\n`);
+    }
+
+    hoverMessage.appendMarkdown(
+        `\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`
+    );
+
+    hoverMessage.appendMarkdown(
+        `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
+            JSON.stringify({ line, code_snippet, decorationType })
+        )})` +
+        `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+            JSON.stringify({ line, decorationType })
+        )})`
+    );
+
+
+
+      
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 

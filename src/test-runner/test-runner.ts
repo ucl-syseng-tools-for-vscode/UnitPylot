@@ -104,15 +104,34 @@ export class TestRunner {
         return this.coverage;
     }
 
+
+    // Get memory of tests biggestAllocations
+    public async getMemory(): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+
+        const memoryTests: TestFunctionResult[] = [];
+        console.log("RESULTS", this.results);
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    memoryTests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        console.log("MEMORY", memoryTests);
+        return memoryTests
+
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();
         return this.results;
+
     }
 
     // Get overall pass / fail results
     public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
         await this.runNeccecaryTests();
+        console.log("PASRESULTS", this.results);
 
         let passed = 0;
         let failed = 0;
@@ -337,7 +356,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --memray --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
@@ -353,6 +372,7 @@ export class TestRunner {
             this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
             this.updateCoverage(testsToRun ? false : true);
             this.saveState();
+
         } catch (error) {
             if (error instanceof Error) {
                 console.error(`Error executing command: ${error.message}`);
@@ -360,6 +380,7 @@ export class TestRunner {
                 console.error('Error executing command:', error);
             }
         }
+
 
         // Save hash manually if all tests were run
         if (!testsToRun) {
