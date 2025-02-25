@@ -120,6 +120,7 @@ export class TestRunner {
         }
         console.log("MEMORY", memoryTests);
         return memoryTests
+    }
 
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
