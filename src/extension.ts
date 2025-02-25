@@ -18,6 +18,7 @@ import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
+import { SlowestTestsProvider } from './dashboard-metrics/slowest-tests-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
@@ -269,6 +270,20 @@ export function activate(context: vscode.ExtensionContext) {
         }, err => {
             console.error(`Failed to open text document: ${err}`);
         });
+    });
+
+    // Register slowest tests tree view and refresh command
+    const workspaceRoot = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
+    const slowestTestsProvider = new SlowestTestsProvider(workspaceRoot);
+    vscode.window.registerTreeDataProvider('slowestTests', slowestTestsProvider);
+    const slowestTreeView = vscode.window.createTreeView('dashboard.slowestteststreeview', {
+        treeDataProvider: slowestTestsProvider
+    });
+    vscode.commands.registerCommand('slowesttests.refreshView', () => slowestTestsProvider.refresh());
+    vscode.commands.registerCommand('extension.openTestFile', async (filePath: string) => {
+        const fullPath = path.join(workspaceRoot, filePath); // Construct the full path
+        const document = await vscode.workspace.openTextDocument(fullPath);
+        await vscode.window.showTextDocument(document);
     });
 }
 
