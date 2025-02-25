@@ -54,6 +54,9 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         const failingTestsOutput: FailingTest[] = [];
 
         for (const file in testResults) {
+            if (file === ''){
+                continue;
+            }
             failingTestsOutput.push(
                 new FailingTest(
                     file,
