@@ -198,12 +198,22 @@
         "pytastic.numberOfMemoryProfilingTests": {
           "type": "number",
           "default": 5,
-          "description": "Number of tests to use for memory profiling."
+          "description": "Number of tests to use for memory profiling. (0 for all tests)"
         },
         "pytastic.snapshotInterval": {
           "type": "number",
           "default": 10,
-          "description": "Snapshot interval in minutes."
+          "description": "Snapshot interval in minutes. (Extension restart required)"
+        },
+        "pytastic.runTestsOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tests on any file save."
+        },
+        "pytastic.runTestsInBackground": {
+          "type": "boolean",
+          "default": true,
+          "description": "Periodically run tests in the background."
         }
       }
     }

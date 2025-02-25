@@ -7,6 +7,7 @@ import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from
 import { parsePytestOutput } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
+import { Settings } from '../settings/settings';
 
 const execPromise = promisify(exec);
 
@@ -27,7 +28,6 @@ export class TestRunner {
     private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
-    private testDurationsToRun: number = 5;
     private notifications: boolean = true;
 
     private constructor(private workspaceState: vscode.Memento) {
@@ -61,14 +61,6 @@ export class TestRunner {
             hash: this.hash
         };
         this.workspaceState.update(this.stateKey, state);
-    }
-
-    public setTestDurationsToRun(n: number): void {
-        if (Number.isInteger(n)) {
-            this.testDurationsToRun = n;
-        } else {
-            throw new Error('Test durations to run must be an integer');
-        }
     }
 
     public setNotifications(value: boolean): void {
@@ -255,7 +247,7 @@ export class TestRunner {
 
     // Run necessary tests
     private async runNeccecaryTests(): Promise<void> {
-        if (!this.results || !this.coverage || !this.hash) {
+        if (!Settings.RUN_NECESSARY_TESTS_ONLY || !this.results || !this.coverage || !this.hash) {
             this.notifications ? vscode.window.showInformationMessage('Running all tests...') : null;
             await this.runTests();
             return;
@@ -356,7 +348,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --memray --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --memray --most-allocations=${Settings.NUMBER_OF_MEMORY_PROFILING_TESTS} --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
