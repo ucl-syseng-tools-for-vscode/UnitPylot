@@ -10,8 +10,7 @@ if (!workspaceFolders) {
     throw new Error('No workspace folder found');
 }
 const workspacePath = workspaceFolders[0].uri.fsPath;
-const HISTORY_DIR = path.join(workspacePath, '.vscode');
-const TEST_HISTORY_FILE = path.join(HISTORY_DIR, 'snapshots.json');
+const TEST_HISTORY_FILE = path.join(workspacePath, 'snapshots.json');
 
 /**
  * HistoryManager
@@ -77,8 +76,8 @@ export class HistoryManager {
         snapshots.push(snapshot);
 
         // Create a new directory if it doesn't exist
-        if (!fs.existsSync(HISTORY_DIR)) {
-            fs.mkdirSync(HISTORY_DIR);
+        if (!fs.existsSync(TEST_HISTORY_FILE)) {
+            fs.mkdirSync(TEST_HISTORY_FILE);
         }
 
         try {
