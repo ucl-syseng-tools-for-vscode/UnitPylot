@@ -24,13 +24,23 @@ The response **must** be a **JSON object** starting with '{', without any Markdo
 ### Required Fields:
 - **"test_name"**: Name of the most memory-intensive test.
 - **"suggestion"**: Clear and concise recommendations for optimization.
-- **"code_snippet"**: Optimized version of the test code.
+- **"code_snippet"**: Optimized version of the test code
 - **"bottleneck"**: Explanation of what is causing high memory usage.
 
 ## Guidelines:
 - Ensure optimizations are actionable and focused on reducing memory usage.
 - Keep suggestions clear and directly applicable.
 - Maintain readability and maintainability in the optimized test case.
+
+
+Here is an example of the expected response format:
+
+{
+  "test_name": 1,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+  "bottleneck": issue
+}
 `;
 
 
