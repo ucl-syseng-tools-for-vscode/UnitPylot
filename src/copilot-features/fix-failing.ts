@@ -32,5 +32,4 @@ Here is an example of the expected response format:
 // Chat Functionality for annotations
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResult[]) {
   hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), 3);
-
 }

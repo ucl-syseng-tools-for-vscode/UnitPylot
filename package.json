@@ -43,6 +43,12 @@
           "id": "dashboard.treeview",
           "name": "Dependency Tree View",
           "contextualTitle": "Tree"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.failingtreeview",
+          "name": "Failing Tests",
+          "contextualTitle": "Failing Tests"
         }
       ]
     },
@@ -80,6 +86,14 @@
       {
         "command": "vscode-slowest-tests.updateSlowestTests",
         "title": "Update Slowest Tests Results"
+      },
+      {
+        "command": "vscode-run-tests.getMemory",
+        "title": "Get Memory"
+      },
+      {
+        "command": "vscode-run-tests.updateMemory",
+        "title": "Update Memory Results"
       },
       {
         "command": "code-tutor.annotate",
@@ -133,6 +147,14 @@
         "command": "extension.openSettings",
         "title": "Open Settings",
         "icon": "$(gear)"
+      },
+      {
+        "command": "optimise-memory.optimiseMemory",
+        "title": "Optimise Memory Usage of Tests"
+      },
+      {
+        "command": "failingtests.refreshView",
+        "title": "Refresh Failing Tests"
       }
     ],
     "menus": {

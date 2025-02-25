@@ -1,4 +1,3 @@
-// Import the VS Code API
 import * as vscode from 'vscode';
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
@@ -11,7 +10,9 @@ import { getWebviewContent } from './test-history/history-graph';
 
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
+import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
 import { get } from 'http';
+import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
@@ -20,8 +21,11 @@ import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
+import { FailingTest } from './dashboard-metrics/failing-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
+export var testRunner: TestRunner;
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
@@ -105,6 +109,21 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(slowestTests);
 
+    // Register the getMemory command 
+    const getMemory = vscode.commands.registerCommand('vscode-run-tests.getMemory', async () => {
+        try {
+
+            const memory = await testRunner.getMemory();
+            // vscode.commands.executeCommand('vscode-run-tests.updateMemory', { memory });
+
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run memory check.');
+        }
+    });
+
+    context.subscriptions.push(getMemory);
+
+
     // Register the annotate command
     const annotateCommand = vscode.commands.registerTextEditorCommand(
         'code-tutor.annotate',
@@ -152,6 +171,15 @@ export function activate(context: vscode.ExtensionContext) {
         async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
+
+
+
+    // Register the optimise memory usage of tests command
+    const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
+        'optimise-memory.optimiseMemory',
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory())
+    );
+    context.subscriptions.push(optimiseMemoryCommand);
 
 
     // Register the getDependencies command
@@ -220,6 +248,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     const provider = new SidebarViewProvider(context.extensionUri);
 
+    // Update dashboard on save
+    vscode.workspace.onDidSaveTextDocument(async (document) => {
+        // Call functions to update dashboard
+        testRunner.setNotifications(true);
+        const { passed, failed } = await testRunner.getResultsSummary();
+        vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
+
+        testRunner.setNotifications(false);
+        const coverage = await testRunner.getCoverage();
+        if (coverage) {
+            jsonStore.set('coverage', coverage);
+            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+        }
+        const slowest = await testRunner.getSlowestTests(5);
+        vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+
+        testRunner.setNotifications(true);
+    });
+
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
     );
@@ -271,6 +318,51 @@ function startIntervalTask(context: vscode.ExtensionContext) {
 
     // Stop the interval when the extension is deactivated
     context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
+    // Register the failing test tree view
+    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
+    const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
+        treeDataProvider: failingTestsProvider
+    });
+    failingTreeView.onDidChangeSelection((e) => {
+        if (e.selection.length > 0) {
+            const selectedItem = e.selection[0] as FailingTest;
+
+            if (selectedItem.collapsibleState === vscode.TreeItemCollapsibleState.None) {
+                vscode.commands.executeCommand('failingTestsProvider.openTestFile', selectedItem.file, selectedItem.failureLocation)
+            }
+        }
+    });
+
+    // Register the refresh command
+    vscode.commands.registerCommand('failingtests.refreshView', () => failingTestsProvider.refresh());
+
+    // Register the open test file command
+    vscode.commands.registerCommand('failingTestsProvider.openTestFile', (file: string, lineNumber: number) => {
+        console.log(`Opening file: ${file} at line: ${lineNumber}`);
+        const workspaceRoot = vscode.workspace.rootPath;
+        if (!workspaceRoot) {
+            vscode.window.showErrorMessage('No workspace folder is open.');
+            return;
+        }
+
+        const filePath = path.join(workspaceRoot, file);
+        const fileUri = vscode.Uri.file(filePath);
+        const options: vscode.TextDocumentShowOptions = {};
+
+        if (!isNaN(lineNumber) && lineNumber !== undefined) {
+            options.selection = new vscode.Range(new vscode.Position(lineNumber, 0), new vscode.Position(lineNumber, 0));
+        }
+
+        vscode.workspace.openTextDocument(fileUri).then(doc => {
+            vscode.window.showTextDocument(doc, options).then(editor => {
+                console.log(`File opened: ${file} at line: ${lineNumber}`);
+            }, err => {
+                console.error(`Failed to show text document: ${err}`);
+            });
+        }, err => {
+            console.error(`Failed to open text document: ${err}`);
+        });
+    });
 }
 
 // Handles file open event
