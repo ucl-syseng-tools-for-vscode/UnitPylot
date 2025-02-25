@@ -37,9 +37,9 @@ export class SlowestTestsProvider implements vscode.TreeDataProvider<SlowestTest
             const filePath = testName.split('::')[0]; // Extract the file path
             slowestTestsOutput.push(
                 new SlowestTest(
-                    test,
+                    testName,
                     filePath,
-                    'test function',
+                    duration,
                     vscode.TreeItemCollapsibleState.None,
                     {
                         command: 'extension.openTestFile',
@@ -58,12 +58,12 @@ export class SlowestTest extends vscode.TreeItem {
     constructor(
         public readonly label: string,
         public file: string,
-        private type: string,
+        private time: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly command?: vscode.Command
     ) {
         super(label, collapsibleState);
-        this.tooltip = `${this.label}-${this.type}`;
-        this.description = this.type;
+        // this.tooltip = `${this.label}-${this.type}`;
+        this.description = this.time;
     }
 }
