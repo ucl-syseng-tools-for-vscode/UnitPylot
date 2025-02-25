@@ -15,7 +15,7 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
-
+import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
 
 export const jsonStore: Map<string, any> = new Map();
 
@@ -99,6 +99,21 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(slowestTests);
 
+    // Register the getMemory command 
+    const getMemory = vscode.commands.registerCommand('vscode-run-tests.getMemory', async () => {
+        try {
+
+            const memory = await testRunner.getMemory();
+            // vscode.commands.executeCommand('vscode-run-tests.updateMemory', { memory });
+
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run memory check.');
+        }
+    });
+
+    context.subscriptions.push(getMemory);
+
+
     // Register the annotate command
     const annotateCommand = vscode.commands.registerTextEditorCommand(
         'code-tutor.annotate',
@@ -127,6 +142,15 @@ export function activate(context: vscode.ExtensionContext) {
         async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
+
+
+
+    // Register the optimise memory usage of tests command
+    const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
+        'optimise-memory.optimiseMemory',
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory())
+    );
+    context.subscriptions.push(optimiseMemoryCommand);
 
 
     // Register the getDependencies command

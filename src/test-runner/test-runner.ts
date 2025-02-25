@@ -96,9 +96,27 @@ export class TestRunner {
         return this.coverage;
     }
 
+    // Get memory of tests biggestAllocations
+    public async getMemory(): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+
+        const memoryTests: TestFunctionResult[] = [];
+        console.log("RESULTS", this.results);
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    memoryTests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        console.log("MEMORY", memoryTests);
+        return memoryTests
+    }
+
     // Get overall pass / fail results
     public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
         await this.runNeccecaryTests();
+        console.log("PASRESULTS", this.results);
 
         let passed = 0;
         let failed = 0;

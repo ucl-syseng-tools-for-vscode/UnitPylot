@@ -33,6 +33,9 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       if (msg.command === 'slowestTests') {
         vscode.commands.executeCommand('vscode-slowest-tests.slowestTests');
       }
+      if (msg.command === 'getMemory') {
+        vscode.commands.executeCommand('vscode-run-tests.getMemory');
+      }
     });
 
     vscode.commands.registerCommand('vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {
@@ -49,6 +52,11 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       console.log('Updating slowest tests:', slowest);
       this.updateSlowestTests(slowest);
     });
+
+    // vscode.commands.registerCommand('vscode-run-tests.updateMemory', (memory) => {
+    //   console.log('Updating memory:', memory);
+    //   this.updateMemory(memory);
+    // });
   }
 
   private updateResults(results: { passed: number; failed: number }): void {
@@ -68,4 +76,10 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       this._view.webview.postMessage({ command: 'updateSlowestTests', slowest });
     }
   }
+
+  // private updateMemory(memory: any): void {
+  //   if (this._view) {
+  //     this._view.webview.postMessage({ command: 'updateMemory', memory });
+  //   }
+  // }
 }
