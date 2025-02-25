@@ -4,36 +4,46 @@ import { TestFunctionResult } from '../test-runner/results';
 
 
 // Annotation Prompt for Optimising the tests that use the most memory in the test suite
-const ANNOTATION_PROMPT = `
+const ANNOTATION_PROMPT: string = `
 You are a test optimization assistant. Your task is to analyze the performance of a given test suite and suggest ways to optimize the tests that use the most memory.
 
-Analyse the most memory intensive Tests:
-For the provided test suite:
+## Analysis Scope:
+For the provided test suite, which includes test code, and the total memory allocations and size from a memray report:
 
-1. Review the most memory intensive tests based on the amount of memory allocated.
+1. Identify the most memory-intensive test cases based on total memory allocated.
+2. Detect potential inefficiencies such as:
+   - Unnecessary data structures or excessive object creation.
+   - Inefficient loops or redundant computations.
+   - Large fixtures or setups that can be minimized.
+   - Repeated expensive operations that could be optimized.
+3. Recommend optimizations that reduce memory usage while maintaining correctness.
 
-2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
+## Response Format:
+The response **must** be a **JSON object** starting with '{', without any Markdown syntax.
 
-Response Format:
-- The response must be in the format of a **JSON object**, starting with '{'.
-- Do no include any markdown syntax 
-- Must include a **test_name** field to specify the name of the slowest test.
-- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with .
-- Must include a **code_snippet** field with an optimized version of the test code.
+### Required Fields:
+- **"test_name"**: Name of the most memory-intensive test.
+- **"suggestion"**: Clear and concise recommendations for optimization.
+- **"code_snippet"**: Optimized version of the test code.
+- **"bottleneck"**: Explanation of what is causing high memory usage.
 
-Guidelines:
-- Clarity: Be clear and concise in explaining why a test is slow and how to fix it.
-- Detail: Ensure the suggested optimizations are actionable and directly address the issue, focusing on improving performance.
-- Performance: Consider both the speed of execution and maintainability of the optimized test.
-
+## Guidelines:
+- Ensure optimizations are actionable and focused on reducing memory usage.
+- Keep suggestions clear and directly applicable.
+- Maintain readability and maintainability in the optimized test case.
 `;
+
 
 // Chat Functionality for Annotation
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
 
     try {
+        var codeWithLineNumbers: string[] = [];
+        for (const test of mostMemoryTests) {
+            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+        }
         console.log("mostMemoryTests:", mostMemoryTests);
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(mostMemoryTests), 1);
+        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
     } catch (error) {
         console.error("Error in handleOptimiseMemoryCommand:", error);
     }
