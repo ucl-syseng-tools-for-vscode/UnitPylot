@@ -18,8 +18,8 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                     margin: 0;
                 }
                 .chart-container {
-                    width: 600px; /* Adjust the width */
-                    height: 400px; /* Adjust the height */
+                    width: 800px;
+                    height: 500px;
                 }
                 canvas {
                     width: 100% !important;
@@ -35,38 +35,32 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                 const ctx = document.getElementById('testHistoryChart').getContext('2d');
                 const rawData = ${dataStr};
                 
-                const labels = rawData.map(entry => new Date(entry.date).toLocaleString());
+                const labels = rawData.map(entry => \`[\${new Date(entry.date).toLocaleString()}]\`);
                 const passData = rawData.map(entry => entry.pass);
                 const failData = rawData.map(entry => entry.fail);
 
                 new Chart(ctx, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [
                             {
                                 label: 'Pass',
                                 data: passData,
-                                borderColor: 'green',
-                                backgroundColor: 'rgba(0, 255, 0, 0.1)',
-                                pointBackgroundColor: 'green',
-                                pointBorderColor: 'green',
-                                pointRadius: 5,
-                                borderWidth: 2,
-                                fill: false,
-                                tension: 0.2
+                                backgroundColor: '#327e36',
+                                borderColor: '#327e36',
+                                borderWidth: 1,
+                                barPercentage: 0.45,
+                                categoryPercentage: 0.8
                             },
                             {
                                 label: 'Fail',
                                 data: failData,
-                                borderColor: 'red',
-                                backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                                pointBackgroundColor: 'red',
-                                pointBorderColor: 'red',
-                                pointRadius: 5,
-                                borderWidth: 2,
-                                fill: false,
-                                tension: 0.2
+                                backgroundColor: '#f14c4c',
+                                borderColor: '#f14c4c',
+                                borderWidth: 1,
+                                barPercentage: 0.45,
+                                categoryPercentage: 0.8
                             }
                         ]
                     },
@@ -80,11 +74,15 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                         scales: {
                             x: {
                                 title: { display: true, text: 'Time' },
-                                ticks: { autoSkip: true, maxTicksLimit: 10 }
+                                ticks: { autoSkip: true, maxTicksLimit: 10 },
+                                stacked: false
                             },
                             y: {
                                 title: { display: true, text: 'Test Count' },
-                                beginAtZero: true
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0 // Ensures only whole numbers
+                                }
                             }
                         }
                     }
