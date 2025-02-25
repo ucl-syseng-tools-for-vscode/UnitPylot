@@ -149,11 +149,6 @@
         <canvas id="chart"></canvas>
     </div>
 
-    <div id="slowest-results-card" class="card">
-        <h3>Slowest Tests</h3>
-        <div id="slowest-results-content"></div>
-    </div>
-
     <div id="button-container">
         <button id="run-tests-btn" class="btn" onclick="runTests()">Run Tests</button>
         <button id="get-coverage-btn" class="btn" onclick="getCoverage()">Get Coverage</button>
@@ -169,7 +164,6 @@
         let state = {
             testResults: null,
             coverageResults: null,
-            slowestResults: null,
         };
 
         function saveState() {
@@ -187,9 +181,6 @@
                 }
                 if (state.coverageResults) {
                     updateCoverage(state.coverageResults);
-                }
-                if (state.slowestResults) {
-                    updateSlowestTests(state.slowestResults);
                 }
             }
         }
@@ -446,40 +437,6 @@
         }
 
         const slowestTestsBtn = document.getElementById('find-slowest-btn');
-
-        function slowestTests() {
-            console.log("called");
-            vscode.postMessage({ command: 'slowestTests' });
-
-            // Adjust the layout
-            slowestTestsBtn.style.marginTop = '0';
-        }
-
-        window.addEventListener('message', (event) => {
-            if (event.data.command === 'updateSlowestTests') {
-                console.log('Frontend received updateSlowestTests message:', event.data.slowest);
-                state.slowestResults = structuredClone(event.data.slowest);
-                saveState();
-                updateSlowestTests(event.data.slowest);
-            }
-        });
-
-
-        function updateSlowestTests(slowest) {
-            const card = document.getElementById('slowest-results-card');
-            const content = document.getElementById('slowest-results-content');
-            content.innerHTML = '';
-
-            slowest.slowest.forEach(test => {
-                console.log('Updating slowest tests:', test);
-                const testElement = document.createElement('p');
-                testElement.textContent = `${test.filePath} - ${test.testName} (${test.time}s)`;
-                content.appendChild(testElement);
-            });
-
-            card.style.display = 'block';
-        }
-
 
     </script>
 </body>

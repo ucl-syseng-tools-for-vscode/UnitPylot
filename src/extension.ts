@@ -6,9 +6,6 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
-
-import { getTestDependencies } from './dependency-management/dependencies';
-import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
 import { get } from 'http';
 import * as path from 'path';
@@ -132,15 +129,6 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
-
-    // Register the getDependencies command
-    context.subscriptions.push(vscode.commands.registerCommand(
-        'dependencies.getDependencies', async () => {
-            const dependencies = await getTestDependencies();
-            jsonStore.set('dependencies', dependencies);
-        }
-    ));
-
     // Register the generate Pydoc command
     const generatePydocCommand = vscode.commands.registerTextEditorCommand(
         'generate-pydoc.generatePydoc',
@@ -217,15 +205,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(openWebView);
 
-    // Register the dependency tree view
-    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
-    vscode.window.createTreeView('dashboard.treeview', {
-        treeDataProvider: dependenciesProvider
-    });
-
-    // Register the refresh command
-    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
-
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
@@ -275,7 +254,6 @@ export function activate(context: vscode.ExtensionContext) {
     // Register slowest tests tree view and refresh command
     const workspaceRoot = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
     const slowestTestsProvider = new SlowestTestsProvider(workspaceRoot);
-    vscode.window.registerTreeDataProvider('slowestTests', slowestTestsProvider);
     const slowestTreeView = vscode.window.createTreeView('dashboard.slowestteststreeview', {
         treeDataProvider: slowestTestsProvider
     });

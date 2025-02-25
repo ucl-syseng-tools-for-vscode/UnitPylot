@@ -41,12 +41,6 @@
         },
         {
           "type": "tree",
-          "id": "dashboard.treeview",
-          "name": "Dependency Tree View",
-          "contextualTitle": "Tree"
-        },
-        {
-          "type": "tree",
           "id": "dashboard.failingtreeview",
           "name": "Failing Tests",
           "contextualTitle": "Failing Tests"
@@ -109,15 +103,6 @@
       {
         "command": "optimise-slowest.optimiseSlowest",
         "title": "Optimise Slowest Tests"
-      },
-      {
-
-        "command": "dependencies.getDependencies",
-        "title": "Get Dependencies"
-      },
-      {
-        "command": "dependencies.refreshView",
-        "title": "Refresh Dependencies View"
       },
       {
         "command": "generate-pydoc.generatePydoc",
