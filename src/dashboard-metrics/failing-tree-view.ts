@@ -3,6 +3,8 @@ import * as path from 'path';
 import { jsonStore, testRunner } from '../extension';
 import { TestResult } from '../test-runner/results';
 
+// make a combined tree view with memory and duration
+
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
     private _onDidChangeTreeData: vscode.EventEmitter<FailingTest | undefined | void> = new vscode.EventEmitter<FailingTest | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<FailingTest | undefined | void> = this._onDidChangeTreeData.event;
