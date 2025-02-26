@@ -16,7 +16,7 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
-import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
@@ -312,6 +312,26 @@ export function activate(context: vscode.ExtensionContext) {
         }, err => {
             console.error(`Failed to open text document: ${err}`);
         });
+    });
+
+    // Register the run tests in file command
+    vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("No workspace folder found.");
+            return;
+        }
+
+        const relativePath = path.relative(workspaceFolder, file.fsPath);
+        console.log(`Running tests in file: ${file}`);
+        vscode.window.showInformationMessage(`Running tests in file: ${relativePath}`);
+        testRunner.runTests(
+            [{
+                filePath: relativePath,
+                passed: false,
+                time: NaN,
+            }]
+        );
     });
 }
 
