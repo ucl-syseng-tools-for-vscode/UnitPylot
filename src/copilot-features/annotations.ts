@@ -1,13 +1,40 @@
 import * as vscode from 'vscode';
 
-const ANNOTATION_PROMPT = `You are a code tutor who helps students learn how to write better tests for Python code. Your job is to evaluate a block of Python test code that the user gives you and then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions if it will significantly improve test efficiency, increase test coverage, or better handle edge cases. Be friendly with your suggestions and remember that these are students who need gentle guidance. Format each suggestion as a single JSON object. Here is an example of what your response should look like:
+const ANNOTATION_PROMPT = `You are a code tutor who helps developers understand the interconnectedness of tests and code in a workspace. Your job is to:
 
-{ "line": 1, "suggestion": "Consider using pytest.raises to check that exceptions are thrown as expected. It helps ensure that your code handles edge cases properly." }{ "line": 12, "suggestion": "It might be helpful to use parameterized tests to cover multiple input scenarios in a single test function, improving coverage and readability." }
+1. Analyze the workspace to identify how changes to specific functions, classes, or modules might impact tests or other dependent code.
+2. Provide insights on whether modifying a given function may require updating or refactoring related test cases.
+
+You must do the following:
+- The response must be in the format of a single **JSON object**, starting with '{'. 
+- If modifying a function could break or require changes in tests, mention which tests would be affected and how they would be affected.
+- Include the line number of the test function in the response.
+Here is an example:
+
+{ "line": 15, 
+  "suggestion": "Modifying function process_data() might affect test_process_data_valid because it is testing the function's return value."
+},
+{ "line": 30, 
+  "suggestion": "Refactoring get_user_profile() could impact module test_user_service.py and test cases related to user authentication."
+}
 `;
+
+async function getWorkspaceContext(): Promise<string> {
+    const files = await vscode.workspace.findFiles('**/*.py', '**/node_modules/**', 10); 
+    let context = '';
+
+    for (const file of files) {
+        const doc = await vscode.workspace.openTextDocument(file);
+        context += `File: ${file.fsPath}\n${doc.getText()}\n\n`;
+    }
+
+    return context;
+}
 
 // Chat Functionality for Annotation
 export async function handleAnnotateCommand(textEditor: vscode.TextEditor) {
     const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
+    const workspaceContext = await getWorkspaceContext();
 
     let [model] = await vscode.lm.selectChatModels({
         vendor: 'copilot',
@@ -16,7 +43,8 @@ export async function handleAnnotateCommand(textEditor: vscode.TextEditor) {
 
     const messages = [
         vscode.LanguageModelChatMessage.User(ANNOTATION_PROMPT),
-        vscode.LanguageModelChatMessage.User(codeWithLineNumbers),
+        vscode.LanguageModelChatMessage.User(`Workspace Context:\n${workspaceContext}`),
+        vscode.LanguageModelChatMessage.User(`Current File:\n${codeWithLineNumbers}`),
     ];
 
     if (model) {
@@ -58,7 +86,12 @@ async function parseChatResponse(
     let accumulatedResponse = '';
 
     for await (const fragment of chatResponse.text) {
-        accumulatedResponse += fragment;
+        if (fragment.includes('},')) {
+            accumulatedResponse += '}';
+        }
+        else{
+            accumulatedResponse += fragment;
+        }
 
         if (fragment.includes('}')) {
             try {

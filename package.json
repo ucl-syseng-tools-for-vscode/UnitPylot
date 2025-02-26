@@ -97,7 +97,7 @@
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Toggle Tutor Annotations"
+        "title": "Interconnected Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
