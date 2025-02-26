@@ -43,11 +43,10 @@
         }
 
         #chart-container {
-            margin: 10px 0;
+            margin: 0;
             width: 100%;
             max-width: 1200px;
-            margin-top: 30px;
-            margin-bottom: 0px;
+            padding: 0;
         }
 
         #chart {
@@ -61,6 +60,8 @@
             width: 100%;
             max-width: 1200px;
             height: auto;
+            margin-bottom: 0;
+            padding: 0;
         }
 
         #coverage-chart {
@@ -74,11 +75,12 @@
         }
 
         #button-container {
-            margin-top: 10px;
+            margin-top: 0;
             display: flex;
-            gap: 10px;
+            gap: 0px;
             flex-wrap: wrap;
             justify-content: center;
+            padding: 0;
         }
     </style>
 </head>
@@ -146,8 +148,6 @@
         function runTests() {
             console.log("called");
             vscode.postMessage({ command: 'runTests' });
-
-            // Adjust the layout
             runTestsBtn.style.marginTop = '0';
             chart.style.display = 'block';
             resultsBar.style.display = 'flex';
@@ -196,6 +196,9 @@
 
             const ctx = chart.getContext('2d');
             if (!ctx) return;
+
+            chartContainer.style.margin = '0';
+            chartContainer.style.padding = '0';
 
             testResultsChart = new Chart(ctx, {
                 type: 'bar',
