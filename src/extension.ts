@@ -16,7 +16,7 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
-import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
