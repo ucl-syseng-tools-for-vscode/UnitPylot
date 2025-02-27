@@ -65,8 +65,6 @@ function handleAnnotation(
         applyDecorationLineNumbers(editor, line, suggestion);
     } else if (decorationMethod === 1) { // based on function name
         applyDecorationFuncName(editor, test_name!, suggestion, code_snippet!, bottleneck!);
-    // } else if (decorationMethod === 3) { // for memory
-    //     applyDecorationMemory(editor, test_name!, suggestion, code_snippet!, bottleneck!);
     } else if (decorationMethod === 2) { // for get coverage
         const decorationType = vscode.window.createTextEditorDecorationType({
             after: {

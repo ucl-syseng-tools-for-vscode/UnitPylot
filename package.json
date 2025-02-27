@@ -97,7 +97,7 @@
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Interconnected Insights"
+        "title": "Identify Code Smells"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
