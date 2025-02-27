@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
 
 const ANNOTATION_PROMPT = `
-You are an expert coder who helps developers identify code smells in tests given a test file. Your job is to:
+You are an expert coder who helps developers identify code smells in tests given a test file. 
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
@@ -17,15 +17,11 @@ Here is an example of the expected response format:
 
 { 
     "line": 15, 
-    "suggestion": "Modifying function process_data() might affect test_process_data_valid because it is testing the function's return value and this can affect something else. Consider updating the test case like so to reflect the new behavior."
+    "suggestion": vulnerability and fix. 
 },
 { 
     "line": 19, 
-    "suggestion": "Refactoring get_user_profile() could impact module test_user_service.py and test cases related to user authentication. You can make this more robust by removing its dependency on this case."
-},
-{ 
-    "line": 30, 
-    "suggestion": "Refactoring get_user_profile() could impact module test_user_service.py and test cases related to user authentication. You can make this more robust by removing its dependency on this case."
+    "suggestion": vulnerability and fix. 
 }
 `;
 
