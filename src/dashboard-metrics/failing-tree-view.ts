@@ -80,7 +80,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             const [testName, duration] = slowTest.split(' - ');
             const filePath = testName.split('::')[0]; // Extract the file path
             const slowTestNode = new FailingTest(
-                testName,
+                testName.split('::').pop() || testName,
                 filePath,
                 'slow test',
                 vscode.TreeItemCollapsibleState.None,
@@ -101,7 +101,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             const filePath = memoryTest.filePath;
             const memoryUsage = memoryTest.totalMemory;
             const memoryTestNode = new FailingTest(
-                testName || "Unknown Test",
+                (testName?.split('::').pop() || "Unknown Test"),
                 filePath || "Unknown File",
                 'memory test',
                 vscode.TreeItemCollapsibleState.None,
@@ -112,7 +112,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             );
             if (filePath && fileMap[filePath]) {
                 fileMap[filePath].push(memoryTestNode);
-                fileIcons[filePath].add('memorytest.svg');
+                fileIcons[filePath].add('memory.svg');
             } else {
                 failingTestsOutput.push(memoryTestNode);
             }
@@ -195,7 +195,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             if (!result.passed) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        result.testName || 'Unknown Test',
+                        result.testName ? result.testName.split('::').pop()! : 'Unknown Test',
                         file,
                         'test function',
                         vscode.TreeItemCollapsibleState.None,
@@ -214,7 +214,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        testName,
+                        testName.split('::').pop() || testName,
                         filePath,
                         'slow test',
                         vscode.TreeItemCollapsibleState.None,
@@ -234,7 +234,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        testName || "Unknown Test",
+                        testName ? testName.split('::').pop()! : 'Unknown Test',
                         filePath,
                         'memory test',
                         vscode.TreeItemCollapsibleState.None,
