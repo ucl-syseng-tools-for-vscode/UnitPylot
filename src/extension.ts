@@ -121,25 +121,31 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
+    let passFailPanel: vscode.WebviewPanel | undefined;
     const showGraphCommand = vscode.commands.registerCommand('test-history.showPassFailGraph', async () => {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
         
-        const panel = vscode.window.createWebviewPanel(
-            'testHistoryGraph',
-            'Test Pass/Fail History',
-            vscode.ViewColumn.One,
-            { enableScripts: true }
-        );
+        if (passFailPanel) {
+            passFailPanel.webview.html = getWebviewContent(graphData);
+            passFailPanel.reveal(vscode.ViewColumn.One);
+        } else {
+            // Create a new panel if one doesn't exist
+            passFailPanel = vscode.window.createWebviewPanel(
+                'testHistoryGraph',
+                'Test Pass/Fail History',
+                vscode.ViewColumn.One,
+                { enableScripts: true }
+            );
 
-        console.log(snapshots);
-        console.log(graphData);
-        panel.webview.html = getWebviewContent(graphData);
+            passFailPanel.webview.html = getWebviewContent(graphData);
+        }
     });
     
     context.subscriptions.push(showGraphCommand);    
 
+    let coveragePanel: vscode.WebviewPanel | undefined;
     const showCoverageGraphCommand = vscode.commands.registerCommand(
         'test-history.showCoverageGraph', async () => {
             await HistoryManager.saveSnapshot(); 
@@ -152,16 +158,20 @@ export function activate(context: vscode.ExtensionContext) {
                 branchesCovered: snapshot.coverage?.totals.branches_covered ?? 0
             }));            
     
-            const panel = vscode.window.createWebviewPanel(
-                'coverageGraph',
-                'Coverage History',
-                vscode.ViewColumn.One,
-                { enableScripts: true }
-            );
+            if (coveragePanel) {
+                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+                coveragePanel.reveal(vscode.ViewColumn.One);
+            } else {
+                coveragePanel = vscode.window.createWebviewPanel(
+                    'coverageGraph',
+                    'Coverage History',
+                    vscode.ViewColumn.One,
+                    { enableScripts: true }
+                );
     
-            panel.webview.html = getCoverageWebviewContent(graphData);
-        }
-    );    
+                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+            }
+        });    
 
     context.subscriptions.push(showCoverageGraphCommand); 
 
