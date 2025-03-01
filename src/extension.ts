@@ -7,7 +7,8 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
-import { getWebviewContent } from './test-history/history-graph';
+import { getWebviewContent } from './test-history/test-history-graph';
+import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
 
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
@@ -120,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
-    const showGraphCommand = vscode.commands.registerCommand('test-history.showGraph', async () => {
+    const showGraphCommand = vscode.commands.registerCommand('test-history.showPassFailGraph', async () => {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
@@ -138,6 +139,31 @@ export function activate(context: vscode.ExtensionContext) {
     });
     
     context.subscriptions.push(showGraphCommand);    
+
+    const showCoverageGraphCommand = vscode.commands.registerCommand(
+        'test-history.showCoverageGraph', async () => {
+            await HistoryManager.saveSnapshot(); 
+            const snapshots = HistoryManager.getSnapshots();
+    
+            const graphData = snapshots.map(snapshot => ({
+                date: snapshot.time,
+                covered: snapshot.coverage ? snapshot.coverage.totals.covered : 0,
+                missed: snapshot.coverage ? snapshot.coverage.totals.missed : 0,
+                branchesCovered: snapshot.coverage?.totals.branches_covered ?? 0
+            }));            
+    
+            const panel = vscode.window.createWebviewPanel(
+                'coverageGraph',
+                'Coverage History',
+                vscode.ViewColumn.One,
+                { enableScripts: true }
+            );
+    
+            panel.webview.html = getCoverageWebviewContent(graphData);
+        }
+    );    
+
+    context.subscriptions.push(showCoverageGraphCommand); 
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
