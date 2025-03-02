@@ -56,17 +56,15 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
 function handleAnnotation(
     editor: vscode.TextEditor,
-    annotation: { line: number; suggestion: string; test_name?: string, code_snippet:string, file: string, bottleneck?: string },
+    annotation: { line: number; suggestion: string; category: string, test_name?: string, code_snippet:string, file: string, bottleneck?: string },
     decorationMethod: number
 ) {
-    const { line, suggestion, test_name, code_snippet, file, bottleneck} = annotation;
+    const { line, suggestion, category, test_name, code_snippet, file, bottleneck} = annotation;
 
     if (decorationMethod === 0) { // based on line numbers
-        applyDecorationLineNumbers(editor, line, suggestion);
+        applyDecorationLineNumbers(editor, line, suggestion, category!);
     } else if (decorationMethod === 1) { // based on function name
         applyDecorationFuncName(editor, test_name!, suggestion, code_snippet!, bottleneck!);
-    // } else if (decorationMethod === 3) { // for memory
-    //     applyDecorationMemory(editor, test_name!, suggestion, code_snippet!, bottleneck!);
     } else if (decorationMethod === 2) { // for get coverage
         const decorationType = vscode.window.createTextEditorDecorationType({
             after: {
@@ -98,13 +96,27 @@ function handleAnnotation(
     }
 }
 
-function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: string) {
-    const decorationType = vscode.window.createTextEditorDecorationType({
-        after: {
-            contentText: ` ${suggestion.substring(0, 25) + '...'}`,
-            color: 'grey',
-        },
-    });
+function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: string, category?: string) {
+    console.log('suggestion', suggestion);
+    console.log('category', category);
+    var decorationType = vscode.window.createTextEditorDecorationType({});
+    if (category){
+        decorationType = vscode.window.createTextEditorDecorationType({
+            after: {
+                contentText: ` ${category.substring(0, 25) + '...'}`,
+                color: 'grey',
+            },
+        });
+    }
+    else{
+        decorationType = vscode.window.createTextEditorDecorationType({
+            after: {
+                contentText: ` ${suggestion.substring(0, 25) + '...'}`,
+                color: 'grey',
+            },
+        });
+    }
+    
 
     const lineLength = editor.document.lineAt(line - 1).text.length;
     const range = new vscode.Range(
@@ -112,14 +124,25 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
         new vscode.Position(line - 1, lineLength)
     );
 
-    const decoration = { range: range, hoverMessage: suggestion };
-    editor.setDecorations(decorationType, [decoration]);
+    const hoverMessage = new vscode.MarkdownString();
+    hoverMessage.isTrusted = true;
+    if (category) {
+        hoverMessage.appendMarkdown(`### 🚀 Code Insight\n\n`);
+        hoverMessage.appendMarkdown(`**Category**: \`${category}\`\n\n`);
+        hoverMessage.appendMarkdown(`**Insight:**\n> ${suggestion}\n\n`);
+    }
+    else {
+        hoverMessage.appendMarkdown(`${suggestion}`);
+
+    }
+
+    editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 
     return decorationType; // Return to allow clearing later
 }
 
-function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, suggestion: string) {
-    displayAnnotation(editor, line, suggestion);
+function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, suggestion: string, category?: string) {
+    displayAnnotation(editor, line, suggestion, category!);
 }
 
 
