@@ -19,7 +19,8 @@ For the provided test suite, which includes test code, and the total memory allo
 3. Recommend optimizations that reduce memory usage while maintaining correctness.
 
 ## Response Format:
-The response **must** be a **JSON object** starting with '{', without any Markdown syntax.
+The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
+
 
 ### Required Fields:
 - **"test_name"**: Name of the most memory-intensive test.
