@@ -1,56 +1,49 @@
 import * as vscode from 'vscode';
-import * as hf from '../copilot-features/helper-func';
+import * as hf from './helper-func';
 
-// Annotation Prompt for generating pydoc suggestions tests in the currently open file
+// Annotation Prompt for generating docstring suggestions for tests in the currently open file
 
 // Added suggestion field in order to reuse previous functions
 const ANNOTATION_PROMPT = `
-You are a Python documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed pydoc annotations for its functions and classes.
+You are a Python test case documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed docstrings for test cases.
 
 For each test case provided, based on its start and end line numbers:
-1. Analyse the test case to understand its purpose, inputs, and expected behavior.
-2. Generate a concise and accurate pydoc suggestion that describes what the test case does.
-
-A pydoc-compliant docstring typically includes:
-- **A brief description**: Summarize what the function or class does.
-- **Parameters**: List the names, types, and descriptions of input parameters.
-- **Returns**: Specify the type and description of the returned value.
-- **Raises**: Document any exceptions the function might raise.
-
-Include all this in the suggestion field.
-
+1. Analyse the test case to understand its purpose, inputs, setup, and expected behavior.
+2. Generate a concise and accurate docstring suggestion in the proper format for documenting test cases.
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting with '{'.
 - Do not include any markdown syntax.
+- Follow typical Python docstring conventions for test cases.
 
 Here is an example of the expected response format:
 
 {
   "line": 1,
-  "suggestion": "This function calculates the sum of two numbers. It takes two arguments, a and b, and returns their sum."
+  "suggestion": Test the addition function.\n\nThis test verifies that the addition function correctly computes the sum of two positive integers. It provides 3 and 5 as inputs and expects a result of 8.
 }
 
-
 Guidelines:
-- Clarity: Write pydoc strings that are easy to understand for other developers.
-- Completeness: Ensure every function and class has a corresponding annotation that fully documents its behavior.
-- Adherence: Follow Python's docstring conventions for readability and consistency.
+- Purpose: Clearly state what the test case is testing (e.g., a specific function or behavior).
+- Inputs: Describe the key inputs or setup used in the test.
+- Expected Outcome: Explain the expected result or behavior being validated.
+- Format: Use PEP 257-style multi-line docstrings for clarity.
+- Adherence: Ensure all test cases have clear, concise, and consistent documentation that follows Python's docstring conventions.
 `;
 
 // Chat Functionality for Annotation
-export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) {
+export async function handleGenerateDocCommand(textEditor: vscode.TextEditor) {
     try {
         const funcLines = await groupFunctions(textEditor)
         hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(funcLines), 0);
     } catch (error) {
-        console.error("Error in handleGeneratePydocCommand:", error);
+        console.error("Error in handleGenerateDocCommand:", error);
     }
 }
 
 
 //CHECK +1 LOGIC IS OK 
-// Extract a line numbers of each test case in the currently open file
+// Extract the line numbers of each test case in the currently open file
 function groupFunctions(textEditor: vscode.TextEditor) {
     const document = textEditor.document;
     const text = document.getText();

@@ -121,8 +121,8 @@
         "title": "Refresh Dependencies View"
       },
       {
-        "command": "generate-pydoc.generatePydoc",
-        "title": "Generate Pydoc"
+        "command": "generate-doc.generateDoc",
+        "title": "Generate Docstrings"
       },
       {
         "command": "extension.acceptSuggestion",

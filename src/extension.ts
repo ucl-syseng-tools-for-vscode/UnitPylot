@@ -16,7 +16,7 @@ import { get } from 'http';
 import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
-import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
+import { handleGenerateDocCommand } from './copilot-features/generate-docstrings';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
@@ -225,11 +225,11 @@ export function activate(context: vscode.ExtensionContext) {
     ));
 
     // Register the generate Pydoc command
-    const generatePydocCommand = vscode.commands.registerTextEditorCommand(
-        'generate-pydoc.generatePydoc',
-        handleGeneratePydocCommand
+    const generateDocCommand = vscode.commands.registerTextEditorCommand(
+        'generate-doc.generateDoc',
+        handleGenerateDocCommand
     );
-    context.subscriptions.push(generatePydocCommand);
+    context.subscriptions.push(generateDocCommand);
 
     // Register the in-line accept and reject commands
     context.subscriptions.push(
