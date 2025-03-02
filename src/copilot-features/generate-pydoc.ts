@@ -21,7 +21,7 @@ Include all this in the suggestion field.
 
 
 Response Format:
-- The response must be in the format of a single **JSON object**, starting with '{'.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Do not include any markdown syntax.
 
 Here is an example of the expected response format:

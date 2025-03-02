@@ -14,7 +14,7 @@ For the identified file:
 2. You must suggest code that covers untested conditions, branches, or edge cases.
 
 Response Format:
-- The response must be in the format of a single **JSON object**, starting with '{'.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Include a **line** field to specify the line where the change begins (if applicable).
 - Please provide a **suggestion** field with the issue related to the coverage
 - Must include a **code_snippet** field with the corrected test code.

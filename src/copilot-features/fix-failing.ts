@@ -6,7 +6,7 @@ import * as hf from '../copilot-features/helper-func';
 
 const ANNOTATION_PROMPT = `You are an expert Python debugger specializing in refactoring failing test cases. Your role is to analyze a block of Python test code and the provided debug console output, then return the corrected and refactored code in the corresponsing source file based on the failing test. Suggest changes to the function that is being tested, not the test case itself, unless its entirely necessary and the test case is itself wrong. You must to do the following:
 
-- The response must be in the format of a single **JSON object**, starting with '{'.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Include a "line" field to specify the line where the change begins (if applicable).
 - Provide a "suggestion" field with a detailed explanation of the recommended change, including why it should be made.
 - Include a "code_snippet" field that contains the corrected or refactored code, either fixing the test case or modifying the function under test.
