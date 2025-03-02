@@ -126,11 +126,15 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
 
     const hoverMessage = new vscode.MarkdownString();
     hoverMessage.isTrusted = true;
-    hoverMessage.appendMarkdown(`### 🚀 Code Insight\n\n`);
     if (category) {
+        hoverMessage.appendMarkdown(`### 🚀 Code Insight\n\n`);
         hoverMessage.appendMarkdown(`**Category**: \`${category}\`\n\n`);
+        hoverMessage.appendMarkdown(`**Insight:**\n> ${suggestion}\n\n`);
     }
-    hoverMessage.appendMarkdown(`**Insight:**\n> ${suggestion}\n\n`);
+    else {
+        hoverMessage.appendMarkdown(`${suggestion}`);
+
+    }
 
     editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 
