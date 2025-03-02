@@ -97,7 +97,7 @@
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Identify Code Smells"
+        "title": "Test Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
