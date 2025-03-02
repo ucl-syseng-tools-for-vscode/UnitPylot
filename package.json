@@ -139,6 +139,14 @@
       {
         "command": "extension.addSuggestiontoMainFile",
         "title": "Add Annotation to corresponding Main File"
+      },
+      {
+        "command": "test-history.showPassFailGraph",
+        "title": "Show test pass-fail history graph"
+      },
+      {
+        "command": "test-history.showCoverageGraph",
+        "title": "Show coverage history graph"
       }, 
       {
         "command": "optimise-memory.optimiseMemory",

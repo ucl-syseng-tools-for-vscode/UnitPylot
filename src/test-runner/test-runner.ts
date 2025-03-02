@@ -122,11 +122,11 @@ export class TestRunner {
         return memoryTests
     }
 
+
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();
         return this.results;
-
     }
 
     // Get overall pass / fail results
