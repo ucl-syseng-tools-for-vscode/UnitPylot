@@ -29,7 +29,7 @@ export var testRunner: TestRunner;
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
-    const testRunner = TestRunner.getInstance(context.workspaceState);
+    testRunner = TestRunner.getInstance(context.workspaceState);
     // Initialise HistoryManager
     HistoryManager.initialise(context);
 
@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
         const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
         const messages = [
             vscode.LanguageModelChatMessage.User(
-                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
+                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query ensuring you always use the AAA (Arrange, Act, Assert) pattern:\n\n${userQuery}`
             )
         ];
         const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
