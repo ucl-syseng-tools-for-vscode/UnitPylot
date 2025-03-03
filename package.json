@@ -222,6 +222,11 @@
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
+        },
+        "pytastic.customLLM Endpoint": {
+          "type": "string",
+          "default": "http://localhost:8000/v1/chat/completions",
+          "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled."
         }
       }
     }

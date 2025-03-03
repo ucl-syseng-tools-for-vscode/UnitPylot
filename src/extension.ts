@@ -287,7 +287,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (!Settings.RUN_TESTS_ON_SAVE) {
+        if (!Settings.RUN_TESTS_ON_SAVE || document.fileName.endsWith('settings.json')) {
             return;
         }
 
