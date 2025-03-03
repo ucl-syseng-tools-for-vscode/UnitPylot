@@ -298,6 +298,10 @@ export function activate(context: vscode.ExtensionContext) {
         const slowest = await testRunner.getSlowestTests(5);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
 
+        HistoryManager.saveSnapshot();
+        vscode.commands.executeCommand('test-history.showPassFailGraph');
+        vscode.commands.executeCommand('test-history.showCoverageGraph');
+
         testRunner.setNotifications(true);
     });
 
