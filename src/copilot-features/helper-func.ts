@@ -51,6 +51,7 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                 }
                 catch {
                     console.error('Failed to parse annotation:', accumulatedResponse);
+                    vscode.window.showErrorMessage('Failed to parse LLM output. Please run the command again...');
                 }
             }
         }
