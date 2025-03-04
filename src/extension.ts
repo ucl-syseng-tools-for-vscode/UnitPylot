@@ -25,6 +25,8 @@ import { HistoryProcessor } from './test-history/history-processor';
 import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
+import { LlmMessage } from './llm/llm-message';
+import { Llm } from './llm/llm';
 
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
@@ -58,13 +60,13 @@ export function activate(context: vscode.ExtensionContext) {
         const pythonFiles = await getPythonFiles();
         const contextContent = pythonFiles.join('\n\n');
 
-        const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
-        const messages = [
-            vscode.LanguageModelChatMessage.User(
-                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
-            )
-        ];
-        const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
+        const messages: LlmMessage[] = [
+            {
+                role: 'user',
+                content: `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
+            }
+        ]
+        const chatRequest = await Llm.sendRequest(messages);
 
         for await (const token of chatRequest.text) {
             response.markdown(token);
