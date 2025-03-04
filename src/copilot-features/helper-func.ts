@@ -2,25 +2,18 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+import { Llm } from '../llm/llm';
+import { LlmMessage } from '../llm/llm-message';
+
 // Includes helper function to annotate chat response in-line
 export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATION_PROMPT: string, codeWithLineNumbers: string, decorationMethod: number) {
-    let [model] = await vscode.lm.selectChatModels({
-        vendor: 'copilot',
-        family: 'gpt-4o',
-    });
-
-    const messages = [
-        vscode.LanguageModelChatMessage.User(ANNOTATION_PROMPT),
-        vscode.LanguageModelChatMessage.User(codeWithLineNumbers),
+    const messages: LlmMessage[] = [
+        { role: 'user', content: ANNOTATION_PROMPT },
+        { role: 'user', content: codeWithLineNumbers }
     ];
 
-    if (model) {
-        const chatResponse = await model.sendRequest(
-            messages,
-            {},
-            new vscode.CancellationTokenSource().token
-        );
-
+    const chatResponse = await Llm.sendRequest(messages, true);
+    if (chatResponse) {
         await parseChatResponse(chatResponse, textEditor, decorationMethod);
         console.log("Response", chatResponse);
     }
@@ -34,21 +27,31 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
         if (fragment.includes('},')) {
             accumulatedResponse += '}';
         }
-        else{
+        else {
             accumulatedResponse += fragment;
         }
-        
+
         if (fragment.includes('}')) {
             try {
                 console.log("AR", accumulatedResponse);
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
-            
+
                 // added a function to display the annotations according to the command
                 handleAnnotation(textEditor, annotation, decorationMethod);
                 accumulatedResponse = '';
             } catch {
-                // Ignore parse errors
+                // If everything is in one fragment, try to parse the whole thing
+                try {
+                    const annotations = JSON.parse(`[${fragment}]`);
+                    for (const annotation of annotations) {
+                        console.log('Annotation:', annotation);
+                        handleAnnotation(textEditor, annotation, decorationMethod);
+                    }
+                }
+                catch {
+                    console.error('Failed to parse annotation:', accumulatedResponse);
+                }
             }
         }
     }
@@ -56,10 +59,10 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
 function handleAnnotation(
     editor: vscode.TextEditor,
-    annotation: { line: number; suggestion: string; category: string, test_name?: string, code_snippet:string, file: string, bottleneck?: string },
+    annotation: { line: number; suggestion: string; category: string, test_name?: string, code_snippet: string, file: string, bottleneck?: string },
     decorationMethod: number
 ) {
-    const { line, suggestion, category, test_name, code_snippet, file, bottleneck} = annotation;
+    const { line, suggestion, category, test_name, code_snippet, file, bottleneck } = annotation;
 
     if (decorationMethod === 0) { // based on line numbers
         applyDecorationLineNumbers(editor, line, suggestion, category!);
@@ -68,7 +71,7 @@ function handleAnnotation(
     } else if (decorationMethod === 2) { // for get coverage
         const decorationType = vscode.window.createTextEditorDecorationType({
             after: {
-                contentText: ` ${suggestion.substring(0, 25) + '...'}`, 
+                contentText: ` ${suggestion.substring(0, 25) + '...'}`,
                 color: 'grey',
             },
         });
@@ -100,7 +103,7 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
     console.log('suggestion', suggestion);
     console.log('category', category);
     var decorationType = vscode.window.createTextEditorDecorationType({});
-    if (category){
+    if (category) {
         decorationType = vscode.window.createTextEditorDecorationType({
             after: {
                 contentText: ` ${category.substring(0, 25) + '...'}`,
@@ -108,7 +111,7 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
             },
         });
     }
-    else{
+    else {
         decorationType = vscode.window.createTextEditorDecorationType({
             after: {
                 contentText: ` ${suggestion.substring(0, 25) + '...'}`,
@@ -116,7 +119,7 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
             },
         });
     }
-    
+
 
     const lineLength = editor.document.lineAt(line - 1).text.length;
     const range = new vscode.Range(
@@ -146,7 +149,7 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 }
 
 
-function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string, bottleneck?:string) {
+function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string, bottleneck?: string) {
     const decorationType = vscode.window.createTextEditorDecorationType({
         after: {
             contentText: ` ${suggestion.substring(0, 25) + '...'}`,
@@ -160,7 +163,7 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
 
     if (funcMatch) {
         functionName = funcMatch[1];  // Extracted function name
-        console.log(functionName);  
+        console.log(functionName);
     }
 
     const documentText = editor.document.getText();
@@ -171,7 +174,7 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         const functionStart = match.index!;
         const startPos = editor.document.positionAt(functionStart + match[0].length);
 
-        const line = startPos.line +1;
+        const line = startPos.line + 1;
         const lineLength = editor.document.lineAt(startPos.line).text.length;
 
         const range = new vscode.Range(
@@ -184,26 +187,26 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
 
         hoverMessage.appendMarkdown(`${suggestion}\n\n`);
 
-    if (bottleneck) {
-        hoverMessage.appendMarkdown(`Bottleneck: ${bottleneck}\n\n`);
-    }
+        if (bottleneck) {
+            hoverMessage.appendMarkdown(`Bottleneck: ${bottleneck}\n\n`);
+        }
 
-    hoverMessage.appendMarkdown(
-        `\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`
-    );
+        hoverMessage.appendMarkdown(
+            `\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`
+        );
 
-    hoverMessage.appendMarkdown(
-        `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
-            JSON.stringify({ line, code_snippet, decorationType })
-        )})` +
-        `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
-            JSON.stringify({ line, decorationType })
-        )})`
-    );
+        hoverMessage.appendMarkdown(
+            `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
+                JSON.stringify({ line, code_snippet, decorationType })
+            )})` +
+            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+                JSON.stringify({ line, decorationType })
+            )})`
+        );
 
 
 
-      
+
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 
@@ -216,7 +219,7 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     const currentFileUri = editor.document.uri;
     const currentFilePath = currentFileUri.fsPath;
-    const currentFileName = path.basename(currentFilePath, '.py'); 
+    const currentFileName = path.basename(currentFilePath, '.py');
 
     // Find project root dynamically
     let projectRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || path.dirname(currentFilePath);
@@ -234,8 +237,8 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
         }
     }
 
-    const testFilePreferred = path.join(testsFolderPath, `${currentFileName}_test.py`); 
-    const testFileFallback = path.join(testsFolderPath, `test_${currentFileName}.py`); 
+    const testFilePreferred = path.join(testsFolderPath, `${currentFileName}_test.py`);
+    const testFileFallback = path.join(testsFolderPath, `test_${currentFileName}.py`);
 
     let testFilePath = testFileFallback; // Default to test_<currentname>.py
 
@@ -298,8 +301,8 @@ function applyDecorationFixFailing(
 
     hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
-    const acceptCommand = file === "test" 
-        ? "extension.addSuggestiontoSameFile" 
+    const acceptCommand = file === "test"
+        ? "extension.addSuggestiontoSameFile"
         : "extension.addSuggestiontoMainFile";
 
     hoverMessage.appendMarkdown(
@@ -369,7 +372,7 @@ export async function addToMainFile(editor: vscode.TextEditor, text: string) {
 
     try {
         let existingText = "";
-        
+
         try {
             const existingContent = await vscode.workspace.fs.readFile(mainFileUri);
             existingText = Buffer.from(existingContent).toString('utf8');
