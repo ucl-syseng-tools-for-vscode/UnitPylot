@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
  */
 export class Settings {
     private static getConfig(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration('pytastic');
+        return vscode.workspace.getConfiguration('Py-TA');
     }
 
     public static get NUMBER_OF_SLOWEST_TESTS(): number {

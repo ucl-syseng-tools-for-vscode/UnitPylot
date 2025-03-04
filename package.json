@@ -1,6 +1,6 @@
 {
-  "name": "pytastic",
-  "displayName": "PyTastic",
+  "name": "pyta",
+  "displayName": "PyTA",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -18,7 +18,7 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "PyTastic",
+          "title": "PyTA",
           "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
@@ -181,44 +181,44 @@
       ]
     },
     "configuration": {
-      "title": "PyTastic",
+      "title": "PyTA",
       "properties": {
-        "pytastic.runNecessaryTestsOnly": {
+        "Py-TA.runNecessaryTestsOnly": {
           "type": "boolean",
           "default": true,
           "description": "Run only necessary tests instead of all tests."
         },
-        "pytastic.copilotEnabled": {
+        "Py-TA.copilotEnabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable GitHub Copilot integration."
         },
-        "pytastic.codeCoverageHighlighting": {
+        "Py-TA.codeCoverageHighlighting": {
           "type": "boolean",
           "default": true,
           "description": "Enable code coverage highlighting."
         },
-        "pytastic.numberOfSlowestTests": {
+        "Py-TA.numberOfSlowestTests": {
           "type": "number",
           "default": 5,
           "description": "Number of slowest tests to display."
         },
-        "pytastic.numberOfMemoryProfilingTests": {
+        "Py-TA.numberOfMemoryProfilingTests": {
           "type": "number",
           "default": 5,
           "description": "Number of tests to use for memory profiling. (0 for all tests)"
         },
-        "pytastic.snapshotInterval": {
+        "Py-TA.snapshotInterval": {
           "type": "number",
           "default": 10,
           "description": "Snapshot interval in minutes. (Extension restart required)"
         },
-        "pytastic.runTestsOnSave": {
+        "Py-TA.runTestsOnSave": {
           "type": "boolean",
           "default": true,
           "description": "Run tests on any file save."
         },
-        "pytastic.runTestsInBackground": {
+        "Py-TA.runTestsInBackground": {
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
