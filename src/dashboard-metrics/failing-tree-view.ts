@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { jsonStore, testRunner } from '../extension';
 import { TestResult, TestFunctionResult } from '../test-runner/results';
-import { runSlowestTests } from '../dashboard-metrics/slowest';
 
 // make a combined tree view with memory and duration
 
@@ -54,7 +53,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
 
     private async getRootFiles(): Promise<FailingTest[]> {
         const testResults = await testRunner.getAllResults();
-        const slowestTests = await runSlowestTests();
+        const slowestTests = await testRunner.getSlowestTests();
         const highestMemoryTests = await testRunner.getHighestMemoryTests();
         const failingTestsOutput: FailingTest[] = [];
         const fileMap: { [key: string]: FailingTest[] } = {};
@@ -77,18 +76,19 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
 
         for (const slowTest of slowestTests) {
-            const [testName, duration] = slowTest.split(' - ');
-            const filePath = testName.split('::')[0]; // Extract the file path
+            const testName = slowTest.testName;
+            const filePath = slowTest.filePath;
+            const duration = slowTest.time;
             const slowTestNode = new FailingTest(
-                testName.split('::').pop() || testName,
-                filePath,
+                testName?.split('::').pop() || testName || 'Unknown Test',
+                filePath || "Unknown File",
                 'slow test',
                 vscode.TreeItemCollapsibleState.None,
                 undefined,
-                parseFloat(duration),
+                duration,
                 true
             );
-            if (fileMap[filePath]) {
+            if (filePath && fileMap[filePath]) {
                 fileMap[filePath].push(slowTestNode);
                 fileIcons[filePath].add('slowtest.svg');
             } else {
@@ -207,19 +207,20 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             }
         }
 
-        const slowestTests = await runSlowestTests();
+        const slowestTests = await testRunner.getSlowestTests();
         for (const slowTest of slowestTests) {
-            const [testName, duration] = slowTest.split(' - ');
-            const filePath = testName.split('::')[0]; // Extract the file path
+            const testName = slowTest.testName;
+            const filePath = slowTest.filePath;
+            const duration = slowTest.time;
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        testName.split('::').pop() || testName,
+                        testName ? testName.split('::').pop() || testName : 'Unknown Test',
                         filePath,
                         'slow test',
                         vscode.TreeItemCollapsibleState.None,
                         undefined,
-                        parseFloat(duration),
+                        duration,
                         true
                     )
                 );
