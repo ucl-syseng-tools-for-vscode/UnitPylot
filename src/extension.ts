@@ -22,7 +22,7 @@ import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
-
+import {fetchPrompt} from './copilot-features/chat';
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
 
@@ -48,21 +48,12 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    // Register the chat participant
     vscode.chat.createChatParticipant("vscode-testing-chat", async (request, context, response, token) => {
         const userQuery = request.prompt;
-
-        // Context - python files and tests 
-        const pythonFiles = await getPythonFiles();
-        const contextContent = pythonFiles.join('\n\n');
-
         const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
-        const messages = [
-            vscode.LanguageModelChatMessage.User(
-                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query ensuring you always use the AAA (Arrange, Act, Assert) pattern:\n\n${userQuery}`
-            )
-        ];
+        const messages = await fetchPrompt(userQuery);
         const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
-
         for await (const token of chatRequest.text) {
             response.markdown(token);
         }
@@ -400,16 +391,7 @@ export async function handleFileOpen(editor: vscode.TextEditor, testRunner: Test
     }
 }
 
-async function getPythonFiles(): Promise<string[]> {
-    const pythonFiles: string[] = [];
-    // find Python files while excluding files in venv or other virtual environment folders
-    const uris = await vscode.workspace.findFiles('**/*.py', '**/venv/**');
-    for (const uri of uris) {
-        const content = (await vscode.workspace.fs.readFile(uri)).toString();
-        pythonFiles.push(`File: ${uri.fsPath}\n${content}`);
-    }
-    return pythonFiles;
-}
+
 
 // Deactivation Method for the Extension
 export function deactivate() { }
