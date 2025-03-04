@@ -12,12 +12,12 @@ export class Llm {
     public static async sendRequest(messages: LlmMessage[], json?: boolean): Promise<vscode.LanguageModelChatResponse> {
         return vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Processing request: ",
-            cancellable: false // Change to true if you want cancellation support
+            title: "Processing request",
+            cancellable: false
         }, async (progress, token) => {
             let output;
 
-            progress.report({ message: "Initializing..." });
+            progress.report({ message: "Initialising..." });
 
             if (Settings.COPILOT_ENABLED) {
                 progress.report({ message: "Sending request to Copilot..." });
