@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
@@ -28,7 +28,10 @@ export class TestRunner {
     private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
+    private testDurationsToRun: number = 5;
     private notifications: boolean = true;
+    private testProcess: any = null; // Store the process reference
+
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
@@ -61,6 +64,14 @@ export class TestRunner {
             hash: this.hash
         };
         this.workspaceState.update(this.stateKey, state);
+    }
+
+    public setTestDurationsToRun(n: number): void {
+        if (Number.isInteger(n)) {
+            this.testDurationsToRun = n;
+        } else {
+            throw new Error('Test durations to run must be an integer');
+        }
     }
 
     public setNotifications(value: boolean): void {
@@ -114,10 +125,7 @@ export class TestRunner {
         return memoryTests
     }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> settings-page
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();
@@ -377,30 +385,74 @@ export class TestRunner {
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
         // Example: tests/fizzbuzz_test.py::test_error_shown_for_negative
 
-        try {
-            const { stdout, stderr } = await execPromise(command, { cwd: workspacePath });
-            if (stderr) {
-                console.error(`stderr: ${stderr}`);
-            }
-            console.log(`stdout: ${stdout}`);
-            // Process the output
-            this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
-            this.updateCoverage(testsToRun ? false : true);
-            this.saveState();
+        return vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Test Runner: ",
+            cancellable: true
+        }, async (progress, token) => {
+            progress.report({ message: "Running..." });
 
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error(`Error executing command: ${error.message}`);
-            } else {
-                console.error('Error executing command:', error);
-            }
-        }
+            return new Promise<void>((resolve, reject) => {
+                let collectedOutput = '';
+                this.testProcess = spawn(command, { cwd: workspacePath, shell: true });
 
+                // Handle stdout (real-time output)
+                var percentage = '';
+                this.testProcess.stdout.on('data', (data: Buffer) => {
+                    collectedOutput += data.toString();
+                    console.log(`stdout: ${data}`);
+                    if (data.toString().endsWith('%]')) {
+                        percentage = data.toString().trim().slice(-6);
+                    }
 
-        // Save hash manually if all tests were run
-        if (!testsToRun) {
-            this.hash = await getWorkspaceHash();
-            this.saveState();
-        }
+                    progress.report({ message: `Running... ${percentage}\n${data.toString().trim()}` });
+                });
+
+                // Handle stderr (errors)
+                this.testProcess.stderr.on('data', (data: Buffer) => {
+                    console.error(`stderr: ${data}`);
+                    vscode.window.showErrorMessage(`Test run error: ${data.toString().trim()}`);
+                });
+
+                // Handle process exit
+                this.testProcess.on('exit', async (code: number | null) => {
+                    this.testProcess = null;
+                    if (code === 0) {
+                        progress.report({ message: "Tests completed successfully!" });
+
+                        // Process the output
+                        this.updateTestResults(collectedOutput, testsToRun ? false : true);  // Rewrite if no tests specified
+                        this.updateCoverage(testsToRun ? false : true);
+                        this.saveState();
+
+                        // Save hash manually if all tests were run
+                        if (!testsToRun) {
+                            this.hash = await getWorkspaceHash();
+                            this.saveState();
+                        }
+
+                    } else {
+                        vscode.window.showErrorMessage(`Tests failed with exit code ${code}`);
+                    }
+                    resolve();
+                });
+
+                // Handle process error
+                this.testProcess.on('error', (error: Error) => {
+                    console.error(`Process error: ${error.message}`);
+                    vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
+                    reject(error);
+                });
+
+                // Handle cancellation
+                token.onCancellationRequested(() => {
+                    if (this.testProcess) {
+                        this.testProcess.kill(); // Kill the test process
+                        vscode.window.showWarningMessage("Test run cancelled.");
+                        resolve(); // Resolve to prevent hanging
+                    }
+                });
+            });
+        });
     }
 }
