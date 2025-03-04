@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import * as hf from './helper-func';
 
 // Annotation Prompt for generating docstring suggestions for tests in the currently open file
@@ -31,47 +33,28 @@ Guidelines:
 - Adherence: Ensure all test cases have clear, concise, and consistent documentation that follows Python's docstring conventions.
 `;
 
-// Chat Functionality for Annotation
 export async function handleGenerateDocCommand(textEditor: vscode.TextEditor) {
     try {
-        const funcLines = await groupFunctions(textEditor)
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(funcLines), 0);
-    } catch (error) {
-        console.error("Error in handleGenerateDocCommand:", error);
-    }
-}
+        const currentFilePath = textEditor.document.fileName;
 
-
-//CHECK +1 LOGIC IS OK 
-// Extract the line numbers of each test case in the currently open file
-function groupFunctions(textEditor: vscode.TextEditor) {
-    const document = textEditor.document;
-    const text = document.getText();
-    const functionRegex = /def\s+test_\w+\s*\(.*\)\s*:/g;
-    const assertRegex = /assert\s+/g;
-    const functions: { startLine: number, endLine: number }[] = [];
-
-    let match;
-    while ((match = functionRegex.exec(text)) !== null) {
-        const startLine = document.positionAt(match.index).line +1;
-        let endLine = document.lineCount - 1;
-
-        // Find the next assert statement after the start line
-        assertRegex.lastIndex = match.index;
-        let assertMatch;
-        while ((assertMatch = assertRegex.exec(text)) !== null) {
-            const assertLine = document.positionAt(assertMatch.index).line;
-            if (assertLine > startLine) {
-                endLine = assertLine+1;
-                break;
-            }
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            throw new Error('No workspace folder found');
         }
+        const workspacePath = workspaceFolders[0].uri.fsPath;
+        const normalizedFilePath = path.relative(workspacePath, currentFilePath);
 
-        functions.push({ startLine, endLine });
+        const testFileContent = textEditor.document.getText();
+
+        const payload = {
+            file: normalizedFilePath,
+            content: testFileContent
+        };
+
+        console.log("Sending test file content with workspace context:", payload);
+
+        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 0);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Error generating docstrings: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    return functions;
 }
-
-
-
