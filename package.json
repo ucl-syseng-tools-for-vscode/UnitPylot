@@ -211,17 +211,34 @@
         "Py-TA.snapshotInterval": {
           "type": "number",
           "default": 10,
+          "minimum": 1,
           "description": "Snapshot interval in minutes. (Extension restart required)"
         },
         "Py-TA.runTestsOnSave": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Run tests on any file save."
         },
         "Py-TA.runTestsInBackground": {
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
+        },
+        "Py-TA.saveSnapshotOnTestRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save snapshots when tests are run."
+        },
+        "Py-TA.saveSnapshotPeriodically": {
+          "type": "boolean",
+          "default": false,
+          "description": "Periodically save snapshots in the background."
+        },
+        "Py-TA.runTestsInterval": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Background test run interval in minutes. (Extension restart required)"
         }
       }
     }
