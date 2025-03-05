@@ -112,7 +112,6 @@
         "title": "PyTA: Optimise Slowest Tests"
       },
       {
-
         "command": "dependencies.getDependencies",
         "title": "PyTA: Get Dependencies"
       },
@@ -170,8 +169,55 @@
           "command": "code-tutor.annotate",
           "group": "navigation"
         }
+      ],
+      "editor/context": [
+        {
+          "group": "llm-commands",
+          "submenu": "pyta.commands"
+        }
+      ],
+      "pyta.commands": [
+        {
+        "command": "optimise-memory.optimiseMemory",
+        "group": "llm-commands"
+        }, 
+        {
+          "command": "fix-failing-tests.fixFailingTests",
+          "group": "llm-commands"
+        },
+        {
+          "command": "fix-coverage.fixCoverage",
+          "group": "llm-commands"
+        },
+        {
+          "command": "optimise-slowest.optimiseSlowest",
+          "group": "llm-commands"
+        }, 
+        {
+          "command": "generate-pydoc.generatePydoc",
+          "group": "llm-commands"
+        }, 
+        {
+          "command": "test-history.showPassFailGraph",
+          "group": "llm-commands"
+        },
+        {
+          "command": "test-history.showCoverageGraph",
+          "group": "llm-commands"
+        }, 
+        {
+          "command": "optimise-memory.optimiseMemory",
+          "group": "llm-commands"
+        }
       ]
-    }
+    },
+    "submenus": [
+      {
+        "id": "pyta.commands",
+        "label": "PyTA Commands",
+        "group": "llm-commands"
+      }
+    ] 
   },
   "scripts": {
     "vscode:prepublish": "npm run compile && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
