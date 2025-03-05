@@ -292,20 +292,16 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // Call functions to update dashboard
-        testRunner.setNotifications(true);
         const { passed, failed } = await testRunner.getResultsSummary();
         vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
 
-        testRunner.setNotifications(false);
-        const coverage = await testRunner.getCoverage();
+        const coverage = await testRunner.getCoverage(true);
         if (coverage) {
             jsonStore.set('coverage', coverage);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         }
-        const slowest = await testRunner.getSlowestTests(5);
+        const slowest = await testRunner.getSlowestTests(5, true);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
-
-        testRunner.setNotifications(true);
     });
 
     context.subscriptions.push(
@@ -342,26 +338,38 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    startIntervalTask(context);
+
 }
 
 function startIntervalTask(context: vscode.ExtensionContext) {
-    const INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
+    const SNAPSHOT_INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
+    const TEST_INTERVAL = Settings.RUN_TESTS_INTERVAL * 60 * 1000;
 
-    function myFunction() {
-        if (!Settings.RUN_TESTS_IN_BACKGROUND) {
-            return;
+    function saveSnapshot() {
+        if (Settings.SAVE_SNAPSHOT_PERIODICALLY) {
+            console.log('Saving snapshot...');
+            HistoryManager.saveSnapshot();  // No tests are run here
         }
-        console.log('Running scheduled task...');
-        console.log('Saving snapshot...');
-        HistoryManager.saveSnapshot();
+    }
+
+    function runTests() {
+        if (Settings.RUN_TESTS_IN_BACKGROUND) {
+            console.log('Running background tests...');
+            TestRunner.getInstance(context.workspaceState).getAllResults(); // Invokes the test runner to run tests
+        }
     }
 
     // Run immediately and schedule repeats
-    myFunction();
-    const interval = setInterval(myFunction, INTERVAL);
+    saveSnapshot();
+    const snapshotInterval = setInterval(saveSnapshot, SNAPSHOT_INTERVAL);
+    const testInterval = setInterval(runTests, TEST_INTERVAL);
 
-    // Stop the interval when the extension is deactivated
-    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
+    // Stop the intervals when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(snapshotInterval)));
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(testInterval)));
+
+    // TODO: Move this junk elsewhere
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {

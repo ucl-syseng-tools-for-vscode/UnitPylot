@@ -8,6 +8,7 @@ import { parsePytestOutput } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
 import { Settings } from '../settings/settings';
+import { HistoryManager } from '../test-history/history-manager';
 
 const execPromise = promisify(exec);
 
@@ -29,7 +30,6 @@ export class TestRunner {
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
     private testDurationsToRun: number = 5;
-    private notifications: boolean = true;
     private testProcess: any = null; // Store the process reference
 
 
@@ -74,10 +74,6 @@ export class TestRunner {
         }
     }
 
-    public setNotifications(value: boolean): void {
-        this.notifications = value;
-    }
-
     public resetState(): void {
         this.results = undefined;
         this.coverage = undefined;
@@ -86,8 +82,10 @@ export class TestRunner {
     }
 
     // Get n slowest tests (default n = 5)
-    public async getSlowestTests(n: number = 5): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getSlowestTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         const slowestTests: TestFunctionResult[] = [];
         if (this.results) {
@@ -102,15 +100,19 @@ export class TestRunner {
     }
 
     // Get coverage data
-    public async getCoverage(): Promise<Coverage | undefined> {
-        await this.runNeccecaryTests();
+    public async getCoverage(doNotRunTests?: boolean): Promise<Coverage | undefined> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         return this.coverage;
     }
 
 
     // Get memory of tests biggestAllocations
-    public async getMemory(): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getMemory(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         const memoryTests: TestFunctionResult[] = [];
         console.log("RESULTS", this.results);
@@ -127,14 +129,18 @@ export class TestRunner {
 
 
     // Get all test results
-    public async getAllResults(): Promise<TestResult | undefined> {
-        await this.runNeccecaryTests();
+    public async getAllResults(doNotRunTests?: boolean): Promise<TestResult | undefined> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         return this.results;
     }
 
     // Get overall pass / fail results
-    public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
-        await this.runNeccecaryTests();
+    public async getResultsSummary(doNotRunTests?: boolean): Promise<{ passed: number, failed: number }> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         console.log("PASRESULTS", this.results);
 
         let passed = 0;
@@ -154,8 +160,10 @@ export class TestRunner {
     }
 
     // Get pass / fail results for a specific file
-    public async getResultsForFile(filePath: string): Promise<TestFileResult> {
-        await this.runNeccecaryTests();
+    public async getResultsForFile(filePath: string, doNotRunTests?: boolean): Promise<TestFileResult> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         if (this.results) {
             return this.results[filePath];
@@ -164,8 +172,10 @@ export class TestRunner {
     }
 
     // Get failing tests with their line numbers
-    public async getAllFailingTests(): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getAllFailingTests(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         const failingTests: TestFunctionResult[] = [];
         if (this.results) {
@@ -181,8 +191,10 @@ export class TestRunner {
     }
 
     // Get n highest memory usage tests
-    public async getHighestMemoryTests(n: number = 5): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getHighestMemoryTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         const tests: TestFunctionResult[] = [];
         if (this.results) {
             for (const filePath in this.results) {
@@ -279,7 +291,7 @@ export class TestRunner {
     // Run necessary tests
     private async runNeccecaryTests(): Promise<void> {
         if (!Settings.RUN_NECESSARY_TESTS_ONLY || !this.results || !this.coverage || !this.hash) {
-            this.notifications ? vscode.window.showInformationMessage('Running all tests...') : null;
+            vscode.window.showInformationMessage('Running all tests...');
             await this.runTests();
             return;
         }
@@ -298,7 +310,7 @@ export class TestRunner {
 
         // Ouput the tests that need to be run as notifications
         if (testsToRunUnique.length === 0) {
-            this.notifications ? vscode.window.showInformationMessage('No test diffs found...') : null;
+            vscode.window.showInformationMessage('No test diffs found...');
         } else {
             const testsInFiles: { [key: string]: string[] } = {};
 
@@ -313,7 +325,7 @@ export class TestRunner {
             }
 
             for (const [filePath, tests] of Object.entries(testsInFiles)) {
-                this.notifications ? vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`) : null;
+                vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
             }
         }
 
@@ -339,6 +351,7 @@ export class TestRunner {
     // Parse test results
     private updateTestResults(output: string, rewrite: boolean): void {
         const newResults: TestResult = parsePytestOutput(output);
+        console.log("PARSED RESULTS:", newResults);
         // If all tests are to be rewritten, overwrite the results
         if (rewrite) {
             this.results = newResults;
@@ -429,6 +442,11 @@ export class TestRunner {
                         if (!testsToRun) {
                             this.hash = await getWorkspaceHash();
                             this.saveState();
+                        }
+
+                        // Finally save snapshot if enabled
+                        if (Settings.SAVE_SNAPSHOT_ON_TEST_RUN) {
+                            HistoryManager.saveSnapshot();
                         }
 
                     } else {
