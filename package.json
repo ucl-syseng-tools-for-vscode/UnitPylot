@@ -144,6 +144,7 @@
         "title": "Open Settings",
         "icon": "$(gear)"
       },
+      {
         "command": "test-history.showPassFailGraph",
         "title": "Show test pass-fail history graph"
       },
