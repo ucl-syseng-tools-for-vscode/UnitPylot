@@ -27,6 +27,38 @@ export function readJsonFile(filePath: string): any {
     }
 }
 
+export function convertToBits(input: string): number {
+    // Define unit multipliers in bits
+    const unitMultipliers: { [key: string]: number } = {
+        "kb": 1000 * 8,
+        "kB": 1000 * 8,
+        "KiB": 1024 * 8,
+        "mb": 1000 * 1000 * 8,
+        "MB": 1000 * 1000 * 8,
+        "MiB": 1024 * 1024 * 8,
+        "gb": 1000 * 1000 * 1000 * 8,
+        "GB": 1000 * 1000 * 1000 * 8,
+        "GiB": 1024 * 1024 * 1024 * 8
+    };
+
+    // Regular expression to extract number and unit
+    const regex = /^(\d+(\.\d+)?)\s*([kKmMgG][iI]?[bB])$/;
+    const match = input.match(regex);
+
+    if (!match) {
+        throw new Error("Invalid input format. Expected format: '<number> <unit>' e.g., '10 MB'");
+    }
+
+    const value = parseFloat(match[1]); // Numeric value
+    const unit = match[3]; // Unit part
+
+    if (!(unit in unitMultipliers)) {
+        throw new Error("Unsupported unit. Use kB, KiB, kb, MB, MiB, mb, GB, GiB, or gb.");
+    }
+
+    return value * unitMultipliers[unit];
+}
+
 function mapFileCoverage(fileCoverage: [FileCoverageRaw], workspacePath: string): FileCoverage[] {
     let files: FileCoverage[] = [];
     let n = 0;

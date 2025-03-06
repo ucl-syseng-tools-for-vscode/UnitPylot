@@ -122,7 +122,7 @@ function parseMemoryReport(results: string[]): TestResult {
         if (!(line.startsWith('Allocation') || line.startsWith('---'))) {  // Include last section as well
             // Do nothing
         } else {
-            if (currentSection.length > 0) {
+            if (currentSection.length > 4 && currentSection[0].startsWith('Allocation')) {
                 // Parse the current section
                 const fullTestName = currentSection[0].split(' ')[3];
                 const filePath = fullTestName.split('::')[0];

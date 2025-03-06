@@ -1,6 +1,6 @@
 {
-  "name": "dashboard",
-  "displayName": "dashboard",
+  "name": "pytastic",
+  "displayName": "PyTastic",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -18,7 +18,7 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "Testing Extension",
+          "title": "PyTastic",
           "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
@@ -90,14 +90,14 @@
       {
         "command": "vscode-run-tests.getMemory",
         "title": "Get Memory"
-      }, 
+      },
       {
         "command": "vscode-run-tests.updateMemory",
         "title": "Update Memory Results"
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Toggle Tutor Annotations"
+        "title": "Test Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
@@ -112,7 +112,6 @@
         "title": "Optimise Slowest Tests"
       },
       {
-
         "command": "dependencies.getDependencies",
         "title": "Get Dependencies"
       },
@@ -131,15 +130,36 @@
       {
         "command": "extension.rejectSuggestion",
         "title": "Reject Annotation"
-      },       
+      },
       {
         "command": "extension.addSuggestiontoSameFile",
         "title": "Add Annotation to Same File"
-      }, 
+      },
       {
         "command": "extension.addSuggestiontoMainFile",
         "title": "Add Annotation to corresponding Main File"
-      }, 
+      },
+      {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
+        "command": "test-history.showPassFailGraph",
+        "title": "Show test pass-fail history graph"
+      },
+      {
+        "command": "test-history.showCoverageGraph",
+        "title": "Show coverage history graph"
+      },
+      {
+        "command": "test-history.showGraph",
+        "title": "Show Graph"
+      },
+      {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
       {
         "command": "optimise-memory.optimiseMemory",
         "title": "Optimise Memory Usage of Tests"
@@ -147,22 +167,99 @@
       {
         "command": "failingtests.refreshView",
         "title": "Refresh Failing Tests"
+      },
+      {
+        "command": "extension.runTestsInFile",
+        "title": "Run Tests in File"
+      },
+      {
+        "command": "extension.runSpecificTest",
+        "title": "Run Specific Test"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "dashboard.menu.view",
-          "group": "navigation",
-          "when": "view == dashboard.openview"
+          "command": "extension.openSettings",
+          "when": "view == dashboard.openview",
+          "group": "navigation"
         }
       ],
       "editor/title": [
         {
           "command": "code-tutor.annotate",
           "group": "navigation"
+        },
+        {
+          "command": "extension.runTestsInFile",
+          "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "PyTastic",
+      "properties": {
+        "pytastic.runNecessaryTestsOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run only necessary tests instead of all tests."
+        },
+        "pytastic.copilotEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable GitHub Copilot integration."
+        },
+        "pytastic.codeCoverageHighlighting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code coverage highlighting."
+        },
+        "pytastic.numberOfSlowestTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of slowest tests to display."
+        },
+        "pytastic.numberOfMemoryProfilingTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of tests to use for memory profiling. (0 for all tests)"
+        },
+        "pytastic.snapshotInterval": {
+          "type": "number",
+          "default": 10,
+          "description": "Snapshot interval in minutes. (Extension restart required)"
+        },
+        "pytastic.runTestsOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tests on any file save."
+        },
+        "pytastic.runTestsInBackground": {
+          "type": "boolean",
+          "default": true,
+          "description": "Periodically run tests in the background."
+        },
+        "pytastic.customLLM Endpoint": {
+          "type": "string",
+          "default": "http://localhost:8000/v1/chat/completions",
+          "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
+        },
+        "pytastic.customLLM Model": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM model to use if GitHub Copilot is not enabled."
+        },
+        "pytastic.customLLM API Key": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
+        },
+        "pytastic.customLLM MaxTokens": {
+          "type": "number",
+          "default": 500,
+          "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."
+        }
+      }
     }
   },
   "scripts": {
