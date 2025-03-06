@@ -18,10 +18,12 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
+import { FailingTest } from './dashboard-metrics/failing-tree-view';
+import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
-import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
 
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
@@ -407,6 +409,53 @@ function startIntervalTask(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    // Register the run tests in file command
+    vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("No workspace folder found.");
+            return;
+        }
+
+        const relativePath = path.relative(workspaceFolder, file.fsPath);
+        console.log(`Running tests in file: ${file}`);
+        vscode.window.showInformationMessage(`Running tests in file: ${relativePath}`);
+        testRunner.runTests(
+            [{
+                filePath: relativePath,
+                passed: false,
+                time: NaN,
+            }]
+        );
+    });
+
+    // Register code lens provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider({ scheme: 'file', language: 'python' }, new PytestCodeLensProvider())
+    );
+
+    // Register the run specific test command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.runSpecificTest', (testName: string, file: vscode.Uri) => {
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!workspaceFolder) {
+                vscode.window.showErrorMessage("No workspace folder found.");
+                return;
+            }
+
+            const relativePath = path.relative(workspaceFolder, file.fsPath);
+            vscode.window.showInformationMessage(`Running: ${testName}`);
+            testRunner.runTests(
+                [{
+                    filePath: relativePath,
+                    passed: false,
+                    time: NaN,
+                    testName: testName
+                }]
+            )
+        })
+    );
 }
 
 function startIntervalTask(context: vscode.ExtensionContext) {
