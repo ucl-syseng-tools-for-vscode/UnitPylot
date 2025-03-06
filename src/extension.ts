@@ -25,8 +25,6 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 
-import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
-import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
