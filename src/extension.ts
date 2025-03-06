@@ -154,7 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (passFailPanel) {
             passFailPanel.webview.html = getWebviewContent(graphData);
-            passFailPanel.reveal(vscode.ViewColumn.One);
+            passFailPanel.reveal(vscode.ViewColumn.One, true);
         } else {
             // Create a new panel if one doesn't exist
             passFailPanel = vscode.window.createWebviewPanel(
@@ -165,6 +165,10 @@ export function activate(context: vscode.ExtensionContext) {
             );
 
             passFailPanel.webview.html = getWebviewContent(graphData);
+
+            passFailPanel.onDidDispose(() => {
+                passFailPanel = undefined;
+            });
         }
     });
 
@@ -185,7 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             if (coveragePanel) {
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
-                coveragePanel.reveal(vscode.ViewColumn.One);
+                coveragePanel.reveal(vscode.ViewColumn.One, true);
             } else {
                 coveragePanel = vscode.window.createWebviewPanel(
                     'coverageGraph',
@@ -195,6 +199,10 @@ export function activate(context: vscode.ExtensionContext) {
                 );
 
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+
+                coveragePanel.onDidDispose(() => {
+                    coveragePanel = undefined;
+                });
             }
         });
 
@@ -309,6 +317,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
         const slowest = await testRunner.getSlowestTests(5);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+
+        HistoryManager.saveSnapshot();
+        vscode.commands.executeCommand('test-history.showPassFailGraph');
+        vscode.commands.executeCommand('test-history.showCoverageGraph');
 
         testRunner.setNotifications(true);
     });
