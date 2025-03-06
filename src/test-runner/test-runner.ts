@@ -114,7 +114,6 @@ export class TestRunner {
         return memoryTests
     }
 
-
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();

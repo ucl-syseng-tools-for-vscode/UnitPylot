@@ -150,7 +150,16 @@
       {
         "command": "test-history.showCoverageGraph",
         "title": "Show coverage history graph"
-      }, 
+      },
+      {
+        "command": "test-history.showGraph",
+        "title": "Show Graph"
+      },
+      {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
       {
         "command": "optimise-memory.optimiseMemory",
         "title": "Optimise Memory Usage of Tests"
@@ -229,6 +238,26 @@
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
+        },
+        "pytastic.customLLM Endpoint": {
+          "type": "string",
+          "default": "http://localhost:8000/v1/chat/completions",
+          "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
+        },
+        "pytastic.customLLM Model": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM model to use if GitHub Copilot is not enabled."
+        },
+        "pytastic.customLLM API Key": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
+        },
+        "pytastic.customLLM MaxTokens": {
+          "type": "number",
+          "default": 500,
+          "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."
         }
       }
     }

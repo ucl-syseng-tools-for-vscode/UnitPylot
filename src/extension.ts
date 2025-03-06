@@ -25,8 +25,11 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
+import { LlmMessage } from './llm/llm-message';
+import { Llm } from './llm/llm';
 
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
@@ -60,13 +63,13 @@ export function activate(context: vscode.ExtensionContext) {
         const pythonFiles = await getPythonFiles();
         const contextContent = pythonFiles.join('\n\n');
 
-        const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
-        const messages = [
-            vscode.LanguageModelChatMessage.User(
-                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
-            )
-        ];
-        const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
+        const messages: LlmMessage[] = [
+            {
+                role: 'user',
+                content: `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
+            }
+        ]
+        const chatRequest = await Llm.sendRequest(messages);
 
         for await (const token of chatRequest.text) {
             response.markdown(token);
@@ -148,7 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
-        
+
         if (passFailPanel) {
             passFailPanel.webview.html = getWebviewContent(graphData);
             passFailPanel.reveal(vscode.ViewColumn.One);
@@ -164,22 +167,22 @@ export function activate(context: vscode.ExtensionContext) {
             passFailPanel.webview.html = getWebviewContent(graphData);
         }
     });
-    
-    context.subscriptions.push(showGraphCommand);    
+
+    context.subscriptions.push(showGraphCommand);
 
     let coveragePanel: vscode.WebviewPanel | undefined;
     const showCoverageGraphCommand = vscode.commands.registerCommand(
         'test-history.showCoverageGraph', async () => {
-            await HistoryManager.saveSnapshot(); 
+            await HistoryManager.saveSnapshot();
             const snapshots = HistoryManager.getSnapshots();
-    
+
             const graphData = snapshots.map(snapshot => ({
                 date: snapshot.time,
                 covered: snapshot.coverage ? snapshot.coverage.totals.covered : 0,
                 missed: snapshot.coverage ? snapshot.coverage.totals.missed : 0,
                 branchesCovered: snapshot.coverage?.totals.branches_covered ?? 0
-            }));            
-    
+            }));
+
             if (coveragePanel) {
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
                 coveragePanel.reveal(vscode.ViewColumn.One);
@@ -190,12 +193,12 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.ViewColumn.One,
                     { enableScripts: true }
                 );
-    
+
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
             }
-        });    
+        });
 
-    context.subscriptions.push(showCoverageGraphCommand); 
+    context.subscriptions.push(showCoverageGraphCommand);
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
@@ -289,7 +292,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (!Settings.RUN_TESTS_ON_SAVE) {
+        if (!Settings.RUN_TESTS_ON_SAVE || document.fileName.endsWith('settings.json')) {
             return;
         }
 
@@ -456,23 +459,6 @@ function startIntervalTask(context: vscode.ExtensionContext) {
             )
         })
     );
-}
-
-function startIntervalTask(context: vscode.ExtensionContext) {
-    const INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
-
-    function myFunction() {
-        console.log('Running scheduled task...');
-        console.log('Saving snapshot...');
-        HistoryManager.saveSnapshot();
-    }
-
-    // Run immediately and schedule repeats
-    myFunction();
-    const interval = setInterval(myFunction, INTERVAL);
-
-    // Stop the interval when the extension is deactivated
-    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
 }
 
 // Handles file open event
