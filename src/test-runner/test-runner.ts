@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
@@ -114,6 +114,7 @@ export class TestRunner {
         return memoryTests
     }
 
+
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();
@@ -166,6 +167,25 @@ export class TestRunner {
             }
         }
         return failingTests;
+    }
+
+    // Get n highest memory usage tests
+    public async getHighestMemoryTests(n: number = 5): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+        const tests: TestFunctionResult[] = [];
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    if (!this.results[filePath][test].totalMemory) {
+                        continue;
+                    }
+                    tests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        tests.sort((a, b) => (convertToBits(b.totalMemory || '0kB')) - (convertToBits(a.totalMemory || '0kB')));
+
+        return tests.slice(0, n);
     }
 
     // Remove deleted test results for deleted tests

@@ -77,8 +77,8 @@ export class HistoryManager {
         snapshots.push(snapshot);
 
         // Create a new directory if it doesn't exist
-        if (!fs.existsSync(HISTORY_DIR)) {
-            fs.mkdirSync(HISTORY_DIR);
+        if (!fs.existsSync(TEST_HISTORY_FILE)) {
+            fs.mkdirSync(TEST_HISTORY_FILE);
         }
 
         try {

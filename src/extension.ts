@@ -6,7 +6,8 @@ import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
 import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
-import { getWebviewContent } from './test-history/history-graph';
+import { getWebviewContent } from './test-history/test-history-graph';
+import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
 
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
@@ -20,8 +21,8 @@ import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
+import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
 
-import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
 
@@ -140,24 +141,59 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
-    const showGraphCommand = vscode.commands.registerCommand('test-history.showGraph', async () => {
+    let passFailPanel: vscode.WebviewPanel | undefined;
+    const showGraphCommand = vscode.commands.registerCommand('test-history.showPassFailGraph', async () => {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
+        
+        if (passFailPanel) {
+            passFailPanel.webview.html = getWebviewContent(graphData);
+            passFailPanel.reveal(vscode.ViewColumn.One);
+        } else {
+            // Create a new panel if one doesn't exist
+            passFailPanel = vscode.window.createWebviewPanel(
+                'testHistoryGraph',
+                'Test Pass/Fail History',
+                vscode.ViewColumn.One,
+                { enableScripts: true }
+            );
 
-        const panel = vscode.window.createWebviewPanel(
-            'testHistoryGraph',
-            'Test Pass/Fail History',
-            vscode.ViewColumn.One,
-            { enableScripts: true }
-        );
-
-        console.log(snapshots);
-        console.log(graphData);
-        panel.webview.html = getWebviewContent(graphData);
+            passFailPanel.webview.html = getWebviewContent(graphData);
+        }
     });
+    
+    context.subscriptions.push(showGraphCommand);    
 
-    context.subscriptions.push(showGraphCommand);
+    let coveragePanel: vscode.WebviewPanel | undefined;
+    const showCoverageGraphCommand = vscode.commands.registerCommand(
+        'test-history.showCoverageGraph', async () => {
+            await HistoryManager.saveSnapshot(); 
+            const snapshots = HistoryManager.getSnapshots();
+    
+            const graphData = snapshots.map(snapshot => ({
+                date: snapshot.time,
+                covered: snapshot.coverage ? snapshot.coverage.totals.covered : 0,
+                missed: snapshot.coverage ? snapshot.coverage.totals.missed : 0,
+                branchesCovered: snapshot.coverage?.totals.branches_covered ?? 0
+            }));            
+    
+            if (coveragePanel) {
+                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+                coveragePanel.reveal(vscode.ViewColumn.One);
+            } else {
+                coveragePanel = vscode.window.createWebviewPanel(
+                    'coverageGraph',
+                    'Coverage History',
+                    vscode.ViewColumn.One,
+                    { enableScripts: true }
+                );
+    
+                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+            }
+        });    
+
+    context.subscriptions.push(showCoverageGraphCommand); 
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
@@ -371,6 +407,23 @@ function startIntervalTask(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+}
+
+function startIntervalTask(context: vscode.ExtensionContext) {
+    const INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+    function myFunction() {
+        console.log('Running scheduled task...');
+        console.log('Saving snapshot...');
+        HistoryManager.saveSnapshot();
+    }
+
+    // Run immediately and schedule repeats
+    myFunction();
+    const interval = setInterval(myFunction, INTERVAL);
+
+    // Stop the interval when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
 }
 
 // Handles file open event
