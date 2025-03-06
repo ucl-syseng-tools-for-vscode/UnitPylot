@@ -140,6 +140,10 @@
         "title": "Add Annotation to corresponding Main File"
       },
       {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
         "command": "test-history.showPassFailGraph",
         "title": "Show test pass-fail history graph"
       },
@@ -163,6 +167,14 @@
       {
         "command": "failingtests.refreshView",
         "title": "Refresh Failing Tests"
+      },
+      {
+        "command": "extension.runTestsInFile",
+        "title": "Run Tests in File"
+      },
+      {
+        "command": "extension.runSpecificTest",
+        "title": "Run Specific Test"
       }
     ],
     "menus": {
@@ -176,6 +188,10 @@
       "editor/title": [
         {
           "command": "code-tutor.annotate",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.runTestsInFile",
           "group": "navigation"
         }
       ]
