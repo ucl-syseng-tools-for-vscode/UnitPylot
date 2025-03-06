@@ -15,7 +15,7 @@ For the provided test suite:
 2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
 
 Response Format:
-- The response must be in the format of a **JSON object**, starting with '{'.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Do no include any markdown syntax 
 - Must include a **test_name** field to specify the name of the slowest test.
 - Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with .

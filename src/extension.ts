@@ -18,13 +18,16 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
+import { FailingTest } from './dashboard-metrics/failing-tree-view';
+import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 
-import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
-import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import { Settings } from './settings/settings';
+import { LlmMessage } from './llm/llm-message';
+import { Llm } from './llm/llm';
 
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
@@ -58,13 +61,13 @@ export function activate(context: vscode.ExtensionContext) {
         const pythonFiles = await getPythonFiles();
         const contextContent = pythonFiles.join('\n\n');
 
-        const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
-        const messages = [
-            vscode.LanguageModelChatMessage.User(
-                `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
-            )
-        ];
-        const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
+        const messages: LlmMessage[] = [
+            {
+                role: 'user',
+                content: `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
+            }
+        ]
+        const chatRequest = await Llm.sendRequest(messages);
 
         for await (const token of chatRequest.text) {
             response.markdown(token);
@@ -149,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (passFailPanel) {
             passFailPanel.webview.html = getWebviewContent(graphData);
-            passFailPanel.reveal(vscode.ViewColumn.One);
+            passFailPanel.reveal(vscode.ViewColumn.One, true);
         } else {
             // Create a new panel if one doesn't exist
             passFailPanel = vscode.window.createWebviewPanel(
@@ -160,6 +163,10 @@ export function activate(context: vscode.ExtensionContext) {
             );
 
             passFailPanel.webview.html = getWebviewContent(graphData);
+
+            passFailPanel.onDidDispose(() => {
+                passFailPanel = undefined;
+            });
         }
     });
 
@@ -180,7 +187,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             if (coveragePanel) {
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
-                coveragePanel.reveal(vscode.ViewColumn.One);
+                coveragePanel.reveal(vscode.ViewColumn.One, true);
             } else {
                 coveragePanel = vscode.window.createWebviewPanel(
                     'coverageGraph',
@@ -190,6 +197,10 @@ export function activate(context: vscode.ExtensionContext) {
                 );
 
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+
+                coveragePanel.onDidDispose(() => {
+                    coveragePanel = undefined;
+                });
             }
         });
 
@@ -287,7 +298,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (!Settings.RUN_TESTS_ON_SAVE) {
+        if (!Settings.RUN_TESTS_ON_SAVE || document.fileName.endsWith('settings.json')) {
             return;
         }
 
@@ -302,6 +313,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
         const slowest = await testRunner.getSlowestTests(5, true);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+
+        HistoryManager.saveSnapshot();
+        vscode.commands.executeCommand('test-history.showPassFailGraph');
+        vscode.commands.executeCommand('test-history.showCoverageGraph');
     });
 
     context.subscriptions.push(
@@ -415,6 +430,53 @@ function startIntervalTask(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    // Register the run tests in file command
+    vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("No workspace folder found.");
+            return;
+        }
+
+        const relativePath = path.relative(workspaceFolder, file.fsPath);
+        console.log(`Running tests in file: ${file}`);
+        vscode.window.showInformationMessage(`Running tests in file: ${relativePath}`);
+        testRunner.runTests(
+            [{
+                filePath: relativePath,
+                passed: false,
+                time: NaN,
+            }]
+        );
+    });
+
+    // Register code lens provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider({ scheme: 'file', language: 'python' }, new PytestCodeLensProvider())
+    );
+
+    // Register the run specific test command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.runSpecificTest', (testName: string, file: vscode.Uri) => {
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!workspaceFolder) {
+                vscode.window.showErrorMessage("No workspace folder found.");
+                return;
+            }
+
+            const relativePath = path.relative(workspaceFolder, file.fsPath);
+            vscode.window.showInformationMessage(`Running: ${testName}`);
+            testRunner.runTests(
+                [{
+                    filePath: relativePath,
+                    passed: false,
+                    time: NaN,
+                    testName: testName
+                }]
+            )
+        })
+    );
 }
 
 // Handles file open event

@@ -69,4 +69,27 @@ export class Settings {
         const config = Settings.getConfig();
         return config.get<number>('runTestsInterval') || 10;
     }
+
+    public static get CUSTOM_LLM_ENDPOINT(): string {
+        const config = Settings.getConfig();
+        const setting = config.get<string>('customLLM Endpoint') || '';
+        return setting !== undefined ? setting : '';
+    }
+
+    public static get CUSTOM_LLM_MODEL(): string {
+        const config = Settings.getConfig();
+        const setting = config.get<string>('customLLM Model') || '';
+        return setting !== undefined ? setting : '';
+    }
+
+    public static get CUSTOM_LLM_API_KEY(): string {
+        const config = Settings.getConfig();
+        const setting = config.get<string>('customLLM API Key') || '';
+        return setting !== undefined ? setting : '';
+    }
+
+    public static get CUSTOM_LLM_MAX_TOKENS(): number {
+        const config = Settings.getConfig();
+        return config.get<number>('customLLM MaxTokens') || 500;
+    }
 }
