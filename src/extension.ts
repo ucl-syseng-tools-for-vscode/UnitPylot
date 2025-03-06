@@ -18,10 +18,13 @@ import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
+
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
+
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
+import { Settings } from './settings/settings';
 
 export const jsonStore: Map<string, any> = new Map();
 export var testRunner: TestRunner;
@@ -284,6 +287,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
+        if (!Settings.RUN_TESTS_ON_SAVE) {
+            return;
+        }
+
         // Call functions to update dashboard
         testRunner.setNotifications(true);
         const { passed, failed } = await testRunner.getResultsSummary();
@@ -328,6 +335,33 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the refresh command
     vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
 
+    // Register the settings page command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.openSettings', () => {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'PyTastic');
+        })
+    );
+
+}
+
+function startIntervalTask(context: vscode.ExtensionContext) {
+    const INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
+
+    function myFunction() {
+        if (!Settings.RUN_TESTS_IN_BACKGROUND) {
+            return;
+        }
+        console.log('Running scheduled task...');
+        console.log('Saving snapshot...');
+        HistoryManager.saveSnapshot();
+    }
+
+    // Run immediately and schedule repeats
+    myFunction();
+    const interval = setInterval(myFunction, INTERVAL);
+
+    // Stop the interval when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
@@ -395,7 +429,7 @@ function startIntervalTask(context: vscode.ExtensionContext) {
 // Handles file open event
 export async function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
-    if (fileName.endsWith('.py')) {
+    if (Settings.CODE_COVERAGE_HIGHLIGHTING && fileName.endsWith('.py')) {
         highlightCodeCoverage(fileName, jsonStore.get('coverage'));
     }
 }
