@@ -1,6 +1,6 @@
 {
-  "name": "dashboard",
-  "displayName": "dashboard",
+  "name": "pytastic",
+  "displayName": "PyTastic",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -18,7 +18,7 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "Testing Extension",
+          "title": "PyTastic",
           "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
@@ -97,7 +97,7 @@
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Toggle Tutor Annotations"
+        "title": "Test Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
@@ -140,6 +140,18 @@
         "title": "Add Annotation to corresponding Main File"
       },
       {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
+        "command": "test-history.showPassFailGraph",
+        "title": "Show test pass-fail history graph"
+      },
+      {
+        "command": "test-history.showCoverageGraph",
+        "title": "Show coverage history graph"
+      }, 
+      {
         "command": "optimise-memory.optimiseMemory",
         "title": "Optimise Memory Usage of Tests"
       },
@@ -159,9 +171,9 @@
     "menus": {
       "view/title": [
         {
-          "command": "dashboard.menu.view",
-          "group": "navigation",
-          "when": "view == dashboard.openview"
+          "command": "extension.openSettings",
+          "when": "view == dashboard.openview",
+          "group": "navigation"
         }
       ],
       "editor/title": [
@@ -174,6 +186,51 @@
           "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "PyTastic",
+      "properties": {
+        "pytastic.runNecessaryTestsOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run only necessary tests instead of all tests."
+        },
+        "pytastic.copilotEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable GitHub Copilot integration."
+        },
+        "pytastic.codeCoverageHighlighting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code coverage highlighting."
+        },
+        "pytastic.numberOfSlowestTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of slowest tests to display."
+        },
+        "pytastic.numberOfMemoryProfilingTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of tests to use for memory profiling. (0 for all tests)"
+        },
+        "pytastic.snapshotInterval": {
+          "type": "number",
+          "default": 10,
+          "description": "Snapshot interval in minutes. (Extension restart required)"
+        },
+        "pytastic.runTestsOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run tests on any file save."
+        },
+        "pytastic.runTestsInBackground": {
+          "type": "boolean",
+          "default": true,
+          "description": "Periodically run tests in the background."
+        }
+      }
     }
   },
   "scripts": {

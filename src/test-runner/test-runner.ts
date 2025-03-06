@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
 import { parsePytestOutput } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
+import { Settings } from '../settings/settings';
 
 const execPromise = promisify(exec);
 
@@ -27,7 +28,6 @@ export class TestRunner {
     private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
-    private testDurationsToRun: number = 5;
     private notifications: boolean = true;
 
     private constructor(private workspaceState: vscode.Memento) {
@@ -61,14 +61,6 @@ export class TestRunner {
             hash: this.hash
         };
         this.workspaceState.update(this.stateKey, state);
-    }
-
-    public setTestDurationsToRun(n: number): void {
-        if (Number.isInteger(n)) {
-            this.testDurationsToRun = n;
-        } else {
-            throw new Error('Test durations to run must be an integer');
-        }
     }
 
     public setNotifications(value: boolean): void {
@@ -122,11 +114,11 @@ export class TestRunner {
         return memoryTests
     }
 
+
     // Get all test results
     public async getAllResults(): Promise<TestResult | undefined> {
         await this.runNeccecaryTests();
         return this.results;
-
     }
 
     // Get overall pass / fail results
@@ -175,6 +167,25 @@ export class TestRunner {
             }
         }
         return failingTests;
+    }
+
+    // Get n highest memory usage tests
+    public async getHighestMemoryTests(n: number = 5): Promise<TestFunctionResult[]> {
+        await this.runNeccecaryTests();
+        const tests: TestFunctionResult[] = [];
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    if (!this.results[filePath][test].totalMemory) {
+                        continue;
+                    }
+                    tests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        tests.sort((a, b) => (convertToBits(b.totalMemory || '0kB')) - (convertToBits(a.totalMemory || '0kB')));
+
+        return tests.slice(0, n);
     }
 
     // Remove deleted test results for deleted tests
@@ -256,7 +267,7 @@ export class TestRunner {
 
     // Run necessary tests
     private async runNeccecaryTests(): Promise<void> {
-        if (!this.results || !this.coverage || !this.hash) {
+        if (!Settings.RUN_NECESSARY_TESTS_ONLY || !this.results || !this.coverage || !this.hash) {
             this.notifications ? vscode.window.showInformationMessage('Running all tests...') : null;
             await this.runTests();
             return;
@@ -357,7 +368,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --memray --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --memray --most-allocations=${Settings.NUMBER_OF_MEMORY_PROFILING_TESTS} --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME

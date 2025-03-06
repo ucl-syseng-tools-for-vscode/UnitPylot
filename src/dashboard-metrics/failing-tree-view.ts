@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { jsonStore, testRunner } from '../extension';
-import { TestResult } from '../test-runner/results';
+import { TestResult, TestFunctionResult } from '../test-runner/results';
+import { runSlowestTests } from '../dashboard-metrics/slowest';
+
+// make a combined tree view with memory and duration
 
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
     private _onDidChangeTreeData: vscode.EventEmitter<FailingTest | undefined | void> = new vscode.EventEmitter<FailingTest | undefined | void>();
@@ -51,17 +54,134 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
 
     private async getRootFiles(): Promise<FailingTest[]> {
         const testResults = await testRunner.getAllResults();
+        const slowestTests = await runSlowestTests();
+        const highestMemoryTests = await testRunner.getHighestMemoryTests();
         const failingTestsOutput: FailingTest[] = [];
+        const fileMap: { [key: string]: FailingTest[] } = {};
+        const fileIcons: { [key: string]: Set<string> } = {};
 
         for (const file in testResults) {
-            failingTestsOutput.push(
-                new FailingTest(
-                    file,
-                    file,
-                    'file',
-                    this.getCollapsibleState(file, testResults),
-                )
-            )
+            if (file === ''){
+                continue;
+            }
+            const collapsibleState = this.getCollapsibleState(file, testResults);
+            const fileNode = new FailingTest(
+                file,
+                file,
+                'file',
+                collapsibleState,
+            );
+            failingTestsOutput.push(fileNode);
+            fileMap[file] = [];
+            fileIcons[file] = new Set();
+        }
+
+        for (const slowTest of slowestTests) {
+            const [testName, duration] = slowTest.split(' - ');
+            const filePath = testName.split('::')[0]; // Extract the file path
+            const slowTestNode = new FailingTest(
+                testName.split('::').pop() || testName,
+                filePath,
+                'slow test',
+                vscode.TreeItemCollapsibleState.None,
+                undefined,
+                parseFloat(duration),
+                true
+            );
+            if (fileMap[filePath]) {
+                fileMap[filePath].push(slowTestNode);
+                fileIcons[filePath].add('slowtest.svg');
+            } else {
+                failingTestsOutput.push(slowTestNode);
+            }
+        }
+
+        for (const memoryTest of highestMemoryTests) {
+            const testName = memoryTest.testName;
+            const filePath = memoryTest.filePath;
+            const memoryUsage = memoryTest.totalMemory;
+            const memoryTestNode = new FailingTest(
+                (testName?.split('::').pop() || "Unknown Test"),
+                filePath || "Unknown File",
+                'memory test',
+                vscode.TreeItemCollapsibleState.None,
+                undefined,
+                undefined,
+                true,
+                memoryUsage ? parseFloat(memoryUsage) : undefined
+            );
+            if (filePath && fileMap[filePath]) {
+                fileMap[filePath].push(memoryTestNode);
+                fileIcons[filePath].add('memory.svg');
+            } else {
+                failingTestsOutput.push(memoryTestNode);
+            }
+        }
+
+        for (const file in fileMap) {
+            if (fileMap[file].length > 0) {
+                const fileNode = failingTestsOutput.find(node => node.file === file);
+                if (fileNode) {
+                    const updatedFileNode = new FailingTest(
+                        fileNode.label,
+                        fileNode.file,
+                        fileNode.type,
+                        vscode.TreeItemCollapsibleState.Collapsed,
+                        fileNode.failureLocation,
+                        fileNode.duration,
+                        fileNode.isFunction,
+                        fileNode.memoryUsage,
+                        fileNode.passes
+                    );
+                    const index = failingTestsOutput.indexOf(fileNode);
+                    if (index !== -1) {
+                        failingTestsOutput[index] = updatedFileNode;
+                    }
+                }
+            }
+        }
+
+        for (const file in testResults) {
+            if (file === '') {
+                continue;
+            }
+            const testResultsForFile = testResults[file];
+            for (const test in testResultsForFile) {
+                const testResult = testResultsForFile[test];
+                if (!testResult.passed) {
+                    fileIcons[file].add('fail.svg');
+                }
+            }
+        }
+
+        for (const fileNode of failingTestsOutput) {
+            const icons = fileIcons[fileNode.file];
+            if (icons.size > 1) {
+                fileNode.iconPath = {
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.svg')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.svg'))
+                };
+            } else if (icons.has('fail.svg')) {
+                fileNode.iconPath = {
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg'))
+                };
+            } else if (icons.has('slowtest.svg')) {
+                fileNode.iconPath = {
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.svg')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.svg'))
+                };
+            } else if (icons.has('memory.svg')) {
+                fileNode.iconPath = {
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.svg')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.svg'))
+                };
+            } else {
+                fileNode.iconPath = {
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.svg')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.svg'))
+                };
+            }
         }
 
         return failingTestsOutput;
@@ -75,13 +195,53 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             if (!result.passed) {
                 failingTestsOutput.push(
                     new FailingTest(
-                        result.testName || 'Unknown Test',
+                        result.testName ? result.testName.split('::').pop()! : 'Unknown Test',
                         file,
                         'test function',
                         vscode.TreeItemCollapsibleState.None,
                         result.failureLocation ? parseInt(result.failureLocation) : undefined,
                         result.time,
                         true
+                    )
+                );
+            }
+        }
+
+        const slowestTests = await runSlowestTests();
+        for (const slowTest of slowestTests) {
+            const [testName, duration] = slowTest.split(' - ');
+            const filePath = testName.split('::')[0]; // Extract the file path
+            if (filePath === file) {
+                failingTestsOutput.push(
+                    new FailingTest(
+                        testName.split('::').pop() || testName,
+                        filePath,
+                        'slow test',
+                        vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        parseFloat(duration),
+                        true
+                    )
+                );
+            }
+        }
+
+        const highestMemoryTests = await testRunner.getHighestMemoryTests();
+        for (const memoryTest of highestMemoryTests) {
+            const testName = memoryTest.testName;
+            const filePath = memoryTest.filePath;
+            const memoryUsage = memoryTest.totalMemory;
+            if (filePath === file) {
+                failingTestsOutput.push(
+                    new FailingTest(
+                        testName ? testName.split('::').pop()! : 'Unknown Test',
+                        filePath,
+                        'memory test',
+                        vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        undefined,
+                        true,
+                        memoryUsage ? parseFloat(memoryUsage) : undefined
                     )
                 );
             }
@@ -95,11 +255,12 @@ export class FailingTest extends vscode.TreeItem {
     constructor(
         public readonly label: string,
         public file: string,
-        private type: string,
+        public type: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public failureLocation?: number,
         public duration?: number,
         public isFunction?: boolean,
+        public memoryUsage?: number,
         public passes?: boolean
     ) {
         super(label, collapsibleState);
@@ -109,6 +270,9 @@ export class FailingTest extends vscode.TreeItem {
             if (this.duration !== undefined) {
                 this.description += ` (Duration: ${this.duration}s)`;
             }
+            if (this.memoryUsage !== undefined) {
+                this.description += ` (Memory: ${this.memoryUsage}MB)`;
+            }
         } 
 
         this.command = {
@@ -116,14 +280,22 @@ export class FailingTest extends vscode.TreeItem {
             title: 'Open Test File',
             arguments: [this.file, this.failureLocation]
         };
-        console.log(`FailingTest created: ${label}, file: ${file}, line: ${this.failureLocation}, duration: ${this.duration}`);
+        console.log(`FailingTest created: ${label}, file: ${file}, line: ${this.failureLocation}, duration: ${this.duration}, memory: ${this.memoryUsage}`);
 
-        if (!this.isFunction) {
-            const iconFileName = this.collapsibleState === vscode.TreeItemCollapsibleState.None ? 'pass.svg' : 'fail.svg';
-            this.iconPath = {
-                light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName)),
-                dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName))
-            };
+        let iconFileName;
+        if (this.type === 'slow test') {
+            iconFileName = 'slowtest.svg';
+        } else if (this.type === 'memory test') {
+            iconFileName = 'memory.svg';
+        } else if (this.type === 'test function' && !this.passes) {
+            iconFileName = 'fail.svg';
+        } else {
+            iconFileName = 'pass.svg';
         }
+
+        this.iconPath = {
+            light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName)),
+            dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', iconFileName))
+        };
     }
 }
