@@ -4,7 +4,7 @@ import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
-import { getPytestResult, parsePytestOutput, PYTEST_MONITOR_OUTPUT_FILE, PYTEST_OUTPUT_FILE } from './parser';
+import { getPytestResult, PYTEST_MONITOR_OUTPUT_FILE, PYTEST_OUTPUT_FILE } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
 import { Settings } from '../settings/settings';
