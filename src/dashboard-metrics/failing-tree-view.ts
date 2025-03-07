@@ -1,16 +1,19 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { jsonStore, testRunner } from '../extension';
-import { TestResult, TestFunctionResult } from '../test-runner/results';
+import { TestResult } from '../test-runner/results';
 import { runSlowestTests } from '../dashboard-metrics/slowest';
+import { TestRunner } from '../test-runner/test-runner';
 
 // make a combined tree view with memory and duration
 
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
     private _onDidChangeTreeData: vscode.EventEmitter<FailingTest | undefined | void> = new vscode.EventEmitter<FailingTest | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<FailingTest | undefined | void> = this._onDidChangeTreeData.event;
+    private testRunner: TestRunner;
 
-    constructor(private workspaceRoot: string) { }
+    constructor(private workspaceRoot: string, workspaceState: vscode.Memento) {
+        this.testRunner = TestRunner.getInstance(workspaceState);
+    }
 
     refresh(): void {
         this._onDidChangeTreeData.fire();
@@ -53,9 +56,9 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     }
 
     private async getRootFiles(): Promise<FailingTest[]> {
-        const testResults = await testRunner.getAllResults();
+        const testResults = await this.testRunner.getAllResults();
         const slowestTests = await runSlowestTests();
-        const highestMemoryTests = await testRunner.getHighestMemoryTests();
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests();
         const failingTestsOutput: FailingTest[] = [];
         const fileMap: { [key: string]: FailingTest[] } = {};
         const fileIcons: { [key: string]: Set<string> } = {};
@@ -99,7 +102,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
-            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(memoryTest.totalMemory.toFixed(2)) : 0;
+            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(Number(memoryTest.totalMemory).toFixed(2)) : 0;
             const memoryTestNode = new FailingTest(
                 (testName?.split('::').pop() || "Unknown Test"),
                 filePath || "Unknown File",
@@ -188,7 +191,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     }
 
     private async getFunctionsInFile(file: string): Promise<FailingTest[]> {
-        const failingTests = await testRunner.getResultsForFile(file);
+        const failingTests = await this.testRunner.getResultsForFile(file);
         const failingTestsOutput: FailingTest[] = [];
 
         for (const [test, result] of Object.entries(failingTests)) {
@@ -226,11 +229,11 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             }
         }
 
-        const highestMemoryTests = await testRunner.getHighestMemoryTests();
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests();
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
-            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(memoryTest.totalMemory.toFixed(2)) : 0;
+            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(Number(memoryTest.totalMemory).toFixed(2)) : 0;
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(

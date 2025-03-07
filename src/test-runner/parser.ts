@@ -433,8 +433,18 @@ export async function getPytestResult(): Promise<TestResult> {
     pytestResult = await getResourceData(dbPath, pytestResult);
 
     // Delete the pytest output files
-    fs.unlinkSync(jsonFilePath);
-    fs.unlinkSync(dbPath);
+    try {
+        fs.unlinkSync(jsonFilePath);
+    }
+    catch (err) {
+        console.error(err);
+    }
+    try {
+        fs.unlinkSync(dbPath);
+    }
+    catch (err) {
+        console.error(err);
+    }
 
     return pytestResult;
 }
