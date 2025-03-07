@@ -34,8 +34,9 @@ export function getCoverageWebviewContent(graphData: { date: Date, covered: numb
             <script>
                 const ctx = document.getElementById('coverageChart').getContext('2d');
                 const rawData = ${dataStr};
-                
-                const labels = rawData.map(entry => \`[\${new Date(entry.date).toLocaleString()}]\`);
+
+                const labels = rawData.map(entry => new Date(entry.date).toLocaleDateString());
+                const fullLabels = rawData.map(entry => new Date(entry.date).toLocaleString());
                 const coveredData = rawData.map(entry => entry.covered);
                 const missedData = rawData.map(entry => entry.missed);
                 const branchesCoveredData = rawData.map(entry => entry.branchesCovered);
@@ -79,7 +80,13 @@ export function getCoverageWebviewContent(graphData: { date: Date, covered: numb
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { position: 'top' },
-                            tooltip: { mode: 'index', intersect: false }
+                            tooltip: {
+                                callbacks: {
+                                    title: (tooltipItems) => {
+                                        return fullLabels[tooltipItems[0].dataIndex]; // Show full timestamp on hover
+                                    }
+                                }
+                            }
                         },
                         scales: {
                             x: {
