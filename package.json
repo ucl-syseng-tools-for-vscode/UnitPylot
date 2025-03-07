@@ -1,6 +1,6 @@
 {
   "name": "dashboard",
-  "displayName": "dashboard",
+  "displayName": "TestPylot",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -65,95 +65,95 @@
       },
       {
         "command": "vscode-run-tests.runTests",
-        "title": "PyTA: Run Tests"
+        "title": "TestPylot: Run Tests"
       },
       {
         "command": "vscode-run-tests.updateResults",
-        "title": "PyTA: Update Results"
+        "title": "TestPylot: Update Results"
       },
       {
         "command": "vscode-run-tests.getCoverage",
-        "title": "PyTA: Get Coverage"
+        "title": "TestPylot: Get Coverage"
       },
       {
         "command": "vscode-run-tests.updateCoverage",
-        "title": "PyTA: Update Coverage Results"
+        "title": "TestPylot: Update Coverage Results"
       },
       {
         "command": "vscode-slowest-tests.slowestTests",
-        "title": "PyTA: Find Slowest Tests"
+        "title": "TestPylot: Find Slowest Tests"
       },
       {
         "command": "vscode-slowest-tests.updateSlowestTests",
-        "title": "PyTA: Update Slowest Tests Results"
+        "title": "TestPylot: Update Slowest Tests Results"
       },
       {
         "command": "vscode-run-tests.getMemory",
-        "title": "PyTA: Get Memory"
+        "title": "TestPylot: Get Memory"
       }, 
       {
         "command": "vscode-run-tests.updateMemory",
-        "title": "PyTA: Update Memory Results"
+        "title": "TestPylot: Update Memory Results"
       },
       {
         "command": "code-tutor.annotate",
-        "title": "PyTA: Test Insights"
+        "title": "TestPylot: Test Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
-        "title": "PyTA: Fix Failing Tests"
+        "title": "TestPylot: Fix Failing Tests"
       },
       {
         "command": "fix-coverage.fixCoverage",
-        "title": "PyTA: Fix Coverage"
+        "title": "TestPylot: Fix Coverage"
       },
       {
         "command": "optimise-slowest.optimiseSlowest",
-        "title": "PyTA: Optimise Slowest Tests"
+        "title": "TestPylot: Optimise Slowest Tests"
       },
       {
         "command": "dependencies.getDependencies",
-        "title": "PyTA: Get Dependencies"
+        "title": "TestPylot: Get Dependencies"
       },
       {
         "command": "dependencies.refreshView",
-        "title": "PyTA: Refresh Dependencies View"
+        "title": "TestPylot: Refresh Dependencies View"
       },
       {
         "command": "generate-pydoc.generatePydoc",
-        "title": "PyTA: Generate Pydoc"
+        "title": "TestPylot: Generate Pydoc"
       },
       {
         "command": "extension.acceptSuggestion",
-        "title": "PyTA: Accept Annotation onto corresponding test file for coverage"
+        "title": "TestPylot: Accept Annotation onto corresponding test file for coverage"
       },
       {
         "command": "extension.rejectSuggestion",
-        "title": "PyTA: Reject Annotation"
+        "title": "TestPylot: Reject Annotation"
       },       
       {
         "command": "extension.addSuggestiontoSameFile",
-        "title": "PyTA: Add Annotation to Same File"
+        "title": "TestPylot: Add Annotation to Same File"
       }, 
       {
         "command": "extension.addSuggestiontoMainFile",
-        "title": "PyTA: Add Annotation to corresponding Main File"
+        "title": "TestPylot: Add Annotation to corresponding Main File"
       },
       {
         "command": "test-history.showPassFailGraph",
-        "title": "PyTA: Show test pass-fail history graph"
+        "title": "TestPylot: Show test pass-fail history graph"
       },
       {
         "command": "test-history.showCoverageGraph",
-        "title": "PyTA: Show coverage history graph"
+        "title": "TestPylot: Show coverage history graph"
       }, 
       {
         "command": "optimise-memory.optimiseMemory",
-        "title": "PyTA: Optimise Memory Usage of Tests"
+        "title": "TestPylot: Optimise Memory Usage of Tests"
       },
       {
         "command": "failingtests.refreshView",
-        "title": "PyTA: Refresh Failing Tests"
+        "title": "TestPylot: Refresh Failing Tests"
       }
     ],
     "menus": {
@@ -173,48 +173,56 @@
       "editor/context": [
         {
           "group": "llm-commands",
-          "submenu": "pyta.commands"
+          "submenu": "testpylot.commands"
         }
       ],
-      "pyta.commands": [
+      "testpylot.commands": [
         {
         "command": "optimise-memory.optimiseMemory",
-        "group": "llm-commands"
+        "group": "llm-commands", 
+        "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
         {
           "command": "fix-failing-tests.fixFailingTests",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
           "command": "fix-coverage.fixCoverage",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
         },
         {
           "command": "optimise-slowest.optimiseSlowest",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
         {
           "command": "generate-pydoc.generatePydoc",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
         {
           "command": "test-history.showPassFailGraph",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
           "command": "test-history.showCoverageGraph",
-          "group": "llm-commands"
+          "group": "llm-commands", 
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
         {
           "command": "optimise-memory.optimiseMemory",
-          "group": "llm-commands"
+          "group": "llm-commands",
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }
       ]
     },
     "submenus": [
       {
-        "id": "pyta.commands",
-        "label": "PyTA Commands",
+        "id": "testpylot.commands",
+        "label": "TestPylot Commands",
         "group": "llm-commands"
       }
     ] 
