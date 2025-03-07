@@ -1,10 +1,35 @@
 
 /* 
-    * This file contains functions related to parsing the pytest output.
+    * This file contains functions related to parsing the pytest json output.
     * The TestRunner class still manages what tests are run.
 */
 
+import * as vscode from 'vscode';
+import * as fs from 'fs';
+import { readJsonFile } from "./helper-functions";
 import { TestFunctionResult, TestResult, MemoryAllocation } from "./results";
+import path = require('path');
+
+export const PYTEST_OUTPUT_FILE = '.pytest_results.json';
+
+type PytestOutput = {
+    tests: PytestTest[];
+}
+
+type PytestTest = {
+    nodeid: string;
+    lineno: number;
+    outcome: string;
+    setup: PytestOutcome;
+    call: PytestOutcome;
+    teardown: PytestOutcome;
+}
+
+type PytestOutcome = {
+    duration: number;
+    outcome: string;
+    longrepr?: string;
+}
 
 function parsePassAndFail(results: string[]): TestResult {
     // The first few lines include metadata about the test run
@@ -280,4 +305,46 @@ export function parsePytestOutput(output: string): TestResult {
         }
     }
     return results;
+}
+
+
+export function getPytestResult(): TestResult {
+    // Get cwd
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+        throw new Error('No workspace folder found');
+    }
+    const workspacePath = workspaceFolders[0].uri.fsPath;
+
+    // Read the pytest output file
+    const jsonFilePath = path.join(workspacePath, PYTEST_OUTPUT_FILE);
+    const pytestOutput = readJsonFile(jsonFilePath) as PytestOutput;
+
+    // Parse the output
+    let pytestResult: TestResult = {};
+
+    for (const test of pytestOutput.tests) {
+        const fullName = test.nodeid;
+        const filePath = fullName.split('::')[0];
+        const testName = fullName.split('::').slice(1).join('::');
+
+        const testResultObj: TestFunctionResult = {
+            passed: test.outcome === 'passed',
+            time: test.call.duration,
+            errorMessage: test.call.longrepr,
+            failureLocation: test.lineno.toString(),
+            filePath: filePath,
+            testName: testName
+        };
+
+        if (!pytestResult[filePath]) {
+            pytestResult[filePath] = {};
+        }
+        pytestResult[filePath][testName] = testResultObj;
+    }
+
+    // Delete the pytest output file
+    fs.unlinkSync(jsonFilePath);
+
+    return pytestResult;
 }

@@ -4,7 +4,7 @@ import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
-import { parsePytestOutput } from './parser';
+import { getPytestResult, parsePytestOutput, PYTEST_OUTPUT_FILE } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
 import { Settings } from '../settings/settings';
@@ -326,7 +326,7 @@ export class TestRunner {
 
     // Parse test results
     private updateTestResults(output: string, rewrite: boolean): void {
-        const newResults: TestResult = parsePytestOutput(output);
+        const newResults: TestResult = getPytestResult();  // Implemented in parser.ts
         // If all tests are to be rewritten, overwrite the results
         if (rewrite) {
             this.results = newResults;
@@ -367,7 +367,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --memray --most-allocations=${Settings.NUMBER_OF_MEMORY_PROFILING_TESTS} --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --memray --json-report --json-report-file=${PYTEST_OUTPUT_FILE} --most-allocations=${Settings.NUMBER_OF_MEMORY_PROFILING_TESTS} --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
