@@ -9,6 +9,7 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Test Pass/Fail History</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
             <style>
                 body {
                     display: flex;
@@ -16,10 +17,12 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                     align-items: center;
                     height: 100vh;
                     margin: 0;
+                    overflow: hidden;
                 }
                 .chart-container {
                     width: 800px;
                     height: 500px;
+                    overflow-x: auto;
                 }
                 canvas {
                     width: 100% !important;
@@ -51,8 +54,8 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                                 backgroundColor: 'rgba(50, 126, 54, 0.3)',
                                 borderColor: '#327e36',
                                 borderWidth: 2,
-                                barPercentage: 0.8, // Thicker bars
-                                categoryPercentage: 0.9 // Closer together
+                                barPercentage: 0.8,
+                                categoryPercentage: 0.9
                             },
                             {
                                 label: 'Fail',
@@ -60,8 +63,8 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                                 backgroundColor: 'rgba(241, 76, 76, 0.3)',
                                 borderColor: '#f14c4c',
                                 borderWidth: 2,
-                                barPercentage: 0.8, // Thicker bars
-                                categoryPercentage: 0.9 // Closer together
+                                barPercentage: 0.8,
+                                categoryPercentage: 0.9
                             }
                         ]
                     },
@@ -76,15 +79,33 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                                         return fullLabels[tooltipItems[0].dataIndex]; // Show full timestamp on hover
                                     }
                                 }
+                            },
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'x'
+                                },
+                                zoom: {
+                                    wheel: {
+                                        enabled: true
+                                    },
+                                    pinch: {
+                                        enabled: true
+                                    },
+                                    mode: 'x'
+                                }
                             }
                         },
                         scales: {
                             x: {
                                 title: { display: true, text: 'Time' },
                                 ticks: {
-                                    autoSkip: true,
-                                    maxTicksLimit: 10
-                                }
+                                    autoSkip: false,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                min: 0,
+                                max: 4 // Show only 5 entries at a time
                             },
                             y: {
                                 title: { display: true, text: 'Test Count' },

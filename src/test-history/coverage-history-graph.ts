@@ -9,6 +9,7 @@ export function getCoverageWebviewContent(graphData: { date: Date, covered: numb
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Coverage History</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
             <style>
                 body {
                     display: flex;
@@ -16,10 +17,12 @@ export function getCoverageWebviewContent(graphData: { date: Date, covered: numb
                     align-items: center;
                     height: 100vh;
                     margin: 0;
+                    overflow: hidden;
                 }
                 .chart-container {
                     width: 800px;
                     height: 500px;
+                    overflow-x: auto;
                 }
                 canvas {
                     width: 100% !important;
@@ -86,12 +89,33 @@ export function getCoverageWebviewContent(graphData: { date: Date, covered: numb
                                         return fullLabels[tooltipItems[0].dataIndex]; // Show full timestamp on hover
                                     }
                                 }
+                            },
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'x'
+                                },
+                                zoom: {
+                                    wheel: {
+                                        enabled: true
+                                    },
+                                    pinch: {
+                                        enabled: true
+                                    },
+                                    mode: 'x'
+                                }
                             }
                         },
                         scales: {
                             x: {
                                 title: { display: true, text: 'Time' },
-                                ticks: { autoSkip: true, maxTicksLimit: 10 }
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                min: 0,
+                                max: 4 // Show only 5 entries at a time
                             },
                             y: {
                                 title: { display: true, text: 'Line Count' },
