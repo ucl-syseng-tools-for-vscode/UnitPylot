@@ -13,10 +13,8 @@ export type TestFunctionResult = {
     failureLocation?: string;
     filePath?: string;
     testName?: string;
-    totalMemory?: string;
-    totalAllocations?: number;
-    histogram?: string;
-    biggestAllocations?: MemoryAllocation;
+    totalMemory?: number;
+    cpuUsage?: number;
 }
 
 export type MemoryAllocation = {
