@@ -36,7 +36,6 @@ export var testRunner: TestRunner;
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
     const testRunner = TestRunner.getInstance(context.workspaceState);
-    testRunner.runTests();
     // Initialise HistoryManager
     HistoryManager.initialise(context);
 
