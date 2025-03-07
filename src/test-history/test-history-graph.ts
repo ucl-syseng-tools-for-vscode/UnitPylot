@@ -34,8 +34,9 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
             <script>
                 const ctx = document.getElementById('testHistoryChart').getContext('2d');
                 const rawData = ${dataStr};
-                
-                const labels = rawData.map(entry => \`[\${new Date(entry.date).toLocaleString()}]\`);
+
+                const labels = rawData.map(entry => new Date(entry.date).toLocaleDateString());
+                const fullLabels = rawData.map(entry => new Date(entry.date).toLocaleString());
                 const passData = rawData.map(entry => entry.pass);
                 const failData = rawData.map(entry => entry.fail);
 
@@ -47,20 +48,20 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                             {
                                 label: 'Pass',
                                 data: passData,
-                                backgroundColor: '#327e36',
+                                backgroundColor: 'rgba(50, 126, 54, 0.3)',
                                 borderColor: '#327e36',
-                                borderWidth: 1,
-                                barPercentage: 0.45,
-                                categoryPercentage: 0.8
+                                borderWidth: 2,
+                                barPercentage: 0.8, // Thicker bars
+                                categoryPercentage: 0.9 // Closer together
                             },
                             {
                                 label: 'Fail',
                                 data: failData,
-                                backgroundColor: '#f14c4c',
+                                backgroundColor: 'rgba(241, 76, 76, 0.3)',
                                 borderColor: '#f14c4c',
-                                borderWidth: 1,
-                                barPercentage: 0.45,
-                                categoryPercentage: 0.8
+                                borderWidth: 2,
+                                barPercentage: 0.8, // Thicker bars
+                                categoryPercentage: 0.9 // Closer together
                             }
                         ]
                     },
@@ -69,19 +70,27 @@ export function getWebviewContent(graphData: { date: Date, pass: number, fail: n
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { position: 'top' },
-                            tooltip: { mode: 'index', intersect: false }
+                            tooltip: {
+                                callbacks: {
+                                    title: (tooltipItems) => {
+                                        return fullLabels[tooltipItems[0].dataIndex]; // Show full timestamp on hover
+                                    }
+                                }
+                            }
                         },
                         scales: {
                             x: {
                                 title: { display: true, text: 'Time' },
-                                ticks: { autoSkip: true, maxTicksLimit: 10 },
-                                stacked: false
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 10
+                                }
                             },
                             y: {
                                 title: { display: true, text: 'Test Count' },
                                 beginAtZero: true,
                                 ticks: {
-                                    precision: 0 // Ensures only whole numbers
+                                    precision: 0
                                 }
                             }
                         }
