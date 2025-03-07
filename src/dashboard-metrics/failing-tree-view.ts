@@ -25,7 +25,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             vscode.window.showInformationMessage('No failing tests in empty workspace');
             return Promise.resolve([]);
         }
-    
+
         if (element) {
             if (element.isFunction) {
                 vscode.commands.executeCommand('failingTestsProvider.openTestFile', element.file, element.failureLocation);
@@ -61,7 +61,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         const fileIcons: { [key: string]: Set<string> } = {};
 
         for (const file in testResults) {
-            if (file === ''){
+            if (file === '') {
                 continue;
             }
             const collapsibleState = this.getCollapsibleState(file, testResults);
@@ -99,7 +99,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
-            const memoryUsage = memoryTest.totalMemory;
+            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(memoryTest.totalMemory.toFixed(2)) : 0;
             const memoryTestNode = new FailingTest(
                 (testName?.split('::').pop() || "Unknown Test"),
                 filePath || "Unknown File",
@@ -108,7 +108,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
                 undefined,
                 undefined,
                 true,
-                memoryUsage ? parseFloat(memoryUsage) : undefined
+                memoryUsage
             );
             if (filePath && fileMap[filePath]) {
                 fileMap[filePath].push(memoryTestNode);
@@ -230,7 +230,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
-            const memoryUsage = memoryTest.totalMemory;
+            const memoryUsage = memoryTest.totalMemory !== undefined ? parseFloat(memoryTest.totalMemory.toFixed(2)) : 0;
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(
@@ -241,7 +241,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
                         undefined,
                         undefined,
                         true,
-                        memoryUsage ? parseFloat(memoryUsage) : undefined
+                        memoryUsage
                     )
                 );
             }
@@ -273,7 +273,7 @@ export class FailingTest extends vscode.TreeItem {
             if (this.memoryUsage !== undefined) {
                 this.description += ` (Memory: ${this.memoryUsage}MB)`;
             }
-        } 
+        }
 
         this.command = {
             command: 'failingTestsProvider.openTestFile',
