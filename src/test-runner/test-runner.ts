@@ -330,7 +330,7 @@ export class TestRunner {
     }
 
     // Parse test results
-    private async updateTestResults(output: string, rewrite: boolean): Promise<void> {
+    private async updateTestResults(rewrite: boolean): Promise<void> {
         const newResults: TestResult = await getPytestResult();  // Implemented in parser.ts
         // If all tests are to be rewritten, overwrite the results
         if (rewrite) {
@@ -385,7 +385,7 @@ export class TestRunner {
             }
             console.log(`stdout: ${stdout}`);
             // Process the output
-            await this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
+            await this.updateTestResults(testsToRun ? false : true);  // Rewrite if no tests specified
             this.updateCoverage(testsToRun ? false : true);
             this.saveState();
 

@@ -220,11 +220,6 @@
           "default": 5,
           "description": "Number of slowest tests to display."
         },
-        "pytastic.numberOfMemoryProfilingTests": {
-          "type": "number",
-          "default": 5,
-          "description": "Number of tests to use for memory profiling. (0 for all tests)"
-        },
         "pytastic.snapshotInterval": {
           "type": "number",
           "default": 10,
