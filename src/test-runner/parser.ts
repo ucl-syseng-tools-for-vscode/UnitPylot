@@ -138,10 +138,10 @@ export async function getPytestResult(): Promise<TestResult> {
         const testName = fullName.split('::').slice(1).join('::');
 
         const testResultObj: TestFunctionResult = {
-            passed: test.outcome === 'passed',
-            time: test.call.duration,
-            errorMessage: test.call.longrepr,
-            lineNo: test.lineno.toString(),
+            passed: test.outcome === 'passed' || test.outcome === 'xpassed',
+            time: test.call?.duration,
+            errorMessage: test.call?.longrepr,
+            lineNo: test.lineno?.toString(),
             filePath: filePath,
             testName: testName
         };
