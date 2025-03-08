@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
-import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { getWebviewContent } from './test-history/test-history-graph';
 import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
@@ -12,8 +13,6 @@ import { getCoverageWebviewContent } from './test-history/coverage-history-graph
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
-import { get } from 'http';
-import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
