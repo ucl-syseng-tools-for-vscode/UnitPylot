@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
  */
 export class Settings {
     private static getConfig(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration('pytastic');
+        return vscode.workspace.getConfiguration('Py-TA');
     }
 
     public static get NUMBER_OF_SLOWEST_TESTS(): number {
@@ -46,6 +46,23 @@ export class Settings {
         const config = Settings.getConfig();
         const setting = config.get<boolean>('runTestsInBackground');
         return setting !== undefined ? setting : true;
+    }
+
+    public static get SAVE_SNAPSHOT_ON_TEST_RUN(): boolean {
+        const config = Settings.getConfig();
+        const setting = config.get<boolean>('saveSnapshotOnTestRun');
+        return setting !== undefined ? setting : true;
+    }
+
+    public static get SAVE_SNAPSHOT_PERIODICALLY(): boolean {
+        const config = Settings.getConfig();
+        const setting = config.get<boolean>('saveSnapshotPeriodically');
+        return setting !== undefined ? setting : false;
+    }
+
+    public static get RUN_TESTS_INTERVAL(): number {
+        const config = Settings.getConfig();
+        return config.get<number>('runTestsInterval') || 10;
     }
 
     public static get CUSTOM_LLM_ENDPOINT(): string {

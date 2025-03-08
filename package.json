@@ -1,6 +1,6 @@
 {
-  "name": "pytastic",
-  "displayName": "PyTastic",
+  "name": "pyta",
+  "displayName": "PyTA",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -18,7 +18,7 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "PyTastic",
+          "title": "PyTA",
           "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
@@ -140,6 +140,18 @@
         "title": "Add Annotation to corresponding Main File"
       },
       {
+        "command": "test-history.showPassFailGraph",
+        "title": "Show test pass-fail history graph"
+      },
+      {
+        "command": "test-history.showCoverageGraph",
+        "title": "Show coverage history graph"
+      },
+      {
+        "command": "test-history.showGraph",
+        "title": "Show Graph"
+      },
+      {
         "command": "extension.openSettings",
         "title": "Open Settings",
         "icon": "$(gear)"
@@ -198,59 +210,76 @@
       ]
     },
     "configuration": {
-      "title": "PyTastic",
+      "title": "PyTA",
       "properties": {
-        "pytastic.runNecessaryTestsOnly": {
+        "Py-TA.runNecessaryTestsOnly": {
           "type": "boolean",
           "default": true,
           "description": "Run only necessary tests instead of all tests."
         },
-        "pytastic.copilotEnabled": {
+        "Py-TA.copilotEnabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable GitHub Copilot integration."
         },
-        "pytastic.codeCoverageHighlighting": {
+        "Py-TA.codeCoverageHighlighting": {
           "type": "boolean",
           "default": true,
           "description": "Enable code coverage highlighting."
         },
-        "pytastic.numberOfSlowestTests": {
+        "Py-TA.numberOfSlowestTests": {
           "type": "number",
           "default": 5,
           "description": "Number of slowest tests to display."
         },
-        "pytastic.snapshotInterval": {
+        "Py-TA.snapshotInterval": {
           "type": "number",
           "default": 10,
+          "minimum": 1,
           "description": "Snapshot interval in minutes. (Extension restart required)"
         },
-        "pytastic.runTestsOnSave": {
+        "Py-TA.runTestsOnSave": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Run tests on any file save."
         },
-        "pytastic.runTestsInBackground": {
+        "Py-TA.runTestsInBackground": {
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
         },
-        "pytastic.customLLM Endpoint": {
+        "Py-TA.saveSnapshotOnTestRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save snapshots when tests are run."
+        },
+        "Py-TA.saveSnapshotPeriodically": {
+          "type": "boolean",
+          "default": false,
+          "description": "Periodically save snapshots in the background."
+        },
+        "Py-TA.runTestsInterval": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Background test run interval in minutes. (Extension restart required)"
+        },
+        "Py-TA.customLLM Endpoint": {
           "type": "string",
           "default": "http://localhost:8000/v1/chat/completions",
           "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
         },
-        "pytastic.customLLM Model": {
+        "Py-TA.customLLM Model": {
           "type": "string",
           "default": "",
           "description": "Custom LLM model to use if GitHub Copilot is not enabled."
         },
-        "pytastic.customLLM API Key": {
+        "Py-TA.customLLM API Key": {
           "type": "string",
           "default": "",
           "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
         },
-        "pytastic.customLLM MaxTokens": {
+        "Py-TA.customLLM MaxTokens": {
           "type": "number",
           "default": 500,
           "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."
