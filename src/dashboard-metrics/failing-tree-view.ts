@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { TestResult } from '../test-runner/results';
-import { runSlowestTests } from '../dashboard-metrics/slowest';
 import { TestRunner } from '../test-runner/test-runner';
 
 // make a combined tree view with memory and duration
@@ -56,9 +55,9 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     }
 
     private async getRootFiles(): Promise<FailingTest[]> {
-        const testResults = await this.testRunner.getAllResults();
-        const slowestTests = await runSlowestTests();
-        const highestMemoryTests = await this.testRunner.getHighestMemoryTests();
+        const testResults = await this.testRunner.getAllResults(true);
+        const slowestTests = await this.testRunner.getSlowestTests(5, true);
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(5, true);
         const failingTestsOutput: FailingTest[] = [];
         const fileMap: { [key: string]: FailingTest[] } = {};
         const fileIcons: { [key: string]: Set<string> } = {};
@@ -80,15 +79,17 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
 
         for (const slowTest of slowestTests) {
-            const [testName, duration] = slowTest.split(' - ');
-            const filePath = testName.split('::')[0]; // Extract the file path
+            const testName = slowTest.testName || "Unknown Test";
+            const duration = slowTest.time;
+            const filePath = slowTest.filePath || "Unknown File";
+
             const slowTestNode = new FailingTest(
                 testName.split('::').pop() || testName,
                 filePath,
                 'slow test',
                 vscode.TreeItemCollapsibleState.None,
                 undefined,
-                parseFloat(duration),
+                parseFloat(duration.toFixed(2)),
                 true
             );
             if (fileMap[filePath]) {
@@ -191,7 +192,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     }
 
     private async getFunctionsInFile(file: string): Promise<FailingTest[]> {
-        const failingTests = await this.testRunner.getResultsForFile(file);
+        const failingTests = await this.testRunner.getResultsForFile(file, true);
         const failingTestsOutput: FailingTest[] = [];
 
         for (const [test, result] of Object.entries(failingTests)) {
@@ -202,7 +203,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
                         file,
                         'test function',
                         vscode.TreeItemCollapsibleState.None,
-                        result.failureLocation ? parseInt(result.failureLocation) : undefined,
+                        result.lineNo ? parseInt(result.lineNo) : undefined,
                         result.time,
                         true
                     )
@@ -210,10 +211,12 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             }
         }
 
-        const slowestTests = await runSlowestTests();
+        const slowestTests = await this.testRunner.getSlowestTests(5, true);
         for (const slowTest of slowestTests) {
-            const [testName, duration] = slowTest.split(' - ');
-            const filePath = testName.split('::')[0]; // Extract the file path
+            const testName = slowTest.testName || "Unknown Test";
+            const duration = slowTest.time;
+            const filePath = slowTest.filePath || "Unknown File";
+
             if (filePath === file) {
                 failingTestsOutput.push(
                     new FailingTest(
@@ -221,15 +224,15 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
                         filePath,
                         'slow test',
                         vscode.TreeItemCollapsibleState.None,
-                        undefined,
-                        parseFloat(duration),
+                        parseInt(slowTest.lineNo || '0'),
+                        duration,
                         true
                     )
                 );
             }
         }
 
-        const highestMemoryTests = await this.testRunner.getHighestMemoryTests();
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(5, true);
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
@@ -241,7 +244,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
                         filePath,
                         'memory test',
                         vscode.TreeItemCollapsibleState.None,
-                        undefined,
+                        parseInt(memoryTest.lineNo || '0'),
                         undefined,
                         true,
                         memoryUsage
@@ -271,7 +274,7 @@ export class FailingTest extends vscode.TreeItem {
         this.description = this.type;
         if (this.isFunction) {
             if (this.duration !== undefined) {
-                this.description += ` (Duration: ${this.duration}s)`;
+                this.description += ` (Duration: ${parseFloat(this.duration.toFixed(2))}s)`;
             }
             if (this.memoryUsage !== undefined) {
                 this.description += ` (Memory: ${this.memoryUsage}MB)`;

@@ -141,7 +141,7 @@ export async function getPytestResult(): Promise<TestResult> {
             passed: test.outcome === 'passed',
             time: test.call.duration,
             errorMessage: test.call.longrepr,
-            failureLocation: test.lineno.toString(),
+            lineNo: test.lineno.toString(),
             filePath: filePath,
             testName: testName
         };
