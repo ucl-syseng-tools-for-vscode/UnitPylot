@@ -90,8 +90,8 @@ function handleAnnotation(
         hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
         hoverMessage.appendMarkdown(
-            `\n[✔ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
-            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+            `\n #### [✅ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
+             `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
         );
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
@@ -197,10 +197,10 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         );
 
         hoverMessage.appendMarkdown(
-            `\n[✔ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
+            `\n #### [✅ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
                 JSON.stringify({ line, code_snippet, decorationType })
             )})` +
-            `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+            `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
                 JSON.stringify({ line, decorationType })
             )})`
         );
@@ -307,8 +307,8 @@ function applyDecorationFixFailing(
         : "extension.addSuggestiontoMainFile";
 
     hoverMessage.appendMarkdown(
-        `\n[✔ Accept](command:${acceptCommand}?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
-        `\n[❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+        `\n #### [✅ Accept](command:${acceptCommand}?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
+         `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
     );
 
     editor.setDecorations(decorationType, [{ range, hoverMessage }]);
