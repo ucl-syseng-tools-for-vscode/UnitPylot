@@ -29,7 +29,6 @@ import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
 
 export const jsonStore: Map<string, any> = new Map();
-export var testRunner: TestRunner;
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
