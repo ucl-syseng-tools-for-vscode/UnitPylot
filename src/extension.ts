@@ -344,7 +344,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the settings page command
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.openSettings', () => {
-            vscode.commands.executeCommand('workbench.action.openSettings', 'Py-TA');
+            vscode.commands.executeCommand('workbench.action.openSettings', 'test-pylot');
         })
     );
 
