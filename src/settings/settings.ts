@@ -36,11 +36,6 @@ export class Settings {
         return setting !== undefined ? setting : true;
     }
 
-    public static get NUMBER_OF_MEMORY_PROFILING_TESTS(): number {
-        const config = Settings.getConfig();
-        return config.get<number>('numberOfMemoryProfilingTests') || 5;
-    }
-
     public static get RUN_TESTS_ON_SAVE(): boolean {
         const config = Settings.getConfig();
         const setting = config.get<boolean>('runTestsOnSave');

@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
-import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { getWebviewContent } from './test-history/test-history-graph';
 import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
@@ -12,8 +13,6 @@ import { getCoverageWebviewContent } from './test-history/coverage-history-graph
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
-import { get } from 'http';
-import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
@@ -36,6 +35,7 @@ export var testRunner: TestRunner;
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
     const testRunner = TestRunner.getInstance(context.workspaceState);
+
     // Initialise HistoryManager
     HistoryManager.initialise(context);
 
@@ -313,10 +313,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
         const slowest = await testRunner.getSlowestTests(5, true);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
-
-        HistoryManager.saveSnapshot();
-        vscode.commands.executeCommand('test-history.showPassFailGraph');
-        vscode.commands.executeCommand('test-history.showCoverageGraph');
     });
 
     context.subscriptions.push(
@@ -353,40 +349,9 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    startIntervalTask(context);
-
-}
-
-function startIntervalTask(context: vscode.ExtensionContext) {
-    const SNAPSHOT_INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
-    const TEST_INTERVAL = Settings.RUN_TESTS_INTERVAL * 60 * 1000;
-
-    function saveSnapshot() {
-        if (Settings.SAVE_SNAPSHOT_PERIODICALLY) {
-            console.log('Saving snapshot...');
-            HistoryManager.saveSnapshot();  // No tests are run here
-        }
-    }
-
-    function runTests() {
-        if (Settings.RUN_TESTS_IN_BACKGROUND) {
-            console.log('Running background tests...');
-            TestRunner.getInstance(context.workspaceState).getAllResults(); // Invokes the test runner to run tests
-        }
-    }
-
-    // Run immediately and schedule repeats
-    saveSnapshot();
-    const snapshotInterval = setInterval(saveSnapshot, SNAPSHOT_INTERVAL);
-    const testInterval = setInterval(runTests, TEST_INTERVAL);
-
-    // Stop the intervals when the extension is deactivated
-    context.subscriptions.push(new vscode.Disposable(() => clearInterval(snapshotInterval)));
-    context.subscriptions.push(new vscode.Disposable(() => clearInterval(testInterval)));
-
     // TODO: Move this junk elsewhere
     // Register the failing test tree view
-    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
+    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath, context.workspaceState);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
         treeDataProvider: failingTestsProvider
     });
@@ -440,6 +405,14 @@ function startIntervalTask(context: vscode.ExtensionContext) {
         }
 
         const relativePath = path.relative(workspaceFolder, file.fsPath);
+
+        // Check file is a test file
+        const fileName = path.basename(relativePath);
+        if (!fileName.match(/(test_.*\.py$)|(.*_test.py$)/)) {
+            vscode.window.showErrorMessage("Not a test file.");
+            return;
+        }
+
         console.log(`Running tests in file: ${file}`);
         vscode.window.showInformationMessage(`Running tests in file: ${relativePath}`);
         testRunner.runTests(
@@ -477,6 +450,37 @@ function startIntervalTask(context: vscode.ExtensionContext) {
             )
         })
     );
+
+    startIntervalTask(context);
+
+}
+
+function startIntervalTask(context: vscode.ExtensionContext) {
+    const SNAPSHOT_INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
+    const TEST_INTERVAL = Settings.RUN_TESTS_INTERVAL * 60 * 1000;
+
+    function saveSnapshot() {
+        if (Settings.SAVE_SNAPSHOT_PERIODICALLY) {
+            console.log('Saving snapshot...');
+            HistoryManager.saveSnapshot();  // No tests are run here
+        }
+    }
+
+    function runTests() {
+        if (Settings.RUN_TESTS_IN_BACKGROUND) {
+            console.log('Running background tests...');
+            TestRunner.getInstance(context.workspaceState).getAllResults(); // Invokes the test runner to run tests
+        }
+    }
+
+    // Run immediately and schedule repeats
+    saveSnapshot();
+    const snapshotInterval = setInterval(saveSnapshot, SNAPSHOT_INTERVAL);
+    const testInterval = setInterval(runTests, TEST_INTERVAL);
+
+    // Stop the intervals when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(snapshotInterval)));
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(testInterval)));
 }
 
 // Handles file open event

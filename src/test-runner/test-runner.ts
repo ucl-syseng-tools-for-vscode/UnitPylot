@@ -4,7 +4,7 @@ import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
-import { parsePytestOutput } from './parser';
+import { getPytestResult, PYTEST_MONITOR_OUTPUT_FILE, PYTEST_OUTPUT_FILE } from './parser';
 import { fail } from 'assert';
 import { promisify } from 'util';
 import { Settings } from '../settings/settings';
@@ -206,7 +206,7 @@ export class TestRunner {
                 }
             }
         }
-        tests.sort((a, b) => (convertToBits(b.totalMemory || '0kB')) - (convertToBits(a.totalMemory || '0kB')));
+        tests.sort((a, b) => (b.totalMemory || 0) - (a.totalMemory || 0));
 
         return tests.slice(0, n);
     }
@@ -324,6 +324,11 @@ export class TestRunner {
                 testsInFiles[test.filePath].push(test.testName);
             }
 
+            // Remove duplicates
+            for (const [filePath, tests] of Object.entries(testsInFiles)) {
+                testsInFiles[filePath] = [...new Set(tests)];
+            }
+
             for (const [filePath, tests] of Object.entries(testsInFiles)) {
                 vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
             }
@@ -349,9 +354,8 @@ export class TestRunner {
     }
 
     // Parse test results
-    private updateTestResults(output: string, rewrite: boolean): void {
-        const newResults: TestResult = parsePytestOutput(output);
-        console.log("PARSED RESULTS:", newResults);
+    private async updateTestResults(rewrite: boolean): Promise<void> {
+        const newResults: TestResult = await getPytestResult();  // Implemented in parser.ts
         // If all tests are to be rewritten, overwrite the results
         if (rewrite) {
             this.results = newResults;
@@ -392,7 +396,7 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --memray --most-allocations=${Settings.NUMBER_OF_MEMORY_PROFILING_TESTS} --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --json-report --json-report-file=${PYTEST_OUTPUT_FILE} --db ${PYTEST_MONITOR_OUTPUT_FILE} --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
@@ -406,13 +410,11 @@ export class TestRunner {
             progress.report({ message: "Running..." });
 
             return new Promise<void>((resolve, reject) => {
-                let collectedOutput = '';
                 this.testProcess = spawn(command, { cwd: workspacePath, shell: true });
 
                 // Handle stdout (real-time output)
                 var percentage = '';
                 this.testProcess.stdout.on('data', (data: Buffer) => {
-                    collectedOutput += data.toString();
                     console.log(`stdout: ${data}`);
                     if (data.toString().endsWith('%]')) {
                         percentage = data.toString().trim().slice(-6);
@@ -434,7 +436,7 @@ export class TestRunner {
                         progress.report({ message: "Tests completed successfully!" });
 
                         // Process the output
-                        this.updateTestResults(collectedOutput, testsToRun ? false : true);  // Rewrite if no tests specified
+                        this.updateTestResults(testsToRun ? false : true);  // Rewrite if no tests specified
                         this.updateCoverage(testsToRun ? false : true);
                         this.saveState();
 

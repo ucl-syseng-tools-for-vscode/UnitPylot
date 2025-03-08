@@ -232,11 +232,6 @@
           "default": 5,
           "description": "Number of slowest tests to display."
         },
-        "Py-TA.numberOfMemoryProfilingTests": {
-          "type": "number",
-          "default": 5,
-          "description": "Number of tests to use for memory profiling. (0 for all tests)"
-        },
         "Py-TA.snapshotInterval": {
           "type": "number",
           "default": 10,
@@ -269,22 +264,22 @@
           "minimum": 1,
           "description": "Background test run interval in minutes. (Extension restart required)"
         },
-        "pytastic.customLLM Endpoint": {
+        "Py-TA.customLLM Endpoint": {
           "type": "string",
           "default": "http://localhost:8000/v1/chat/completions",
           "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
         },
-        "pytastic.customLLM Model": {
+        "Py-TA.customLLM Model": {
           "type": "string",
           "default": "",
           "description": "Custom LLM model to use if GitHub Copilot is not enabled."
         },
-        "pytastic.customLLM API Key": {
+        "Py-TA.customLLM API Key": {
           "type": "string",
           "default": "",
           "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
         },
-        "pytastic.customLLM MaxTokens": {
+        "Py-TA.customLLM MaxTokens": {
           "type": "number",
           "default": 500,
           "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."
@@ -304,6 +299,7 @@
     "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "14.x",
+    "@types/sqlite3": "^3.1.11",
     "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
@@ -314,6 +310,7 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "chartjs-plugin-doughnutlabel": "^2.0.3"
+    "chartjs-plugin-doughnutlabel": "^2.0.3",
+    "sqlite3": "^5.1.7"
   }
 }
