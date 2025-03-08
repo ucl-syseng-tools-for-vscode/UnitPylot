@@ -436,7 +436,7 @@ export class TestRunner {
                         progress.report({ message: "Tests completed successfully!" });
 
                         // Process the output
-                        this.updateTestResults(testsToRun ? false : true);  // Rewrite if no tests specified
+                        await this.updateTestResults(testsToRun ? false : true);  // Rewrite if no tests specified
                         this.updateCoverage(testsToRun ? false : true);
                         this.saveState();
 
