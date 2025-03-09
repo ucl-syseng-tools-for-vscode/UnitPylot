@@ -1,11 +1,16 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { exec, spawn } from 'child_process';
+import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
 import { Coverage, FileCoverage, mergeCoverage } from './coverage';
 import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
-import { parsePytestOutput } from './parser';
+import { getPytestResult, PYTEST_MONITOR_OUTPUT_FILE, PYTEST_OUTPUT_FILE } from './parser';
 import { fail } from 'assert';
+import { promisify } from 'util';
+import { Settings } from '../settings/settings';
+import { HistoryManager } from '../test-history/history-manager';
+
+const execPromise = promisify(exec);
 
 type TestRunnerState = {
     results: TestResult;
@@ -25,6 +30,8 @@ export class TestRunner {
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
     private testDurationsToRun: number = 5;
+    private testProcess: any = null; // Store the process reference
+
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
@@ -75,8 +82,10 @@ export class TestRunner {
     }
 
     // Get n slowest tests (default n = 5)
-    public async getSlowestTests(n: number = 5): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getSlowestTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         const slowestTests: TestFunctionResult[] = [];
         if (this.results) {
@@ -91,20 +100,48 @@ export class TestRunner {
     }
 
     // Get coverage data
-    public async getCoverage(): Promise<Coverage | undefined> {
-        await this.runNeccecaryTests();
+    public async getCoverage(doNotRunTests?: boolean): Promise<Coverage | undefined> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         return this.coverage;
     }
 
+
+    // Get memory of tests biggestAllocations
+    public async getMemory(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
+
+        const memoryTests: TestFunctionResult[] = [];
+        console.log("RESULTS", this.results);
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    memoryTests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        console.log("MEMORY", memoryTests);
+        return memoryTests
+    }
+
+
     // Get all test results
-    public async getAllResults(): Promise<TestResult | undefined> {
-        await this.runNeccecaryTests();
+    public async getAllResults(doNotRunTests?: boolean): Promise<TestResult | undefined> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
         return this.results;
     }
 
     // Get overall pass / fail results
-    public async getResultsSummary(): Promise<{ passed: number, failed: number }> {
-        await this.runNeccecaryTests();
+    public async getResultsSummary(doNotRunTests?: boolean): Promise<{ passed: number, failed: number }> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
+        console.log("PASRESULTS", this.results);
 
         let passed = 0;
         let failed = 0;
@@ -123,8 +160,10 @@ export class TestRunner {
     }
 
     // Get pass / fail results for a specific file
-    public async getResultsForFile(filePath: string): Promise<TestFileResult> {
-        await this.runNeccecaryTests();
+    public async getResultsForFile(filePath: string, doNotRunTests?: boolean): Promise<TestFileResult> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         if (this.results) {
             return this.results[filePath];
@@ -133,8 +172,10 @@ export class TestRunner {
     }
 
     // Get failing tests with their line numbers
-    public async getAllFailingTests(): Promise<TestFunctionResult[]> {
-        await this.runNeccecaryTests();
+    public async getAllFailingTests(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
 
         const failingTests: TestFunctionResult[] = [];
         if (this.results) {
@@ -147,6 +188,27 @@ export class TestRunner {
             }
         }
         return failingTests;
+    }
+
+    // Get n highest memory usage tests
+    public async getHighestMemoryTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
+        if (!doNotRunTests) {
+            await this.runNeccecaryTests();
+        }
+        const tests: TestFunctionResult[] = [];
+        if (this.results) {
+            for (const filePath in this.results) {
+                for (const test in this.results[filePath]) {
+                    if (!this.results[filePath][test].totalMemory) {
+                        continue;
+                    }
+                    tests.push(this.results[filePath][test]);
+                }
+            }
+        }
+        tests.sort((a, b) => (b.totalMemory || 0) - (a.totalMemory || 0));
+
+        return tests.slice(0, n);
     }
 
     // Remove deleted test results for deleted tests
@@ -228,9 +290,9 @@ export class TestRunner {
 
     // Run necessary tests
     private async runNeccecaryTests(): Promise<void> {
-        if (!this.results || !this.coverage || !this.hash) {
+        if (!Settings.RUN_NECESSARY_TESTS_ONLY || !this.results || !this.coverage || !this.hash) {
             vscode.window.showInformationMessage('Running all tests...');
-            this.runTests();
+            await this.runTests();
             return;
         }
 
@@ -262,12 +324,17 @@ export class TestRunner {
                 testsInFiles[test.filePath].push(test.testName);
             }
 
+            // Remove duplicates
+            for (const [filePath, tests] of Object.entries(testsInFiles)) {
+                testsInFiles[filePath] = [...new Set(tests)];
+            }
+
             for (const [filePath, tests] of Object.entries(testsInFiles)) {
                 vscode.window.showInformationMessage(`Running tests in ${filePath}: ${tests.join(', ')}`);
             }
         }
 
-        this.runTests(testsToRunUnique);
+        await this.runTests(testsToRunUnique);
     }
 
     // Get coverage data
@@ -287,8 +354,8 @@ export class TestRunner {
     }
 
     // Parse test results
-    private updateTestResults(output: string, rewrite: boolean): void {
-        const newResults: TestResult = parsePytestOutput(output);
+    private async updateTestResults(rewrite: boolean): Promise<void> {
+        const newResults: TestResult = await getPytestResult();  // Implemented in parser.ts
         // If all tests are to be rewritten, overwrite the results
         if (rewrite) {
             this.results = newResults;
@@ -329,32 +396,83 @@ export class TestRunner {
         const workspacePath = workspaceFolders[0].uri.fsPath;
         const testsToRunString = testsToRun ? testsToRun.map(test => test.testName ? `${test.filePath}::${test.testName}` : `${test.filePath}`).join(' ') : '';
         const command =
-            `${pythonPath} -m pytest -vv --durations=${this.testDurationsToRun} --maxfail=0 --cov --cov-report=json --cov-branch --tb=short ${testsToRunString}|| true`;
+            `${pythonPath} -m pytest -vv --durations=${Settings.NUMBER_OF_SLOWEST_TESTS} --maxfail=0 --cov --cov-report=json --cov-branch --json-report --json-report-file=${PYTEST_OUTPUT_FILE} --db ${PYTEST_MONITOR_OUTPUT_FILE} --tb=short ${testsToRunString}|| true`;
 
         // The || true is to prevent the command from failing if there are failed tests
         // For specific tests, append FOLDER/FILE_NAME::TEST_NAME
         // Example: tests/fizzbuzz_test.py::test_error_shown_for_negative
 
-        exec(command, { cwd: workspacePath }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error executing command: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.error(`stderr: ${stderr}`);
-            }
-            console.log(`stdout: ${stdout}`);
-            // Process the output
-            this.updateTestResults(stdout, testsToRun ? false : true);  // Rewrite if no tests specified
+        return vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Test Runner: ",
+            cancellable: true
+        }, async (progress, token) => {
+            progress.report({ message: "Running..." });
 
-            this.updateCoverage(testsToRun ? false : true);
+            return new Promise<void>((resolve, reject) => {
+                this.testProcess = spawn(command, { cwd: workspacePath, shell: true });
 
-            this.saveState();
+                // Handle stdout (real-time output)
+                var percentage = '';
+                this.testProcess.stdout.on('data', (data: Buffer) => {
+                    console.log(`stdout: ${data}`);
+                    if (data.toString().endsWith('%]')) {
+                        percentage = data.toString().trim().slice(-6);
+                    }
+
+                    progress.report({ message: `Running... ${percentage}\n${data.toString().trim()}` });
+                });
+
+                // Handle stderr (errors)
+                this.testProcess.stderr.on('data', (data: Buffer) => {
+                    console.error(`stderr: ${data}`);
+                    vscode.window.showErrorMessage(`Test run error: ${data.toString().trim()}`);
+                });
+
+                // Handle process exit
+                this.testProcess.on('exit', async (code: number | null) => {
+                    this.testProcess = null;
+                    if (code === 0) {
+                        progress.report({ message: "Tests completed successfully!" });
+
+                        // Process the output
+                        await this.updateTestResults(testsToRun ? false : true);  // Rewrite if no tests specified
+                        this.updateCoverage(testsToRun ? false : true);
+                        this.saveState();
+
+                        // Save hash manually if all tests were run
+                        if (!testsToRun) {
+                            this.hash = await getWorkspaceHash();
+                            this.saveState();
+                        }
+
+                        // Finally save snapshot if enabled
+                        if (Settings.SAVE_SNAPSHOT_ON_TEST_RUN) {
+                            HistoryManager.saveSnapshot();
+                        }
+
+                    } else {
+                        vscode.window.showErrorMessage(`Tests failed with exit code ${code}`);
+                    }
+                    resolve();
+                });
+
+                // Handle process error
+                this.testProcess.on('error', (error: Error) => {
+                    console.error(`Process error: ${error.message}`);
+                    vscode.window.showErrorMessage(`Test run failed: ${error.message}`);
+                    reject(error);
+                });
+
+                // Handle cancellation
+                token.onCancellationRequested(() => {
+                    if (this.testProcess) {
+                        this.testProcess.kill(); // Kill the test process
+                        vscode.window.showWarningMessage("Test run cancelled.");
+                        resolve(); // Resolve to prevent hanging
+                    }
+                });
+            });
         });
-        // Save hash manunally if all tests were run
-        if (!testsToRun) {
-            this.hash = await getWorkspaceHash();
-            this.saveState();
-        }
     }
 }

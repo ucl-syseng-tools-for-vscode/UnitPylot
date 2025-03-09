@@ -10,7 +10,13 @@ export type TestFunctionResult = {
     passed: boolean;
     time: number;
     errorMessage?: string;
-    failureLocation?: string;
+    lineNo?: string;
     filePath?: string;
     testName?: string;
+    totalMemory?: number;
+    cpuUsage?: number;
+}
+
+export type MemoryAllocation = {
+    [key: string]: string;  // Function name : Memory allocation (x.xKiB)
 }

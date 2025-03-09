@@ -1,415 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test Results</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #1e1e1e;
-        color: #d4d4d4;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: left;
-        align-items: center;
-        height: auto;
-        flex-direction: column;
-      }
 
-      #run-tests-btn {
-        background-color: #0097fb;
-        color: white;
-        font-size: 16px;
-        font-weight: 500;
-        border: none;
-        border-radius: 0px;
-        padding: 8px 16px;
-        height: 35px; /* Fixed height */
-        width: 100%; /* Button stretches dynamically */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        outline: none;
-        transition: background-color 0.3s ease;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Results</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: left;
+      align-items: center;
+      height: auto;
+      flex-direction: column;
+    }
 
-      #run-tests-btn:hover {
-        background-color: #0e639c;
-        transform: translateY(-2px);
-      }
+    #run-tests-btn {
+      background-color: #0097fb;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border: none;
+      border-radius: 0px;
+      padding: 8px 16px;
+      height: 35px;
+      /* Fixed height */
+      width: 100%;
+      /* Button stretches dynamically */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
 
-      #run-tests-btn:active {
-        background-color: #094771;
-        transform: translateY(1px);
-      }
+    #run-tests-btn:hover {
+      background-color: #0e639c;
+      transform: translateY(-2px);
+    }
 
-      #chart-container {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        height: auto;
-        margin-bottom: 0;
-        padding: 0;
-      }
+    #run-tests-btn:active {
+      background-color: #094771;
+      transform: translateY(1px);
+    }
 
-      #chart {
-        display: none;
-        width: 100%;
-        height: 30px;
-      }
+    #chart-container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      height: auto;
+      margin-bottom: 0;
+      padding: 0;
+    }
 
-      #coverage-chart-container {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        height: auto;
-        margin-bottom: 0;
-        padding: 0;
-      }
+    #chart {
+      display: none;
+      width: 100%;
+      height: 30px;
+    }
 
-      #coverage-chart {
-        max-width: 105px;
-        max-height: 105px;
-      }
+    #coverage-chart-container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      height: auto;
+      margin-bottom: 0;
+      padding: 0;
+    }
 
-      #coverage-results {
-        margin-left: 20px;
-        line-height: 0.5;
-      }
+    #coverage-chart {
+      max-width: 105px;
+      max-height: 105px;
+    }
 
-      #button-container {
-        width: 100%; /* Take full width of parent */
-        display: flex;
-        margin-top: 0; /* Remove top margin */
-        padding: 0; /* Remove padding */
-      }
-    </style>
-  </head>
+    #coverage-results {
+      margin-left: 20px;
+      line-height: 0.5;
+    }
 
-  <body>
-    <div id="coverage-chart-container" class="card">
-      <canvas id="coverage-chart"></canvas>
-      <div id="coverage-results">
-        <strong>Line Coverage</strong>
-        <p id="coverage-results-covered">Covered</p>
-        <p id="coverage-results-missed">Missed</p>
-        <p id="coverage-results-skipped">Skipped</p>
-        <strong>Branch Coverage</strong>
-        <p id="coverage-results-branches-covered">Covered Branches</p>
-      </div>
+    #button-container {
+      width: 100%;
+      /* Take full width of parent */
+      display: flex;
+      margin-top: 0;
+      /* Remove top margin */
+      padding: 0;
+      /* Remove padding */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="coverage-chart-container" class="card">
+    <canvas id="coverage-chart"></canvas>
+    <div id="coverage-results">
+      <strong>Line Coverage</strong>
+      <p id="coverage-results-covered">Covered</p>
+      <p id="coverage-results-missed">Missed</p>
+      <p id="coverage-results-skipped">Skipped</p>
+      <strong>Branch Coverage</strong>
+      <p id="coverage-results-branches-covered">Covered Branches</p>
     </div>
+  </div>
 
-    <div id="chart-container">
-      <canvas id="chart"></canvas>
-    </div>
+  <div id="chart-container">
+    <canvas id="chart"></canvas>
+  </div>
 
-    <div id="button-container">
-      <button id="run-tests-btn" onclick="runTests()">
-        <span class="btn-text">Run Tests</span>
-      </button>
-    </div>
+  <div id="button-container">
+    <button id="run-tests-btn" onclick="runTests()">
+      <span class="btn-text">Run Tests</span>
+    </button>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel"></script>
-    <script>
-      const vscode = acquireVsCodeApi();
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel"></script>
+  <script>
+    const vscode = acquireVsCodeApi();
 
-      let state = {
-        testResults: null,
-        coverageResults: null,
-      };
+    let state = {
+      testResults: null,
+      coverageResults: null,
+    };
 
-      function saveState() {
-        vscode.setState(state);
-        console.log("State saved:", state);
-      }
+    function saveState() {
+      vscode.setState(state);
+      console.log("State saved:", state);
+    }
 
-      function restoreState() {
-        const savedState = vscode.getState();
-        if (savedState) {
-          state = savedState;
-          console.log("State restored:", state);
-          if (state.testResults) {
-            updateChart(state.testResults);
-          }
-          if (state.coverageResults) {
-            updateCoverage(state.coverageResults);
-          }
+    function restoreState() {
+      const savedState = vscode.getState();
+      if (savedState) {
+        state = savedState;
+        console.log("State restored:", state);
+        if (state.testResults) {
+          updateChart(state.testResults);
+        }
+        if (state.coverageResults) {
+          updateCoverage(state.coverageResults);
         }
       }
+    }
 
-      window.addEventListener("load", () => {
-        restoreState();
+    window.addEventListener("load", () => {
+      restoreState();
+    });
+
+    const runTestsBtn = document.getElementById("run-tests-btn");
+    const chart = document.getElementById("chart");
+    const chartContainer = document.getElementById("chart-container");
+
+    function runTests() {
+      console.log("called");
+      vscode.postMessage({ command: "runTests" });
+      runTestsBtn.style.marginTop = "0";
+      chart.style.display = "block";
+      resultsBar.style.display = "flex";
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.data.command === "updateResults") {
+        console.log("Updating chart with results:", event.data.results);
+        console.log("State before update:", state);
+        state.testResults = structuredClone(event.data.results);
+        console.log("State after update:", state);
+        saveState();
+        console.log("State after save:", state);
+        updateChart(event.data.results);
+      }
+    });
+
+    let testResultsChart; // Declare a variable to store the chart instance
+
+    // Function to modify results to make display better
+    function prettifyResults(results) {
+      const { passed, failed } = results;
+      console.log("Prettifying results:", passed, failed);
+      const ratio = passed / (passed + failed);
+      console.log("Ratio:", ratio);
+      if (ratio < 0.2) {
+        return { passed: 1, failed: 4 };
+      }
+      if (ratio > 0.8) {
+        console.log("Returning 4 passed, 1 failed");
+        return { passed: 4, failed: 1 };
+      } else {
+        return results;
+      }
+    }
+
+    function updateChart(results) {
+      const { passed, failed } = results;
+      const total = passed + failed;
+      const { passed: prettyPassed, failed: prettyFailed } = prettifyResults({
+        passed,
+        failed,
       });
 
-      const runTestsBtn = document.getElementById("run-tests-btn");
-      const chart = document.getElementById("chart");
-      const chartContainer = document.getElementById("chart-container");
-
-      function runTests() {
-        console.log("called");
-        vscode.postMessage({ command: "runTests" });
-        runTestsBtn.style.marginTop = "0";
-        chart.style.display = "block";
-        resultsBar.style.display = "flex";
+      if (testResultsChart) {
+        testResultsChart.destroy();
       }
 
-      window.addEventListener("message", (event) => {
-        if (event.data.command === "updateResults") {
-          console.log("Updating chart with results:", event.data.results);
-          console.log("State before update:", state);
-          state.testResults = structuredClone(event.data.results);
-          console.log("State after update:", state);
-          saveState();
-          console.log("State after save:", state);
-          updateChart(event.data.results);
-        }
-      });
+      const ctx = chart.getContext("2d");
+      if (!ctx) return;
 
-      let testResultsChart; // Declare a variable to store the chart instance
+      chartContainer.style.margin = "0";
+      chartContainer.style.padding = "0";
 
-      // Function to modify results to make display better
-      function prettifyResults(results) {
-        const { passed, failed } = results;
-        console.log("Prettifying results:", passed, failed);
-        const ratio = passed / (passed + failed);
-        console.log("Ratio:", ratio);
-        if (ratio < 0.2) {
-          return { passed: 1, failed: 4 };
-        }
-        if (ratio > 0.8) {
-          console.log("Returning 4 passed, 1 failed");
-          return { passed: 4, failed: 1 };
-        } else {
-          return results;
-        }
-      }
-
-      function updateChart(results) {
-        const { passed, failed } = results;
-        const total = passed + failed;
-        const { passed: prettyPassed, failed: prettyFailed } = prettifyResults({
-          passed,
-          failed,
-        });
-
-        if (testResultsChart) {
-          testResultsChart.destroy();
-        }
-
-        const ctx = chart.getContext("2d");
-        if (!ctx) return;
-
-        chartContainer.style.margin = "0";
-        chartContainer.style.padding = "0";
-
-        testResultsChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: ["Passed", "Failed"],
-            datasets: [
-              {
-                label: "Passed",
-                data: [prettyPassed],
-                backgroundColor: ["#327e36"],
-                maxBarThickness: 30,
-              },
-              {
-                label: "Failed",
-                data: [prettyFailed],
-                backgroundColor: ["#f14c4c"],
-                maxBarThickness: 30,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            indexAxis: "y",
-            plugins: {
-              legend: {
-                position: "top",
-                labels: {
-                  color: "#d4d4d4",
-                  font: {
-                    size: 14,
-                  },
-                },
-                display: false,
-              },
-              datalabels: {
-                formatter: (value, context) => {
-                  const label = context.dataset.label;
-                  const actualValue = results[label.toLowerCase()];
-                  return `${actualValue} ${label}`;
-                },
-                color: "#ffffff",
+      testResultsChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Passed", "Failed"],
+          datasets: [
+            {
+              label: "Passed",
+              data: [prettyPassed],
+              backgroundColor: ["#327e36"],
+              maxBarThickness: 30,
+            },
+            {
+              label: "Failed",
+              data: [prettyFailed],
+              backgroundColor: ["#f14c4c"],
+              maxBarThickness: 30,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          indexAxis: "y",
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#d4d4d4",
                 font: {
-                  weight: "bold",
                   size: 14,
                 },
               },
-              tooltip: {
-                callbacks: {
-                  title: function (context) {
-                    return context[0].dataset.label;
-                  },
-                  label: function (context) {
-                    const label = context.dataset.label;
-                    const actualValue = results[label.toLowerCase()];
+              display: false,
+            },
+            datalabels: {
+              formatter: (value, context) => {
+                const label = context.dataset.label;
+                const actualValue = results[label.toLowerCase()];
+                return `${actualValue} ${label}`;
+              },
+              color: "#ffffff",
+              font: {
+                weight: "bold",
+                size: 14,
+              },
+            },
+            tooltip: {
+              callbacks: {
+                title: function (context) {
+                  return context[0].dataset.label;
+                },
+                label: function (context) {
+                  const label = context.dataset.label;
+                  const actualValue = results[label.toLowerCase()];
 
-                    const percentage = ((actualValue / total) * 100).toFixed(1);
-                    return `${percentage}%`;
-                  },
+                  const percentage = ((actualValue / total) * 100).toFixed(1);
+                  return `${percentage}%`;
                 },
               },
             },
-            scales: {
-              x: {
-                stacked: true,
-                display: false,
-              },
-              y: {
-                stacked: true,
-                display: false,
-              },
+          },
+          scales: {
+            x: {
+              stacked: true,
+              display: false,
+            },
+            y: {
+              stacked: true,
+              display: false,
             },
           },
-          plugins: [ChartDataLabels],
-        });
-      }
-    </script>
-    <script>
-      const coverageChartContainer = document.getElementById(
-        "coverage-chart-container"
-      );
-      const coverageChart = document.getElementById("coverage-chart");
-
-      function getCoverage() {
-        console.log("Get Coverage button clicked");
-        vscode.postMessage({ command: "getCoverage" });
-        coverageChart.style.display = "block"; // Show the coverage chart
-      }
-
-      window.addEventListener("message", (event) => {
-        if (event.data.command === "updateCoverage") {
-          console.log(
-            "Frontend received updateCoverage message:",
-            event.data.coverage
-          );
-          state.coverageResults = structuredClone(event.data.coverage);
-          saveState();
-          updateCoverage(event.data.coverage);
-        }
+        },
+        plugins: [ChartDataLabels],
       });
+    }
+  </script>
+  <script>
+    const coverageChartContainer = document.getElementById(
+      "coverage-chart-container"
+    );
+    const coverageChart = document.getElementById("coverage-chart");
 
-      let coverageResultsChart; // Declare a variable to store the coverage chart instance
+    function getCoverage() {
+      console.log("Get Coverage button clicked");
+      vscode.postMessage({ command: "getCoverage" });
+      coverageChart.style.display = "block"; // Show the coverage chart
+    }
 
-      function updateCoverage(coverage) {
-        console.log("Updating coverage chart with:", coverage);
-        const totals = coverage.coverage.totals;
-        const total = totals.total;
+    window.addEventListener("message", (event) => {
+      if (event.data.command === "updateCoverage") {
+        console.log(
+          "Frontend received updateCoverage message:",
+          event.data.coverage
+        );
+        state.coverageResults = structuredClone(event.data.coverage);
+        saveState();
+        updateCoverage(event.data.coverage);
+      }
+    });
 
-        if (!totals) {
-          console.error("Coverage totals are undefined");
-          return;
-        }
+    let coverageResultsChart; // Declare a variable to store the coverage chart instance
 
-        if (coverageResultsChart) {
-          coverageResultsChart.destroy();
-        }
+    function updateCoverage(coverage) {
+      console.log("Updating coverage chart with:", coverage);
+      const totals = coverage.coverage.totals;
+      const total = totals.total;
 
-        // Update coverage results
-        document.getElementById(
-          "coverage-results-covered"
-        ).innerText = `${totals.covered} Covered`;
-        document.getElementById(
-          "coverage-results-missed"
-        ).innerText = `${totals.missed} Missed`;
-        document.getElementById(
-          "coverage-results-skipped"
-        ).innerText = `${totals.skipped} Skipped`;
-        document.getElementById(
-          "coverage-results-branches-covered"
-        ).innerText = `${totals.branches_covered} / ${totals.branches_total}`;
+      if (!totals) {
+        console.error("Coverage totals are undefined");
+        return;
+      }
 
-        // Generate a new coverage chart
-        const ctx = coverageChart.getContext("2d");
-        if (!ctx) return;
+      if (coverageResultsChart) {
+        coverageResultsChart.destroy();
+      }
 
-        coverageResultsChart = new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: ["Covered", "Skipped", "Uncovered"],
-            datasets: [
-              {
-                label: "Code Coverage",
-                data: [totals.covered, totals.skipped, totals.missed],
-                backgroundColor: ["#007acb", "#ed9c28", "#f14c4c"],
-                borderWidth: 0,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top",
-                labels: {
-                  color: "#d4d4d4",
-                  font: {
-                    size: 14,
-                  },
-                },
-                display: false,
-              },
-              datalabels: {
-                display: false,
-              },
-              tooltip: {
-                callbacks: {
-                  title: function (context) {
-                    return context[0].dataset.label;
-                  },
-                  label: function (context) {
-                    const value = context.raw;
-                    const percentage = ((value / total) * 100).toFixed(1);
-                    return `${percentage}%`;
-                  },
-                },
-              },
-            },
-          },
-          plugins: [
+      // Update coverage results
+      document.getElementById(
+        "coverage-results-covered"
+      ).innerText = `${totals.covered} Covered`;
+      document.getElementById(
+        "coverage-results-missed"
+      ).innerText = `${totals.missed} Missed`;
+      document.getElementById(
+        "coverage-results-skipped"
+      ).innerText = `${totals.skipped} Skipped`;
+      document.getElementById(
+        "coverage-results-branches-covered"
+      ).innerText = `${totals.branches_covered} / ${totals.branches_total}`;
+
+      // Generate a new coverage chart
+      const ctx = coverageChart.getContext("2d");
+      if (!ctx) return;
+
+      coverageResultsChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Covered", "Skipped", "Uncovered"],
+          datasets: [
             {
-              ChartDataLabels,
-              beforeDraw: (chart) => {
-                const { width } = chart;
-                const { height } = chart;
-                const ctx = chart.ctx;
-                ctx.restore();
-
-                const fontSize = (height / 50).toFixed(2);
-                ctx.font = `${fontSize}em sans-serif`;
-                ctx.fillStyle = "white";
-                ctx.textBaseline = "middle";
-
-                const text = `${((totals.covered / total) * 100).toFixed(0)}`;
-                const textX = Math.round(
-                  (width - ctx.measureText(text).width) / 2
-                );
-                const textY = height / 2;
-
-                ctx.fillText(text, textX, textY);
-                ctx.save();
-              },
+              label: "Code Coverage",
+              data: [totals.covered, totals.skipped, totals.missed],
+              backgroundColor: ["#007acb", "#ed9c28", "#f14c4c"],
+              borderWidth: 0,
             },
           ],
-        });
-      }
-    </script>
-  </body>
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#d4d4d4",
+                font: {
+                  size: 14,
+                },
+              },
+              display: false,
+            },
+            datalabels: {
+              display: false,
+            },
+            tooltip: {
+              callbacks: {
+                title: function (context) {
+                  return context[0].dataset.label;
+                },
+                label: function (context) {
+                  const value = context.raw;
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${percentage}%`;
+                },
+              },
+            },
+          },
+        },
+        plugins: [
+          {
+            ChartDataLabels,
+            beforeDraw: (chart) => {
+              const { width } = chart;
+              const { height } = chart;
+              const ctx = chart.ctx;
+              ctx.restore();
+
+              const fontSize = (height / 50).toFixed(2);
+              ctx.font = `${fontSize}em sans-serif`;
+              ctx.fillStyle = "white";
+              ctx.textBaseline = "middle";
+
+              const text = `${((totals.covered / total) * 100).toFixed(0)}`;
+              const textX = Math.round(
+                (width - ctx.measureText(text).width) / 2
+              );
+              const textY = height / 2;
+
+              ctx.fillText(text, textX, textY);
+              ctx.save();
+            },
+          },
+        ],
+      });
+    }
+  </script>
+</body>
+
 </html>
