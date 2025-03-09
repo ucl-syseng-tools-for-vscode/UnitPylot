@@ -44,12 +44,6 @@
           "id": "dashboard.failingtreeview",
           "name": "Failing Tests",
           "contextualTitle": "Failing Tests"
-        },
-        {
-          "type": "tree",
-          "id": "dashboard.slowestteststreeview",
-          "name": "Slowest Tests",
-          "contextualTitle": "Slowest Tests"
         }
       ]
     },
@@ -127,10 +121,6 @@
       {
         "command": "failingtests.refreshView",
         "title": "Refresh Failing Tests"
-      },
-      {
-        "command": "slowesttests.refreshView",
-        "title": "Refresh Slowest Tests"
       },
       {
         "command": "extension.openTestFile",

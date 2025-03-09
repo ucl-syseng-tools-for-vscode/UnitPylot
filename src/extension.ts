@@ -250,19 +250,6 @@ export function activate(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
-
-    // Register slowest tests tree view and refresh command
-    const workspaceRoot = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
-    const slowestTestsProvider = new SlowestTestsProvider(workspaceRoot);
-    const slowestTreeView = vscode.window.createTreeView('dashboard.slowestteststreeview', {
-        treeDataProvider: slowestTestsProvider
-    });
-    vscode.commands.registerCommand('slowesttests.refreshView', () => slowestTestsProvider.refresh());
-    vscode.commands.registerCommand('extension.openTestFile', async (filePath: string) => {
-        const fullPath = path.join(workspaceRoot, filePath); // Construct the full path
-        const document = await vscode.workspace.openTextDocument(fullPath);
-        await vscode.window.showTextDocument(document);
-    });
 }
 
 // Handles file open event
