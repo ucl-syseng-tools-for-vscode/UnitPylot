@@ -63,6 +63,10 @@
         "title": "TestPylot: Run Tests"
       },
       {
+        "command": "vscode-run-tests.runAllTests",
+        "title": "TestPylot: Run All Tests"
+      },
+      {
         "command": "vscode-run-tests.updateResults",
         "title": "TestPylot: Update Results"
       },

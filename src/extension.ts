@@ -86,6 +86,17 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(runTests);
 
+    // Register the runAllTests command
+    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+        try {
+            const results = await testRunner.runTests();
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
+        }
+    });
+
+    context.subscriptions.push(runAllTests);
+
 
     // Register the getCoverage command
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
