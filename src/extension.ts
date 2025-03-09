@@ -305,7 +305,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
 
-    const provider = new SidebarViewProvider(context.extensionUri);
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
@@ -327,7 +327,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
 
     context.subscriptions.push(
@@ -450,6 +450,16 @@ export function activate(context: vscode.ExtensionContext) {
                     testName: testName
                 }]
             )
+        })
+    );
+
+    // Register the update sidebar command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.updateSidebar', () => {
+            // Update the web view
+            webviewProvider.update();
+            // Update the tree view
+            failingTestsProvider.refresh();
         })
     );
 

@@ -167,6 +167,10 @@
       {
         "command": "extension.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
+      },
+      {
+        "command": "extension.updateSidebar",
+        "title": "TestPylot: Update Sidebar"
       }
     ],
     "menus": {
