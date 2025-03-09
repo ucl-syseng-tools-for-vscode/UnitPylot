@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { Snapshot } from "./snapshot";
 import { readJsonFile } from '../test-runner/helper-functions';
 import { TestRunner } from '../test-runner/test-runner';
+import { HistoryProcessor } from './history-processor';
 
 const workspaceFolders = vscode.workspace.workspaceFolders;
 if (!workspaceFolders) {
@@ -86,4 +87,93 @@ export class HistoryManager {
             console.error(error);
         }
     }
+}
+
+export class ReportGenerator {
+    public static async generateSnapshotReport() {
+        const passFailHistory = HistoryProcessor.getPassFailHistory();
+        if (passFailHistory.length === 0) {
+            vscode.window.showWarningMessage("No snapshot history available to generate a report.");
+            return;
+        }
+
+        const options: vscode.SaveDialogOptions = {
+            saveLabel: "Save Report",
+            filters: { 
+                "JSON Files": ["json"],
+                "Markdown Files": ["md"]
+            }
+        };
+
+        const uri = await vscode.window.showSaveDialog(options);
+        if (!uri) return;
+
+        const filePath = uri.fsPath;
+        const fileExtension = path.extname(filePath);
+
+        try {
+            if (fileExtension === ".json") {
+                fs.writeFileSync(filePath, JSON.stringify(passFailHistory, null, 4), "utf8");
+                vscode.window.showInformationMessage(`Snapshot report saved as JSON: ${filePath}`);
+            } else if (fileExtension === ".md") {
+                const markdownContent = ReportGenerator.generateMarkdownReport(passFailHistory);
+                fs.writeFileSync(filePath, markdownContent, "utf8");
+                vscode.window.showInformationMessage(`Snapshot report saved as Markdown: ${filePath}`);
+            } else {
+                vscode.window.showErrorMessage("Unsupported file format selected.");
+            }
+        } catch (error) {
+            const errorMessage = (error as Error).message;
+            vscode.window.showErrorMessage(`Error saving report: ${errorMessage}`);
+        }
+    }
+
+    private static generateMarkdownReport(passFailHistory: { date: string | Date; pass: number; fail: number }[]): string {
+        // Ensure all dates are converted to ISO strings
+        const formattedData = passFailHistory.map(entry => ({
+            date: (entry.date instanceof Date ? entry.date : new Date(entry.date)).toISOString(),
+            pass: entry.pass,
+            fail: entry.fail
+        }));
+    
+        // Get column widths for proper alignment
+        const columnWidths = {
+            date: Math.max(...formattedData.map(entry => entry.date.length), 12),
+            pass: Math.max(...formattedData.map(entry => entry.pass.toString().length), 4),
+            fail: Math.max(...formattedData.map(entry => entry.fail.toString().length), 4),
+        };
+    
+        // Function to pad text for alignment
+        const pad = (text: string, width: number) => text.padEnd(width, " ");
+    
+        // Table Header
+        let table = `| ${pad("Date (UTC)", columnWidths.date)} | ${pad("✅ Pass", columnWidths.pass)} | ${pad("❌ Fail", columnWidths.fail)} |\n`;
+        table += `|-${"-".repeat(columnWidths.date)}-|-${"-".repeat(columnWidths.pass)}-|-${"-".repeat(columnWidths.fail)}-|\n`;
+    
+        // Table Rows
+        table += formattedData.map(entry =>
+            `| ${pad(entry.date, columnWidths.date)} | ${pad(entry.pass.toString(), columnWidths.pass)} | ${pad(entry.fail.toString(), columnWidths.fail)} |`
+        ).join("\n");
+    
+        return `# Test Snapshot Report
+    
+    **Generated on:** ${new Date().toLocaleString()}
+    
+    ---
+    
+    ## Summary
+    - **Total Snapshots:** ${formattedData.length}
+    - **Total Passed Tests:** ${formattedData.reduce((sum, entry) => sum + entry.pass, 0)}
+    - **Total Failed Tests:** ${formattedData.reduce((sum, entry) => sum + entry.fail, 0)}
+    - **Pass Rate:** ${(formattedData.reduce((sum, entry) => sum + entry.pass, 0) / 
+                         (formattedData.reduce((sum, entry) => sum + entry.pass, 0) + 
+                          formattedData.reduce((sum, entry) => sum + entry.fail, 0)) * 100).toFixed(2)}%
+    
+    ---
+    
+    ## Test Results by Date
+    
+    ${table}
+    `;
+    }    
 }
