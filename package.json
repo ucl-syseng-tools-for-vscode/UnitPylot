@@ -175,7 +175,7 @@
       }, 
       {
         "command": "extension.exportSnapshotReport",
-        "title": "Testpylot: Download Snapshot Report"
+        "title": "TestPylot: Download Snapshot Report"
       }
     ],
     "menus": {
@@ -220,16 +220,6 @@
         }, 
         {
           "command": "generate-pydoc.generatePydoc",
-          "group": "llm-commands", 
-          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
-        {
-          "command": "test-history.showPassFailGraph",
-          "group": "llm-commands", 
-          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        },
-        {
-          "command": "test-history.showCoverageGraph",
           "group": "llm-commands", 
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
@@ -307,7 +297,7 @@
           "default": "http://localhost:8000/v1/chat/completions",
           "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
         },
-        "testpylot.customLLM Model": {
+        "test-pylot.customLLM Model": {
           "type": "string",
           "default": "",
           "description": "Custom LLM model to use if GitHub Copilot is not enabled."

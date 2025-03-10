@@ -139,7 +139,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the fix failing tests command
     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
         'fix-failing-tests.fixFailingTests',
-        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests())
+        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests(true))
 
     );
     context.subscriptions.push(fixFailingTestsCommand);
@@ -222,7 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
+        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5, true))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
@@ -231,7 +231,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
-        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory())
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory(true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
