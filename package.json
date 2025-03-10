@@ -175,7 +175,7 @@
       }, 
       {
         "command": "extension.exportSnapshotReport",
-        "title": "Testpylot: Download Snapshot Report"
+        "title": "TestPylot: Download Snapshot Report"
       }
     ],
     "menus": {
