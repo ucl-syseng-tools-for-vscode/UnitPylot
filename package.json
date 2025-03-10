@@ -44,6 +44,12 @@
           "id": "dashboard.failingtreeview",
           "name": "Failing Tests",
           "contextualTitle": "Failing Tests"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.graphdoctreeview",
+          "name": "Graphs & Docs",
+          "contextualTitle": "Graphs and Docs"
         }
       ]
     },

@@ -27,7 +27,8 @@ import { HistoryProcessor } from './test-history/history-processor';
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
-import { SlowestTestsProvider } from './dashboard-metrics/slowest-tests-tree-view';
+
+import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
 
@@ -397,6 +398,18 @@ export function activate(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
+    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('test-history.showPassFailGraph', () => {
+            vscode.window.showInformationMessage('Pass/Fail Graph command executed');
+        }),
+        vscode.commands.registerCommand('test-history.showCoverageGraph', () => {
+            vscode.window.showInformationMessage('Coverage Graph command executed');
+        })
+    );
 
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
