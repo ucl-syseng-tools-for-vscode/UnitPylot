@@ -23,6 +23,7 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
+import { ReportGenerator } from './test-history/report-generator';
 
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
@@ -211,6 +212,12 @@ export function activate(context: vscode.ExtensionContext) {
         handleFixCoverageCommand
     );
     context.subscriptions.push(fixCoverageCommand);
+
+    let exportSnapshotReport = vscode.commands.registerCommand('extension.exportSnapshotReport', () => {
+        ReportGenerator.generateSnapshotReport();
+    });
+
+    context.subscriptions.push(exportSnapshotReport);
 
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(

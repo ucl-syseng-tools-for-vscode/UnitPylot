@@ -172,6 +172,10 @@
       {
         "command": "extension.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
+      }, 
+      {
+        "command": "extension.exportSnapshotReport",
+        "title": "Testpylot: Download Snapshot Report"
       }
     ],
     "menus": {
