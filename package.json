@@ -297,7 +297,7 @@
           "default": "http://localhost:8000/v1/chat/completions",
           "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
         },
-        "testpylot.customLLM Model": {
+        "test-pylot.customLLM Model": {
           "type": "string",
           "default": "",
           "description": "Custom LLM model to use if GitHub Copilot is not enabled."
