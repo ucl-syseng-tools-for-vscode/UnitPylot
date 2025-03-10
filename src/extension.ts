@@ -23,7 +23,7 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
-import { ReportGenerator } from './test-history/history-manager';
+import { ReportGenerator } from './test-history/report-generator';
 
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
