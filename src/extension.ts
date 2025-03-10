@@ -27,7 +27,6 @@ import { HistoryProcessor } from './test-history/history-processor';
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
-import { SlowestTestsProvider } from './dashboard-metrics/slowest-tests-tree-view';
 
 export const jsonStore: Map<string, any> = new Map();
 
