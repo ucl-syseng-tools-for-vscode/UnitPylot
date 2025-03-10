@@ -224,16 +224,6 @@
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }, 
         {
-          "command": "test-history.showPassFailGraph",
-          "group": "llm-commands", 
-          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        },
-        {
-          "command": "test-history.showCoverageGraph",
-          "group": "llm-commands", 
-          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
-        {
           "command": "optimise-memory.optimiseMemory",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
