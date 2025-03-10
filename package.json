@@ -175,6 +175,10 @@
         "title": "TestPylot: Run Specific Test"
       },
       {
+        "command": "extension.exportSnapshotReport",
+        "title": "Testpylot: Download Snapshot Report"
+      },
+      {
         "command": "extension.updateSidebar",
         "title": "TestPylot: Update Sidebar"
       }
