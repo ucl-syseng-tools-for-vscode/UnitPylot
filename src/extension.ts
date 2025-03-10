@@ -28,6 +28,8 @@ import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
 
+import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
+
 export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
@@ -84,6 +86,17 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(runTests);
+
+    // Register the runAllTests command
+    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+        try {
+            const results = await testRunner.runTests();
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
+        }
+    });
+
+    context.subscriptions.push(runAllTests);
 
 
     // Register the getCoverage command
@@ -293,7 +306,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
 
-    const provider = new SidebarViewProvider(context.extensionUri);
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
@@ -315,7 +328,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
 
     context.subscriptions.push(
@@ -386,6 +399,18 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 
+    const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
+    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('test-history.showPassFailGraph', () => {
+            vscode.window.showInformationMessage('Pass/Fail Graph command executed');
+        }),
+        vscode.commands.registerCommand('test-history.showCoverageGraph', () => {
+            vscode.window.showInformationMessage('Coverage Graph command executed');
+        })
+    );
+
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -438,6 +463,16 @@ export function activate(context: vscode.ExtensionContext) {
                     testName: testName
                 }]
             )
+        })
+    );
+
+    // Register the update sidebar command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.updateSidebar', () => {
+            // Update the web view
+            webviewProvider.update();
+            // Update the tree view
+            failingTestsProvider.refresh();
         })
     );
 

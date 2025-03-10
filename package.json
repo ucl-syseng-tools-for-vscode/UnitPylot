@@ -44,6 +44,12 @@
           "id": "dashboard.failingtreeview",
           "name": "Failing Tests",
           "contextualTitle": "Failing Tests"
+        },
+        {
+          "type": "tree",
+          "id": "dashboard.graphdoctreeview",
+          "name": "Graphs & Docs",
+          "contextualTitle": "Graphs and Docs"
         }
       ]
     },
@@ -61,6 +67,10 @@
       {
         "command": "vscode-run-tests.runTests",
         "title": "TestPylot: Run Tests"
+      },
+      {
+        "command": "vscode-run-tests.runAllTests",
+        "title": "TestPylot: Run All Tests"
       },
       {
         "command": "vscode-run-tests.updateResults",
@@ -163,6 +173,10 @@
       {
         "command": "extension.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
+      },
+      {
+        "command": "extension.updateSidebar",
+        "title": "TestPylot: Update Sidebar"
       }
     ],
     "menus": {
