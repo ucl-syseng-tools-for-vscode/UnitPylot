@@ -29,6 +29,8 @@ import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
 
+import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
+
 export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
@@ -85,6 +87,17 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(runTests);
+
+    // Register the runAllTests command
+    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+        try {
+            const results = await testRunner.runTests();
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
+        }
+    });
+
+    context.subscriptions.push(runAllTests);
 
 
     // Register the getCoverage command
@@ -300,7 +313,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
 
-    const provider = new SidebarViewProvider(context.extensionUri);
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
@@ -322,7 +335,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
 
     context.subscriptions.push(
@@ -339,14 +352,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(openWebView);
 
-    // Register the dependency tree view
-    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
-    vscode.window.createTreeView('dashboard.treeview', {
-        treeDataProvider: dependenciesProvider
-    });
-
-    // Register the refresh command
-    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
 
     // Register the settings page command
     context.subscriptions.push(
@@ -355,7 +360,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // TODO: Move this junk elsewhere
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath, context.workspaceState);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
@@ -401,6 +405,18 @@ export function activate(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
+    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('test-history.showPassFailGraph', () => {
+            vscode.window.showInformationMessage('Pass/Fail Graph command executed');
+        }),
+        vscode.commands.registerCommand('test-history.showCoverageGraph', () => {
+            vscode.window.showInformationMessage('Coverage Graph command executed');
+        })
+    );
 
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
@@ -454,6 +470,16 @@ export function activate(context: vscode.ExtensionContext) {
                     testName: testName
                 }]
             )
+        })
+    );
+
+    // Register the update sidebar command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.updateSidebar', () => {
+            // Update the web view
+            webviewProvider.update();
+            // Update the tree view
+            failingTestsProvider.refresh();
         })
     );
 

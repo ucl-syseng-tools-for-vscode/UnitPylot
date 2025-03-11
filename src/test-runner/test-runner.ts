@@ -404,7 +404,7 @@ export class TestRunner {
 
         return vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Test Runner: ",
+            title: "Test Runner",
             cancellable: true
         }, async (progress, token) => {
             progress.report({ message: "Running..." });
@@ -445,6 +445,9 @@ export class TestRunner {
                             this.hash = await getWorkspaceHash();
                             this.saveState();
                         }
+
+                        // Update the sidebar
+                        vscode.commands.executeCommand('extension.updateSidebar');
 
                         // Finally save snapshot if enabled
                         if (Settings.SAVE_SNAPSHOT_ON_TEST_RUN) {

@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage"
+    "onLanguage",
+    "onCommand:slowestTests.refresh"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -40,15 +41,15 @@
         },
         {
           "type": "tree",
-          "id": "dashboard.treeview",
-          "name": "Dependency Tree View",
-          "contextualTitle": "Tree"
+          "id": "dashboard.failingtreeview",
+          "name": "Tests Overview",
+          "contextualTitle": "Tests Overview"
         },
         {
           "type": "tree",
-          "id": "dashboard.failingtreeview",
-          "name": "Failing Tests",
-          "contextualTitle": "Failing Tests"
+          "id": "dashboard.graphdoctreeview",
+          "name": "Graphs & Docs",
+          "contextualTitle": "Graphs and Docs"
         }
       ]
     },
@@ -66,6 +67,10 @@
       {
         "command": "vscode-run-tests.runTests",
         "title": "TestPylot: Run Tests"
+      },
+      {
+        "command": "vscode-run-tests.runAllTests",
+        "title": "TestPylot: Run All Tests"
       },
       {
         "command": "vscode-run-tests.updateResults",
@@ -110,14 +115,6 @@
       {
         "command": "optimise-slowest.optimiseSlowest",
         "title": "TestPylot: Optimise Slowest Tests"
-      },
-      {
-        "command": "dependencies.getDependencies",
-        "title": "TestPylot: Get Dependencies"
-      },
-      {
-        "command": "dependencies.refreshView",
-        "title": "TestPylot: Refresh Dependencies View"
       },
       {
         "command": "generate-pydoc.generatePydoc",
@@ -166,16 +163,24 @@
         "title": "TestPylot: Refresh Failing Tests"
       },
       {
+        "command": "extension.openTestFile",
+        "title": "Open Test File"
+      },
+      {
         "command": "extension.runTestsInFile",
         "title": "TestPylot: Run Tests in File"
       },
       {
         "command": "extension.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
-      }, 
+      },
       {
         "command": "extension.exportSnapshotReport",
-        "title": "TestPylot: Download Snapshot Report"
+        "title": "Testpylot: Download Snapshot Report"
+      },
+      {
+        "command": "extension.updateSidebar",
+        "title": "TestPylot: Update Sidebar"
       }
     ],
     "menus": {
@@ -205,24 +210,24 @@
       "testpylot.commands": [
         {
           "command": "fix-failing-tests.fixFailingTests",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
           "command": "fix-coverage.fixCoverage",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
         },
         {
           "command": "optimise-slowest.optimiseSlowest",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
+        },
         {
           "command": "generate-pydoc.generatePydoc",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
+        },
         {
           "command": "optimise-memory.optimiseMemory",
           "group": "llm-commands",
@@ -236,7 +241,7 @@
         "label": "TestPylot Commands",
         "group": "llm-commands"
       }
-    ], 
+    ],
     "configuration": {
       "title": "TestPylot",
       "properties": {
