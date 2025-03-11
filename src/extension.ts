@@ -409,15 +409,6 @@ export function activate(context: vscode.ExtensionContext) {
     const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
     vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('test-history.showPassFailGraph', () => {
-            vscode.window.showInformationMessage('Pass/Fail Graph command executed');
-        }),
-        vscode.commands.registerCommand('test-history.showCoverageGraph', () => {
-            vscode.window.showInformationMessage('Coverage Graph command executed');
-        })
-    );
-
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
