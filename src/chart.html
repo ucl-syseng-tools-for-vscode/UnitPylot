@@ -12,10 +12,26 @@
         margin: 0;
         padding: 20px;
         display: flex;
-        justify-content: left;
+        justify-content: center;
         align-items: center;
-        height: auto;
+        height: 100vh;
         flex-direction: column;
+      }
+
+      #button-container {
+        width: 100%; /* Take full width of parent */
+        display: flex;
+        justify-content: center; /* Center align buttons */
+        margin: 0; /* Remove top margin */
+        padding: 0; /* Remove padding */
+      }
+
+      .dropdown-container {
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: 100%; /* Take full width of parent */
+        max-width: 600px; /* Optional: set a max width */
       }
 
       #run-tests-btn {
@@ -34,6 +50,7 @@
         outline: none;
         transition: background-color 0.3s ease;
         position: relative;
+        flex-grow: 4; /* 80% width */
       }
 
       #run-tests-btn:hover {
@@ -62,6 +79,7 @@
         outline: none;
         transition: background-color 0.3s ease;
         position: relative;
+        flex-grow: 1; /* 20% width */
         margin-left: 5px; /* Add some space between buttons */
       }
 
@@ -78,7 +96,8 @@
       #dropdown {
         display: none;
         position: absolute;
-        background-color: #1e1e1e;
+        margin-top: 2px;
+        background-color: #0097fb;
         box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
         z-index: 1;
         top: 100%; /* Position below the button */
@@ -102,8 +121,8 @@
         width: 100%;
         max-width: 1200px;
         height: auto;
-        margin-bottom: 0;
-        padding: 0;
+        margin: 0; /* Remove margin */
+        padding: 0; /* Remove padding */
       }
 
       #chart {
@@ -127,21 +146,8 @@
       }
 
       #coverage-results {
-        margin-left: 20px;
+        margin-left: 30px;
         line-height: 0.5;
-      }
-
-      #button-container {
-        width: 100%; /* Take full width of parent */
-        display: flex;
-        margin-top: 0; /* Remove top margin */
-        padding: 0; /* Remove padding */
-      }
-
-      .dropdown-container {
-        display: flex;
-        align-items: center;
-        position: relative;
       }
     </style>
   </head>
@@ -214,19 +220,21 @@
       const chartContainer = document.getElementById("chart-container");
 
       function runTests() {
-        console.log("called");
-        vscode.postMessage({ command: "runTests" });
+        console.log("Run Tests button clicked");
+        vscode.postMessage({ command: "vscode-run-tests.runTests" });
         runTestsBtn.style.marginTop = "0";
         chart.style.display = "block";
-        resultsBar.style.display = "flex";
+        // Assuming resultsBar is defined somewhere in your code
+        // resultsBar.style.display = "flex";
       }
 
       function runAllTests() {
-        console.log("Run All Tests clicked");
-        vscode.postMessage({ command: "runAllTests" });
+        console.log("Run All Tests button clicked");
+        vscode.postMessage({ command: "vscode-run-tests.runAllTests" });
         runTestsBtn.style.marginTop = "0";
         chart.style.display = "block";
-        resultsBar.style.display = "flex";
+        // Assuming resultsBar is defined somewhere in your code
+        // resultsBar.style.display = "flex";
       }
 
       function toggleDropdown() {
@@ -237,11 +245,8 @@
       window.addEventListener("message", (event) => {
         if (event.data.command === "updateResults") {
           console.log("Updating chart with results:", event.data.results);
-          console.log("State before update:", state);
           state.testResults = structuredClone(event.data.results);
-          console.log("State after update:", state);
           saveState();
-          console.log("State after save:", state);
           updateChart(event.data.results);
         }
       });
@@ -251,14 +256,11 @@
       // Function to modify results to make display better
       function prettifyResults(results) {
         const { passed, failed } = results;
-        console.log("Prettifying results:", passed, failed);
         const ratio = passed / (passed + failed);
-        console.log("Ratio:", ratio);
         if (ratio < 0.2) {
           return { passed: 1, failed: 4 };
         }
         if (ratio > 0.8) {
-          console.log("Returning 4 passed, 1 failed");
           return { passed: 4, failed: 1 };
         } else {
           return results;
@@ -385,7 +387,6 @@
       let coverageResultsChart; // Declare a variable to store the coverage chart instance
 
       function updateCoverage(coverage) {
-        console.log("Updating coverage chart with:", coverage);
         const totals = coverage.coverage.totals;
         const total = totals.total;
 

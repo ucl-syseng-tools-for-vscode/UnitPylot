@@ -42,8 +42,8 @@
         {
           "type": "tree",
           "id": "dashboard.failingtreeview",
-          "name": "Failing Tests",
-          "contextualTitle": "Failing Tests"
+          "name": "Tests Overview",
+          "contextualTitle": "Tests Overview"
         },
         {
           "type": "tree",
