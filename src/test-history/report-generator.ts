@@ -33,8 +33,8 @@ export class ReportGenerator {
             if (fileExtension === ".json") {
                 const fullData = passFailHistory.map((entry, index) => ({
                     ...entry,
-                    coverage: snapshots[index]?.coverage?.totals?.percentCovered !== undefined
-                        ? snapshots[index].coverage.totals.percentCovered.toFixed(2) + "%"
+                    coverage: snapshots[index]?.coverage?.totals?.percentCovered
+                        ? snapshots[index].coverage?.totals.percentCovered.toFixed(2) + "%"
                         : "N/A",
                     linesCovered: snapshots[index]?.coverage?.totals?.covered ?? "N/A",
                     linesMissed: snapshots[index]?.coverage?.totals?.missed ?? "N/A",
@@ -64,8 +64,8 @@ export class ReportGenerator {
             date: entry.date instanceof Date ? entry.date.toISOString() : new Date(entry.date).toISOString(),
             pass: entry.pass,
             fail: entry.fail,
-            coverage: snapshots[index]?.coverage?.totals?.percentCovered !== undefined
-                ? snapshots[index].coverage.totals.percentCovered.toFixed(2) + "%"
+            coverage: snapshots[index]?.coverage?.totals?.percentCovered
+                ? snapshots[index].coverage?.totals.percentCovered.toFixed(2) + "%"
                 : "N/A",
             linesCovered: snapshots[index]?.coverage?.totals?.covered ?? "N/A",
             linesMissed: snapshots[index]?.coverage?.totals?.missed ?? "N/A",
