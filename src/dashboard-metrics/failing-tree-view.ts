@@ -58,7 +58,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     private async getRootFiles(): Promise<FailingTest[]> {
         const testResults = await this.testRunner.getAllResults(true);
         const slowestTests = await this.testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true);
-        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(5, true);
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS, true);
         const failingTestsOutput: FailingTest[] = [];
         const fileMap: { [key: string]: FailingTest[] } = {};
         const fileIcons: { [key: string]: Set<string> } = {};
@@ -233,7 +233,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             }
         }
 
-        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(5, true);
+        const highestMemoryTests = await this.testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS, true);
         for (const memoryTest of highestMemoryTests) {
             const testName = memoryTest.testName;
             const filePath = memoryTest.filePath;
