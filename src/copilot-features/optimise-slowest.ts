@@ -10,7 +10,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 Analyse Slow Tests:
 For the provided test suite:
 
-1. Review the slowest tests based on the execution time.
+1. Review the tests based on their execution time.
 
 2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
 
@@ -26,20 +26,63 @@ Guidelines:
 - Detail: Ensure the suggested optimizations are actionable and directly address the issue, focusing on improving performance.
 - Performance: Consider both the speed of execution and maintainability of the optimized test.
 
+Here is an example of the expected response format:
+
+{
+  "test_name": test name,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}, 
+{
+  "test_name": test name,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}
 `;
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    try {
-        var codeWithLineNumbers: string[] = [];
-        for (const test of slowestTests) {
-            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, slowestTests);
+    if  (codeWithLineNumbers.length > 0) {
+        vscode.window.showInformationMessage("Slowest tests are present in the current file.");
+        try {
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+
+        } catch (error) {
+            console.error("Error in handleOptimiseSlowestTestsCommand:", error);
         }
-
-        console.log("CODE2", codeWithLineNumbers);
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
-
-    } catch (error) {
-        console.error("Error in handleOptimiseSlowestTestsCommand:", error);
+    }
+    else {
+        vscode.window.showInformationMessage("None of the slowest tests are present in the current file.");
     }
 }
+
+
+
+// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
+    const documentText = editor.document.getText();
+    var codeWithLineNumbers: string[] = [];
+
+    for (const test of tests) {
+        const testName = test.testName;
+
+        if (testName) {
+            // Extracts everything after the last '::'
+            const funcMatch = testName.match(/([^:]+)$/);
+            const functionName = funcMatch ? funcMatch[1] : null;
+
+            if (functionName) {
+                const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+
+                const match = documentText.match(functionRegex);
+                if (match) { // Test case is present in this file 
+                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                }
+            }
+        }
+    }
+    return codeWithLineNumbers;
+}
+

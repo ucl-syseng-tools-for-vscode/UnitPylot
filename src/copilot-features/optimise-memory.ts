@@ -10,7 +10,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 ## Analysis Scope:
 For the provided test suite, which includes test code, and the total memory allocations and size from a memray report:
 
-1. Identify the most memory-intensive test cases based on total memory allocated.
+1. Review all the test cases based on total memory allocated.
 2. Detect potential inefficiencies such as:
    - Unnecessary data structures or excessive object creation.
    - Inefficient loops or redundant computations.
@@ -37,7 +37,13 @@ The response must be in the format of a single **JSON object**, starting directl
 Here is an example of the expected response format:
 
 {
-  "test_name": 1,
+  "test_name": test name,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+  "bottleneck": issue
+}, 
+{
+  "test_name": test name,
   "suggestion": issue,
   "code_snippet": <corrected_code>
   "bottleneck": issue
@@ -47,16 +53,46 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
+    console.log(mostMemoryTests);
+    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, mostMemoryTests);
+    if  (codeWithLineNumbers.length > 0) {
+        vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
+        try {
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
 
-    try {
-        var codeWithLineNumbers: string[] = [];
-        for (const test of mostMemoryTests) {
-            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+        } catch (error) {
+            console.error("Error in handleOptimiseMemoryCommand:", error);
         }
-        console.log("mostMemoryTests:", mostMemoryTests);
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
-    } catch (error) {
-        console.error("Error in handleOptimiseMemoryCommand:", error);
+    }
+    else {
+        vscode.window.showInformationMessage("None of the most memory intensive tests are present in the current file.");
     }
 }
 
+
+// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
+    const documentText = editor.document.getText();
+    var codeWithLineNumbers: string[] = [];
+
+    for (const test of tests) {
+        const testName = test.testName;
+
+        if (testName) {
+            // Extracts everything after the last '::'
+            const funcMatch = testName.match(/([^:]+)$/);
+            const functionName = funcMatch ? funcMatch[1] : null;
+
+            if (functionName) {
+                const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+
+                const match = documentText.match(functionRegex);
+                if (match) { // Test case is present in this file 
+                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.totalMemory + "s");
+                }
+            }
+        }
+    }
+    return codeWithLineNumbers;
+}

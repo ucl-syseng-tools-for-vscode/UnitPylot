@@ -237,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
-        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory(true))
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(5,true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
