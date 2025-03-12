@@ -10,7 +10,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 ## Analysis Scope:
 For the provided test suite, which includes test code, and the total memory allocations and size from a memray report:
 
-1. Identify the most memory-intensive test cases based on total memory allocated.
+1. Review all the test cases based on total memory allocated.
 2. Detect potential inefficiencies such as:
    - Unnecessary data structures or excessive object creation.
    - Inefficient loops or redundant computations.
@@ -37,13 +37,13 @@ The response must be in the format of a single **JSON object**, starting directl
 Here is an example of the expected response format:
 
 {
-  "test_name": 1,
+  "test_name": test name,
   "suggestion": issue,
   "code_snippet": <corrected_code>
   "bottleneck": issue
 }, 
 {
-  "test_name": 1,
+  "test_name": test name,
   "suggestion": issue,
   "code_snippet": <corrected_code>
   "bottleneck": issue
@@ -53,6 +53,7 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
+    console.log(mostMemoryTests);
     var codeWithLineNumbers = checkIfTestIsPresent(textEditor, mostMemoryTests);
     if  (codeWithLineNumbers.length > 0) {
         vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
@@ -88,7 +89,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.totalMemory + "s");
                 }
             }
         }
