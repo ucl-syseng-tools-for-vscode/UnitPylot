@@ -27,8 +27,8 @@
     "chatParticipants": [
       {
         "id": "vscode-testing-chat",
-        "name": "python-tester",
-        "description": "Specialised chat for building and editing good testing infrastructure"
+        "name": "TestPylot-AAA-Assistant",
+        "description": "Implement good python testing practices using the AAA pattern"
       }
     ],
     "views": {
