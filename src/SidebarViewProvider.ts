@@ -57,7 +57,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       }
       if (msg.command === 'vscode-run-tests.runAllTests') {
         vscode.commands.executeCommand('vscode-run-tests.runAllTests');
-    }
+      }
       if (msg.command === 'getCoverage') {
         vscode.commands.executeCommand('vscode-run-tests.getCoverage');
       }
