@@ -47,16 +47,36 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
+    if (checkIfTestIsPresent(textEditor, mostMemoryTests)==1) {
+        vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
 
-    try {
-        var codeWithLineNumbers: string[] = [];
-        for (const test of mostMemoryTests) {
-            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+        try {
+            var codeWithLineNumbers: string[] = [];
+            for (const test of mostMemoryTests) {
+                codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+            }
+            console.log("mostMemoryTests:", mostMemoryTests);
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+        } catch (error) {
+            console.error("Error in handleOptimiseMemoryCommand:", error);
         }
-        console.log("mostMemoryTests:", mostMemoryTests);
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
-    } catch (error) {
-        console.error("Error in handleOptimiseMemoryCommand:", error);
+    }
+    else {
+        vscode.window.showInformationMessage("None of the most memory intensive tests are present in the current file.");
     }
 }
 
+
+// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
+    const documentText = editor.document.getText();
+
+    for (const test of tests) {
+        const functionRegex = new RegExp(`def\\s+${test}\\s*\\(`); 
+        const match = documentText.match(functionRegex);
+        if (match) { // Test case is present in this File 
+            return 1;
+        } 
+    }
+    return 0;
+}
