@@ -35,21 +35,26 @@ async function getFunctionsInFile(filePath: string): Promise<{ [key: string]: st
     if (pythonPath) {
         const command = `${pythonPath} ${scriptPath} ${filePath}`;
         return new Promise((resolve, reject) => {
-            exec(command, (error, stdout, stderr) => {
-                if (error) {
-                    vscode.window.showErrorMessage(`Function Error: ${stderr}`);
-                    reject(error);
-                    return;
-                }
+            try {
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`Function Error: ${stderr}`);
+                        reject(error);
+                        return;
+                    }
 
-                try {
-                    const functions = JSON.parse(stdout);
-                    resolve(functions);
-                } catch (e) {
-                    vscode.window.showErrorMessage(`Error parsing functions: ${e}`);
-                    reject(e);
-                }
-            });
+                    try {
+                        const functions = JSON.parse(stdout);
+                        resolve(functions);
+                    } catch (e) {
+                        console.error(`Error parsing functions: ${e}`);
+                        reject(e);
+                    }
+                });
+            } catch (e) {
+                console.error(`Error executing command: ${e}`);
+                reject(e);
+            }
         });
     }
     else {
@@ -97,8 +102,12 @@ async function hashDirectory(directoryPath: string): Promise<Hash> {
             if (!file.endsWith('.py')) {
                 continue;
             }
-            const fileHash = await hashFile(filePath);
-            hash[relativeFilePath] = fileHash;
+            try {
+                const fileHash = await hashFile(filePath);
+                hash[relativeFilePath] = fileHash;
+            } catch (e) {
+                console.error(`Error hashing file: ${e}`);
+            }
         }
     }
     return hash;
