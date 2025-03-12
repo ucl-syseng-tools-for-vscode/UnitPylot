@@ -20,14 +20,18 @@ export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATIO
 }
 
 // Parses chat response and applies decoration
-async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse, textEditor: vscode.TextEditor, decorationMethod: number) {
+async function parseChatResponse(
+    chatResponse: vscode.LanguageModelChatResponse,
+    textEditor: vscode.TextEditor,
+    decorationMethod: number
+) {
     let accumulatedResponse = '';
+    let parsedSuccessfully = false; // Flag to track successful parsing
 
     for await (const fragment of chatResponse.text) {
         if (fragment.includes('},')) {
             accumulatedResponse += '}';
-        }
-        else {
+        } else {
             accumulatedResponse += fragment;
         }
 
@@ -37,24 +41,27 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
 
-                // added a function to display the annotations according to the command
                 handleAnnotation(textEditor, annotation, decorationMethod);
                 accumulatedResponse = '';
+                parsedSuccessfully = true; // Mark as successfully parsed
             } catch {
-                // If everything is in one fragment, try to parse the whole thing
                 try {
                     const annotations = JSON.parse(`[${fragment}]`);
                     for (const annotation of annotations) {
                         console.log('Annotation:', annotation);
                         handleAnnotation(textEditor, annotation, decorationMethod);
                     }
-                }
-                catch {
-                    console.error('Failed to parse annotation:', accumulatedResponse);
-                    vscode.window.showErrorMessage('Failed to parse LLM output. Please run the command again...');
+                    parsedSuccessfully = true; 
+                } catch {
+                    console.warn('Parsing attempt failed for fragment:', fragment);
                 }
             }
         }
+    }
+
+    if (!parsedSuccessfully) {
+        console.error('Failed to parse annotation:', accumulatedResponse);
+        vscode.window.showErrorMessage('Failed to parse LLM output. Please run the command again...');
     }
 }
 
