@@ -172,7 +172,7 @@
       {
         "command": "extension.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
-      }, 
+      },
       {
         "command": "extension.exportSnapshotReport",
         "title": "TestPylot: Download Snapshot Report"
@@ -205,24 +205,24 @@
       "testpylot.commands": [
         {
           "command": "fix-failing-tests.fixFailingTests",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
           "command": "fix-coverage.fixCoverage",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
         },
         {
           "command": "optimise-slowest.optimiseSlowest",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
+        },
         {
           "command": "generate-pydoc.generatePydoc",
-          "group": "llm-commands", 
+          "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
-        }, 
+        },
         {
           "command": "optimise-memory.optimiseMemory",
           "group": "llm-commands",
@@ -236,7 +236,7 @@
         "label": "TestPylot Commands",
         "group": "llm-commands"
       }
-    ], 
+    ],
     "configuration": {
       "title": "TestPylot",
       "properties": {
@@ -259,6 +259,11 @@
           "type": "number",
           "default": 5,
           "description": "Number of slowest tests to display."
+        },
+        "test-pylot.numberOfMemoryIntensiveTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of memory intensive tests to display."
         },
         "test-pylot.snapshotInterval": {
           "type": "number",
