@@ -106,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
             // runSlowestTests();
-            const slowest = await testRunner.getSlowestTests(5);
+            const slowest = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS);
             vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
@@ -222,7 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5, true))
+        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
@@ -317,7 +317,7 @@ export function activate(context: vscode.ExtensionContext) {
             jsonStore.set('coverage', coverage);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         }
-        const slowest = await testRunner.getSlowestTests(5, true);
+        const slowest = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
     });
 
