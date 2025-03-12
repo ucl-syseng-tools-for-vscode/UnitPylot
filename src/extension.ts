@@ -23,11 +23,15 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
+import {fetchPrompt} from './copilot-features/chat';
 import { ReportGenerator } from './test-history/report-generator';
 
 import { Settings } from './settings/settings';
 import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
+
+import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
+
 
 export const jsonStore: Map<string, any> = new Map();
 
@@ -54,23 +58,14 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    // Register the chat participant
     vscode.chat.createChatParticipant("vscode-testing-chat", async (request, context, response, token) => {
         const userQuery = request.prompt;
-
-        // Context - python files and tests 
-        const pythonFiles = await getPythonFiles();
-        const contextContent = pythonFiles.join('\n\n');
-
-        const messages: LlmMessage[] = [
-            {
-                role: 'user',
-                content: `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query:\n\n${userQuery}`
-            }
-        ]
-        const chatRequest = await Llm.sendRequest(messages);
-
-        for await (const token of chatRequest.text) {
-            response.markdown(token);
+        const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
+        const messages = await fetchPrompt(userQuery);
+        const chatRequest = await chatModels[0].sendRequest(messages, {}, token);
+        for await (const fragment of chatRequest.text) {
+            response.markdown(fragment);
         }
     });
 
@@ -85,6 +80,17 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(runTests);
+
+    // Register the runAllTests command
+    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+        try {
+            const results = await testRunner.runTests();
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
+        }
+    });
+
+    context.subscriptions.push(runAllTests);
 
 
     // Register the getCoverage command
@@ -231,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
-        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory(true))
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(5,true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
@@ -300,7 +306,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
 
-    const provider = new SidebarViewProvider(context.extensionUri);
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
@@ -322,7 +328,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
 
     context.subscriptions.push(
@@ -339,14 +345,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(openWebView);
 
-    // Register the dependency tree view
-    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
-    vscode.window.createTreeView('dashboard.treeview', {
-        treeDataProvider: dependenciesProvider
-    });
-
-    // Register the refresh command
-    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
 
     // Register the settings page command
     context.subscriptions.push(
@@ -355,7 +353,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // TODO: Move this junk elsewhere
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath, context.workspaceState);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
@@ -401,6 +398,9 @@ export function activate(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
+    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
 
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
@@ -457,6 +457,16 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Register the update sidebar command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.updateSidebar', () => {
+            // Update the web view
+            webviewProvider.update();
+            // Update the tree view
+            failingTestsProvider.refresh();
+        })
+    );
+
     startIntervalTask(context);
 
 }
@@ -497,16 +507,7 @@ export async function handleFileOpen(editor: vscode.TextEditor, testRunner: Test
     }
 }
 
-async function getPythonFiles(): Promise<string[]> {
-    const pythonFiles: string[] = [];
-    // find Python files while excluding files in venv or other virtual environment folders
-    const uris = await vscode.workspace.findFiles('**/*.py', '**/venv/**');
-    for (const uri of uris) {
-        const content = (await vscode.workspace.fs.readFile(uri)).toString();
-        pythonFiles.push(`File: ${uri.fsPath}\n${content}`);
-    }
-    return pythonFiles;
-}
+
 
 // Deactivation Method for the Extension
 export function deactivate() { }
