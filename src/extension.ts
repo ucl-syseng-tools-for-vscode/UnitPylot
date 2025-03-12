@@ -23,8 +23,6 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
-import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
-import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import {fetchPrompt} from './copilot-features/chat';
 import { ReportGenerator } from './test-history/report-generator';
 
