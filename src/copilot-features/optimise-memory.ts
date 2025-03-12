@@ -72,7 +72,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
     const documentText = editor.document.getText();
 
     for (const test of tests) {
-        const functionRegex = new RegExp(`def\\s+${test}\\s*\\(`); 
+        const functionRegex = new RegExp(`def\\s+${test.testName}\\s*\\(`); 
         const match = documentText.match(functionRegex);
         if (match) { // Test case is present in this File 
             return 1;

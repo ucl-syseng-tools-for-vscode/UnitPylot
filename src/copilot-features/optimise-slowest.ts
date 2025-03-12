@@ -30,6 +30,7 @@ Guidelines:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
+    console.log(checkIfTestIsPresent(textEditor, slowestTests));
     if (checkIfTestIsPresent(textEditor, slowestTests)==1) {
         vscode.window.showInformationMessage("Slowest test is present in the current file.");
         try {
@@ -57,7 +58,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
     const documentText = editor.document.getText();
 
     for (const test of tests) {
-        const functionRegex = new RegExp(`def\\s+${test}\\s*\\(`); 
+        const functionRegex = new RegExp(`def\\s+${test.testName}\\s*\\(`); 
         const match = documentText.match(functionRegex);
         if (match) { // Test case is present in this File 
             return 1;
