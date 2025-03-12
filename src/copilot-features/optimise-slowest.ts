@@ -46,18 +46,18 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
         }
     }
     else {
-        vscode.window.showInformationMessage("Slowest test is not present in the current file.");
+        vscode.window.showInformationMessage("None of the slowest tests are present in the current file.");
     }
 }
 
 
 
-// Checking if at least one of the slowest tests is present in the current file (return 1 if present, 0 if not present)
-function checkIfTestIsPresent(editor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
+// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
 
-    for (const slowestTest of slowestTests) {
-        const functionRegex = new RegExp(`def\\s+${slowestTest}\\s*\\(`); 
+    for (const test of tests) {
+        const functionRegex = new RegExp(`def\\s+${test}\\s*\\(`); 
         const match = documentText.match(functionRegex);
         if (match) { // Test case is present in this File 
             return 1;
