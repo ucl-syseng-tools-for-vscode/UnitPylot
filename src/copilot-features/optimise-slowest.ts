@@ -30,16 +30,38 @@ Guidelines:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    try {
-        var codeWithLineNumbers: string[] = [];
-        for (const test of slowestTests) {
-            codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+    if (checkIfTestIsPresent(textEditor, slowestTests)==1) {
+        vscode.window.showInformationMessage("Slowest test is present in the current file.");
+        try {
+            var codeWithLineNumbers: string[] = [];
+            for (const test of slowestTests) {
+                codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+            }
+
+            console.log("CODE2", codeWithLineNumbers);
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+
+        } catch (error) {
+            console.error("Error in handleOptimiseSlowestTestsCommand:", error);
         }
-
-        console.log("CODE2", codeWithLineNumbers);
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
-
-    } catch (error) {
-        console.error("Error in handleOptimiseSlowestTestsCommand:", error);
     }
+    else {
+        vscode.window.showInformationMessage("Slowest test is not present in the current file.");
+    }
+}
+
+
+
+// Checking if at least one of the slowest tests is present in the current file (return 1 if present, 0 if not present)
+function checkIfTestIsPresent(editor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
+    const documentText = editor.document.getText();
+
+    for (const slowestTest of slowestTests) {
+        const functionRegex = new RegExp(`def\\s+${slowestTest}\\s*\\(`); 
+        const match = documentText.match(functionRegex);
+        if (match) { // Test case is present in this File 
+            return 1;
+        } 
+    }
+    return 0;
 }
