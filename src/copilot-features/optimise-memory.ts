@@ -41,22 +41,24 @@ Here is an example of the expected response format:
   "suggestion": issue,
   "code_snippet": <corrected_code>
   "bottleneck": issue
+}, 
+{
+  "test_name": 1,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+  "bottleneck": issue
 }
 `;
 
 
 // Chat Functionality for Annotation
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
-    if (checkIfTestIsPresent(textEditor, mostMemoryTests)==1) {
+    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, mostMemoryTests);
+    if  (codeWithLineNumbers.length > 0) {
         vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
-
         try {
-            var codeWithLineNumbers: string[] = [];
-            for (const test of mostMemoryTests) {
-                codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
-            }
-            console.log("mostMemoryTests:", mostMemoryTests);
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+
         } catch (error) {
             console.error("Error in handleOptimiseMemoryCommand:", error);
         }
@@ -70,13 +72,26 @@ export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor,
 // Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
+    var codeWithLineNumbers: string[] = [];
 
     for (const test of tests) {
-        const functionRegex = new RegExp(`def\\s+${test.testName}\\s*\\(`); 
-        const match = documentText.match(functionRegex);
-        if (match) { // Test case is present in this File 
-            return 1;
-        } 
+        const testName = test.testName;
+
+        if (testName) {
+            // Extracts everything after the last '::'
+            const funcMatch = testName.match(/([^:]+)$/);
+            const functionName = funcMatch ? funcMatch[1] : null;
+
+            if (functionName) {
+                const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+
+                const match = documentText.match(functionRegex);
+                if (match) { // Test case is present in this file 
+                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                }
+            }
+        }
     }
-    return 0;
+    return codeWithLineNumbers;
 }

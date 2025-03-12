@@ -26,20 +26,26 @@ Guidelines:
 - Detail: Ensure the suggested optimizations are actionable and directly address the issue, focusing on improving performance.
 - Performance: Consider both the speed of execution and maintainability of the optimized test.
 
+Here is an example of the expected response format:
+
+{
+  "test_name": test name,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}, 
+{
+  "test_name": test name,
+  "suggestion": issue,
+  "code_snippet": <corrected_code>
+}
 `;
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    console.log(checkIfTestIsPresent(textEditor, slowestTests));
-    if (checkIfTestIsPresent(textEditor, slowestTests)==1) {
-        vscode.window.showInformationMessage("Slowest test is present in the current file.");
+    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, slowestTests);
+    if  (codeWithLineNumbers.length > 0) {
+        vscode.window.showInformationMessage("Slowest tests are present in the current file.");
         try {
-            var codeWithLineNumbers: string[] = [];
-            for (const test of slowestTests) {
-                codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
-            }
-
-            console.log("CODE2", codeWithLineNumbers);
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
 
         } catch (error) {
@@ -56,13 +62,27 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
 // Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
+    var codeWithLineNumbers: string[] = [];
 
     for (const test of tests) {
-        const functionRegex = new RegExp(`def\\s+${test.testName}\\s*\\(`); 
-        const match = documentText.match(functionRegex);
-        if (match) { // Test case is present in this File 
-            return 1;
-        } 
+        const testName = test.testName;
+
+        if (testName) {
+            // Extracts everything after the last '::'
+            const funcMatch = testName.match(/([^:]+)$/);
+            const functionName = funcMatch ? funcMatch[1] : null;
+
+            if (functionName) {
+                const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+
+                const match = documentText.match(functionRegex);
+                if (match) { // Test case is present in this file 
+                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                }
+            }
+        }
     }
-    return 0;
+    return codeWithLineNumbers;
 }
+
