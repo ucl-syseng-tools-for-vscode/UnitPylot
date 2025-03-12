@@ -23,7 +23,7 @@ import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
 
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
-import {fetchPrompt} from './copilot-features/chat';
+import { fetchPrompt } from './copilot-features/chat';
 import { ReportGenerator } from './test-history/report-generator';
 
 import { Settings } from './settings/settings';
@@ -237,7 +237,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
-        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(5,true))
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS, true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
