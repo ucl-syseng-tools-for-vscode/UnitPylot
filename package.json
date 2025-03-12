@@ -1,6 +1,6 @@
 {
-  "name": "dashboard",
-  "displayName": "dashboard",
+  "name": "testpylot",
+  "displayName": "TestPylot",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage"
+    "onLanguage",
+    "onCommand:slowestTests.refresh"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,7 +19,7 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "Testing Extension",
+          "title": "TestPylot",
           "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
@@ -40,15 +41,15 @@
         },
         {
           "type": "tree",
-          "id": "dashboard.treeview",
-          "name": "Dependency Tree View",
-          "contextualTitle": "Tree"
+          "id": "dashboard.failingtreeview",
+          "name": "Tests Overview",
+          "contextualTitle": "Tests Overview"
         },
         {
           "type": "tree",
-          "id": "dashboard.failingtreeview",
-          "name": "Failing Tests",
-          "contextualTitle": "Failing Tests"
+          "id": "dashboard.graphdoctreeview",
+          "name": "Graphs & Docs",
+          "contextualTitle": "Graphs and Docs"
         }
       ]
     },
@@ -65,112 +66,258 @@
       },
       {
         "command": "vscode-run-tests.runTests",
-        "title": "Run Tests"
+        "title": "TestPylot: Run Tests"
+      },
+      {
+        "command": "vscode-run-tests.runAllTests",
+        "title": "TestPylot: Run All Tests"
       },
       {
         "command": "vscode-run-tests.updateResults",
-        "title": "Update Results"
+        "title": "TestPylot: Update Results"
       },
       {
         "command": "vscode-run-tests.getCoverage",
-        "title": "Get Coverage"
+        "title": "TestPylot: Get Coverage"
       },
       {
         "command": "vscode-run-tests.updateCoverage",
-        "title": "Update Coverage Results"
+        "title": "TestPylot: Update Coverage Results"
       },
       {
         "command": "vscode-slowest-tests.slowestTests",
-        "title": "Find Slowest Tests"
+        "title": "TestPylot: Find Slowest Tests"
       },
       {
         "command": "vscode-slowest-tests.updateSlowestTests",
-        "title": "Update Slowest Tests Results"
+        "title": "TestPylot: Update Slowest Tests Results"
       },
       {
         "command": "vscode-run-tests.getMemory",
-        "title": "Get Memory"
-      }, 
+        "title": "TestPylot: Get Memory"
+      },
       {
         "command": "vscode-run-tests.updateMemory",
-        "title": "Update Memory Results"
+        "title": "TestPylot: Update Memory Results"
       },
       {
         "command": "code-tutor.annotate",
-        "title": "Test Insights"
+        "title": "TestPylot: Test Insights"
       },
       {
         "command": "fix-failing-tests.fixFailingTests",
-        "title": "Fix Failing Tests"
+        "title": "TestPylot: Fix Failing Tests"
       },
       {
         "command": "fix-coverage.fixCoverage",
-        "title": "Fix Coverage"
+        "title": "TestPylot: Fix Coverage"
       },
       {
         "command": "optimise-slowest.optimiseSlowest",
-        "title": "Optimise Slowest Tests"
-      },
-      {
-
-        "command": "dependencies.getDependencies",
-        "title": "Get Dependencies"
-      },
-      {
-        "command": "dependencies.refreshView",
-        "title": "Refresh Dependencies View"
+        "title": "TestPylot: Optimise Slowest Tests"
       },
       {
         "command": "generate-pydoc.generatePydoc",
-        "title": "Generate Pydoc"
+        "title": "TestPylot: Generate Pydoc"
       },
       {
         "command": "extension.acceptSuggestion",
-        "title": "Accept Annotation onto corresponding test file for coverage"
+        "title": "TestPylot: Accept Annotation onto corresponding test file for coverage"
       },
       {
         "command": "extension.rejectSuggestion",
-        "title": "Reject Annotation"
-      },       
+        "title": "TestPylot: Reject Annotation"
+      },
       {
         "command": "extension.addSuggestiontoSameFile",
-        "title": "Add Annotation to Same File"
-      }, 
+        "title": "TestPylot: Add Annotation to Same File"
+      },
       {
         "command": "extension.addSuggestiontoMainFile",
-        "title": "Add Annotation to corresponding Main File"
+        "title": "TestPylot: Add Annotation to corresponding Main File"
       },
       {
         "command": "test-history.showPassFailGraph",
-        "title": "Show test pass-fail history graph"
+        "title": "TestPylot: Show test pass-fail history graph"
       },
       {
         "command": "test-history.showCoverageGraph",
-        "title": "Show coverage history graph"
-      }, 
+        "title": "TestPylot: Show coverage history graph"
+      },
+      {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "extension.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
       {
         "command": "optimise-memory.optimiseMemory",
-        "title": "Optimise Memory Usage of Tests"
+        "title": "TestPylot: Optimise Memory Usage of Tests"
       },
       {
         "command": "failingtests.refreshView",
-        "title": "Refresh Failing Tests"
+        "title": "TestPylot: Refresh Failing Tests"
+      },
+      {
+        "command": "extension.openTestFile",
+        "title": "Open Test File"
+      },
+      {
+        "command": "extension.runTestsInFile",
+        "title": "TestPylot: Run Tests in File"
+      },
+      {
+        "command": "extension.runSpecificTest",
+        "title": "TestPylot: Run Specific Test"
+      },
+      {
+        "command": "extension.exportSnapshotReport",
+        "title": "Testpylot: Download Snapshot Report"
+      },
+      {
+        "command": "extension.updateSidebar",
+        "title": "TestPylot: Update Sidebar"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "dashboard.menu.view",
-          "group": "navigation",
-          "when": "view == dashboard.openview"
+          "command": "extension.openSettings",
+          "when": "view == dashboard.openview",
+          "group": "navigation"
         }
       ],
       "editor/title": [
         {
           "command": "code-tutor.annotate",
           "group": "navigation"
+        },
+        {
+          "command": "extension.runTestsInFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "group": "llm-commands",
+          "submenu": "testpylot.commands"
+        }
+      ],
+      "testpylot.commands": [
+        {
+          "command": "fix-failing-tests.fixFailingTests",
+          "group": "llm-commands",
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
+        },
+        {
+          "command": "fix-coverage.fixCoverage",
+          "group": "llm-commands",
+          "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
+        },
+        {
+          "command": "optimise-slowest.optimiseSlowest",
+          "group": "llm-commands",
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
+        },
+        {
+          "command": "generate-pydoc.generatePydoc",
+          "group": "llm-commands",
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
+        },
+        {
+          "command": "optimise-memory.optimiseMemory",
+          "group": "llm-commands",
+          "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }
       ]
+    },
+    "submenus": [
+      {
+        "id": "testpylot.commands",
+        "label": "TestPylot Commands",
+        "group": "llm-commands"
+      }
+    ],
+    "configuration": {
+      "title": "TestPylot",
+      "properties": {
+        "test-pylot.runNecessaryTestsOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run only necessary tests instead of all tests."
+        },
+        "test-pylot.copilotEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable GitHub Copilot integration."
+        },
+        "test-pylot.codeCoverageHighlighting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code coverage highlighting."
+        },
+        "test-pylot.numberOfSlowestTests": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of slowest tests to display."
+        },
+        "test-pylot.snapshotInterval": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Snapshot interval in minutes. (Extension restart required)"
+        },
+        "test-pylot.runTestsOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run tests on any file save."
+        },
+        "test-pylot.runTestsInBackground": {
+          "type": "boolean",
+          "default": true,
+          "description": "Periodically run tests in the background."
+        },
+        "test-pylot.saveSnapshotOnTestRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Save snapshots when tests are run."
+        },
+        "test-pylot.saveSnapshotPeriodically": {
+          "type": "boolean",
+          "default": false,
+          "description": "Periodically save snapshots in the background."
+        },
+        "test-pylot.runTestsInterval": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Background test run interval in minutes. (Extension restart required)"
+        },
+        "test-pylot.customLLM Endpoint": {
+          "type": "string",
+          "default": "http://localhost:8000/v1/chat/completions",
+          "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
+        },
+        "test-pylot.customLLM Model": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM model to use if GitHub Copilot is not enabled."
+        },
+        "test-pylot.customLLM API Key": {
+          "type": "string",
+          "default": "",
+          "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
+        },
+        "test-pylot.customLLM MaxTokens": {
+          "type": "number",
+          "default": 500,
+          "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."
+        }
+      }
     }
   },
   "scripts": {
@@ -185,6 +332,7 @@
     "@types/glob": "^7.1.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "14.x",
+    "@types/sqlite3": "^3.1.11",
     "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
@@ -195,6 +343,7 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "chartjs-plugin-doughnutlabel": "^2.0.3"
+    "chartjs-plugin-doughnutlabel": "^2.0.3",
+    "sqlite3": "^5.1.7"
   }
 }

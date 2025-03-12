@@ -65,16 +65,20 @@ function mapFileCoverage(fileCoverage: [FileCoverageRaw], workspacePath: string)
     for (let [key, file] of Object.entries(fileCoverage)) {
 
         files.push({
-            filename: workspacePath + '/' + key,
+            filename: path.join(workspacePath, key),
             lines: {
                 covered: file.executed_lines,
                 skipped: file.excluded_lines,
                 missed: file.missing_lines,
+                branches_covered: file.executed_branches,
+                branches_missed: file.missing_branches,
             },
             summary: {
                 covered: file.summary.covered_lines,
                 skipped: file.summary.excluded_lines,
                 missed: file.summary.missing_lines,
+                branches_covered: file.summary.branches_covered,
+                branches_missed: file.summary.branches_missed,
                 percentCovered: file.summary.percent_covered,
                 total: file.summary.num_statements,
             },
@@ -90,7 +94,7 @@ export function parseCoverage(): Coverage {
         throw new Error('No workspace folder found');
     }
     const workspacePath = workspaceFolders[0].uri.fsPath;
-    const coveragePath = `${workspacePath}/coverage.json`;
+    const coveragePath = path.join(workspacePath, 'coverage.json');
     const coverageData = readJsonFile(coveragePath);
     const coverage: Coverage = {
         files: mapFileCoverage(coverageData.files, workspacePath),

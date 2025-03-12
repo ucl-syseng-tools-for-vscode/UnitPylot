@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 import { SidebarViewProvider } from './SidebarViewProvider';
 import { highlightCodeCoverage } from './dashboard-metrics/EditorHighlighter';
 import { handleAnnotateCommand } from './copilot-features/annotations';
 import { handleFixFailingTestsCommand } from './copilot-features/fix-failing';
 import { handleFixCoverageCommand } from './copilot-features/fix-coverage';
-import { runSlowestTests } from './dashboard-metrics/slowest';
 import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-slowest';
 import { getWebviewContent } from './test-history/test-history-graph';
 import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
@@ -12,24 +13,35 @@ import { getCoverageWebviewContent } from './test-history/coverage-history-graph
 import { getTestDependencies } from './dependency-management/dependencies';
 import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
-import { get } from 'http';
-import * as path from 'path';
 import { TestRunner } from './test-runner/test-runner';
 
 import { handleGeneratePydocCommand } from './copilot-features/generate-pydoc';
 import { addToTestFile, addToSameFile, addToMainFile } from './copilot-features/helper-func';
+import { handleOptimiseMemoryCommand } from './copilot-features/optimise-memory';
+import { FailingTest } from './dashboard-metrics/failing-tree-view';
+import { PytestCodeLensProvider } from './editor-features/pytest-code-lens';
+
 import { HistoryManager } from './test-history/history-manager';
 import { HistoryProcessor } from './test-history/history-processor';
 import {handleOptimiseMemoryCommand} from './copilot-features/optimise-memory';
 import { FailingTest } from './dashboard-metrics/failing-tree-view';
 import {fetchPrompt} from './copilot-features/chat';
+import { ReportGenerator } from './test-history/report-generator';
+
+import { Settings } from './settings/settings';
+import { LlmMessage } from './llm/llm-message';
+import { Llm } from './llm/llm';
+
+import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
+
+
 export const jsonStore: Map<string, any> = new Map();
-export var testRunner: TestRunner;
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
     // Use this TestRunner instance
-    testRunner = TestRunner.getInstance(context.workspaceState);
+    const testRunner = TestRunner.getInstance(context.workspaceState);
+
     // Initialise HistoryManager
     HistoryManager.initialise(context);
 
@@ -70,6 +82,17 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(runTests);
+
+    // Register the runAllTests command
+    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+        try {
+            const results = await testRunner.runTests();
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
+        }
+    });
+
+    context.subscriptions.push(runAllTests);
 
 
     // Register the getCoverage command
@@ -124,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the fix failing tests command
     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
         'fix-failing-tests.fixFailingTests',
-        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests())
+        async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests(true))
 
     );
     context.subscriptions.push(fixFailingTestsCommand);
@@ -134,10 +157,10 @@ export function activate(context: vscode.ExtensionContext) {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
-        
+
         if (passFailPanel) {
             passFailPanel.webview.html = getWebviewContent(graphData);
-            passFailPanel.reveal(vscode.ViewColumn.One);
+            passFailPanel.reveal(vscode.ViewColumn.One, true);
         } else {
             // Create a new panel if one doesn't exist
             passFailPanel = vscode.window.createWebviewPanel(
@@ -148,27 +171,31 @@ export function activate(context: vscode.ExtensionContext) {
             );
 
             passFailPanel.webview.html = getWebviewContent(graphData);
+
+            passFailPanel.onDidDispose(() => {
+                passFailPanel = undefined;
+            });
         }
     });
-    
-    context.subscriptions.push(showGraphCommand);    
+
+    context.subscriptions.push(showGraphCommand);
 
     let coveragePanel: vscode.WebviewPanel | undefined;
     const showCoverageGraphCommand = vscode.commands.registerCommand(
         'test-history.showCoverageGraph', async () => {
-            await HistoryManager.saveSnapshot(); 
+            await HistoryManager.saveSnapshot();
             const snapshots = HistoryManager.getSnapshots();
-    
+
             const graphData = snapshots.map(snapshot => ({
                 date: snapshot.time,
                 covered: snapshot.coverage ? snapshot.coverage.totals.covered : 0,
                 missed: snapshot.coverage ? snapshot.coverage.totals.missed : 0,
                 branchesCovered: snapshot.coverage?.totals.branches_covered ?? 0
-            }));            
-    
+            }));
+
             if (coveragePanel) {
                 coveragePanel.webview.html = getCoverageWebviewContent(graphData);
-                coveragePanel.reveal(vscode.ViewColumn.One);
+                coveragePanel.reveal(vscode.ViewColumn.One, true);
             } else {
                 coveragePanel = vscode.window.createWebviewPanel(
                     'coverageGraph',
@@ -176,12 +203,16 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.ViewColumn.One,
                     { enableScripts: true }
                 );
-    
-                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
-            }
-        });    
 
-    context.subscriptions.push(showCoverageGraphCommand); 
+                coveragePanel.webview.html = getCoverageWebviewContent(graphData);
+
+                coveragePanel.onDidDispose(() => {
+                    coveragePanel = undefined;
+                });
+            }
+        });
+
+    context.subscriptions.push(showCoverageGraphCommand);
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
@@ -190,10 +221,16 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixCoverageCommand);
 
+    let exportSnapshotReport = vscode.commands.registerCommand('extension.exportSnapshotReport', () => {
+        ReportGenerator.generateSnapshotReport();
+    });
+
+    context.subscriptions.push(exportSnapshotReport);
+
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
         'optimise-slowest.optimiseSlowest',
-        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5))
+        async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(5, true))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
@@ -202,7 +239,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
-        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory())
+        async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getMemory(true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
@@ -271,29 +308,29 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
 
-    const provider = new SidebarViewProvider(context.extensionUri);
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
+        if (!Settings.RUN_TESTS_ON_SAVE || document.fileName.endsWith('settings.json')) {
+            return;
+        }
+
         // Call functions to update dashboard
-        testRunner.setNotifications(true);
         const { passed, failed } = await testRunner.getResultsSummary();
         vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
 
-        testRunner.setNotifications(false);
-        const coverage = await testRunner.getCoverage();
+        const coverage = await testRunner.getCoverage(true);
         if (coverage) {
             jsonStore.set('coverage', coverage);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         }
-        const slowest = await testRunner.getSlowestTests(5);
+        const slowest = await testRunner.getSlowestTests(5, true);
         vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
-
-        testRunner.setNotifications(true);
     });
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, provider)
+        vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
 
     context.subscriptions.push(
@@ -310,17 +347,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(openWebView);
 
-    // Register the dependency tree view
-    const dependenciesProvider = new DependenciesProvider(context.extensionUri.fsPath);
-    vscode.window.createTreeView('dashboard.treeview', {
-        treeDataProvider: dependenciesProvider
-    });
 
-    // Register the refresh command
-    vscode.commands.registerCommand('dependencies.refreshView', () => dependenciesProvider.refresh());
+    // Register the settings page command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.openSettings', () => {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'test-pylot');
+        })
+    );
 
     // Register the failing test tree view
-    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath);
+    const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath, context.workspaceState);
     const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
         treeDataProvider: failingTestsProvider
     });
@@ -364,29 +400,111 @@ export function activate(context: vscode.ExtensionContext) {
             console.error(`Failed to open text document: ${err}`);
         });
     });
+
+    const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
+    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+
+    // Register the run tests in file command
+    vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+            vscode.window.showErrorMessage("No workspace folder found.");
+            return;
+        }
+
+        const relativePath = path.relative(workspaceFolder, file.fsPath);
+
+        // Check file is a test file
+        const fileName = path.basename(relativePath);
+        if (!fileName.match(/(test_.*\.py$)|(.*_test.py$)/)) {
+            vscode.window.showErrorMessage("Not a test file.");
+            return;
+        }
+
+        console.log(`Running tests in file: ${file}`);
+        vscode.window.showInformationMessage(`Running tests in file: ${relativePath}`);
+        testRunner.runTests(
+            [{
+                filePath: relativePath,
+                passed: false,
+                time: NaN,
+            }]
+        );
+    });
+
+    // Register code lens provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider({ scheme: 'file', language: 'python' }, new PytestCodeLensProvider())
+    );
+
+    // Register the run specific test command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.runSpecificTest', (testName: string, file: vscode.Uri) => {
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            if (!workspaceFolder) {
+                vscode.window.showErrorMessage("No workspace folder found.");
+                return;
+            }
+
+            const relativePath = path.relative(workspaceFolder, file.fsPath);
+            vscode.window.showInformationMessage(`Running: ${testName}`);
+            testRunner.runTests(
+                [{
+                    filePath: relativePath,
+                    passed: false,
+                    time: NaN,
+                    testName: testName
+                }]
+            )
+        })
+    );
+
+    // Register the update sidebar command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.updateSidebar', () => {
+            // Update the web view
+            webviewProvider.update();
+            // Update the tree view
+            failingTestsProvider.refresh();
+        })
+    );
+
+    startIntervalTask(context);
+
 }
 
 function startIntervalTask(context: vscode.ExtensionContext) {
-    const INTERVAL = 10 * 60 * 1000; // 10 minutes in milliseconds
+    const SNAPSHOT_INTERVAL = Settings.SNAPSHOT_INTERVAL * 60 * 1000; // minutes to milliseconds
+    const TEST_INTERVAL = Settings.RUN_TESTS_INTERVAL * 60 * 1000;
 
-    function myFunction() {
-        console.log('Running scheduled task...');
-        console.log('Saving snapshot...');
-        HistoryManager.saveSnapshot();
+    function saveSnapshot() {
+        if (Settings.SAVE_SNAPSHOT_PERIODICALLY) {
+            console.log('Saving snapshot...');
+            HistoryManager.saveSnapshot();  // No tests are run here
+        }
+    }
+
+    function runTests() {
+        if (Settings.RUN_TESTS_IN_BACKGROUND) {
+            console.log('Running background tests...');
+            TestRunner.getInstance(context.workspaceState).getAllResults(); // Invokes the test runner to run tests
+        }
     }
 
     // Run immediately and schedule repeats
-    myFunction();
-    const interval = setInterval(myFunction, INTERVAL);
+    saveSnapshot();
+    const snapshotInterval = setInterval(saveSnapshot, SNAPSHOT_INTERVAL);
+    const testInterval = setInterval(runTests, TEST_INTERVAL);
 
-    // Stop the interval when the extension is deactivated
-    context.subscriptions.push(new vscode.Disposable(() => clearInterval(interval)));
+    // Stop the intervals when the extension is deactivated
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(snapshotInterval)));
+    context.subscriptions.push(new vscode.Disposable(() => clearInterval(testInterval)));
 }
 
 // Handles file open event
 export async function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
-    if (fileName.endsWith('.py')) {
+    if (Settings.CODE_COVERAGE_HIGHLIGHTING && fileName.endsWith('.py')) {
         highlightCodeCoverage(fileName, jsonStore.get('coverage'));
     }
 }

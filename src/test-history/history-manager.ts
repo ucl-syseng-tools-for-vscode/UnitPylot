@@ -57,8 +57,8 @@ export class HistoryManager {
 
     public static async saveSnapshot() {
         // Save the current test results and coverage data as a snapshot
-        const testResult = await this.testRunner.getAllResults();
-        const coverage = await this.testRunner.getCoverage();
+        const testResult = await this.testRunner.getAllResults(true);
+        const coverage = await this.testRunner.getCoverage(true);
         const time = new Date();
 
         const snapshot: Snapshot = {
