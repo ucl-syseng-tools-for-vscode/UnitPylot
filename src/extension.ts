@@ -63,9 +63,9 @@ export function activate(context: vscode.ExtensionContext) {
         const userQuery = request.prompt;
         const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
         const messages = await fetchPrompt(userQuery);
-        const chatRequest = await chatModels[0].sendRequest(messages, undefined, token);
-        for await (const token of chatRequest.text) {
-            response.markdown(token);
+        const chatRequest = await chatModels[0].sendRequest(messages, {}, token);
+        for await (const fragment of chatRequest.text) {
+            response.markdown(fragment);
         }
     });
 
