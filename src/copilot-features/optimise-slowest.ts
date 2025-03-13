@@ -42,11 +42,18 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, slowestTests);
-    if  (codeWithLineNumbers.length > 0) {
+    const visibleCodeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
+    var slowestTestsData = checkIfTestIsPresent(textEditor, slowestTests);
+
+    if  (slowestTestsData.length > 0) {
         vscode.window.showInformationMessage("Slowest tests are present in the current file.");
         try {
-            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+            const combinedContext = {
+                visible_code: visibleCodeWithLineNumbers,
+                slowest_tests: slowestTestsData
+            };
+
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(combinedContext), 1);
 
         } catch (error) {
             console.error("Error in handleOptimiseSlowestTestsCommand:", error);
@@ -57,12 +64,10 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
     }
 }
 
-
-
 // Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
-    var codeWithLineNumbers: string[] = [];
+    var slowestTestsData: string[] = [];
 
     for (const test of tests) {
         let testName = test.testName;
@@ -81,11 +86,23 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                    slowestTestsData.push(test.filePath + "::" + test.testName + " " + test.time + "s");
                 }
             }
         }
     }
-    return codeWithLineNumbers;
+    return slowestTestsData;
 }
 
+function getVisibleCodeWithLineNumbers(textEditor: vscode.TextEditor) {
+    let currentLine = textEditor.visibleRanges[0].start.line;
+    const endLine = textEditor.visibleRanges[0].end.line;
+
+    let code = '';
+
+    while (currentLine <= endLine) {
+        code += `${currentLine + 1}: ${textEditor.document.lineAt(currentLine).text}\n`;
+        currentLine++;
+    }
+    return code;
+}
