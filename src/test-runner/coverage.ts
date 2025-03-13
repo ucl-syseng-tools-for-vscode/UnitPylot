@@ -51,123 +51,135 @@ export type FileCoverageRaw = {
 
 /**
  * Merges two coverage reports together
- * @param existing The existing coverage report
+ * @param existingCoverage The existing coverage report
  * @param newCoverage The new coverage report to merge
  * @returns The merged coverage report
  */
 
-export function mergeCoverage(existing: Coverage, newCoverage: Coverage): Coverage {
-    const mergedFiles: Record<string, FileCoverage> = {};
+export function mergeCoverage(existingCoverage: Coverage, newCoverage: Coverage): Coverage {
+    const outputFileCoverage: FileCoverage[] = [];
+    const mergedCoverageMap: { [key: string]: FileCoverage } = {};
 
-    // Merge existing files into the map
-    for (const file of existing.files) {
-        mergedFiles[file.filename] = { ...file };
-    }
+    // Add existing coverage to the map
+    for (const existingFileCoverage of existingCoverage.files) {
+        mergedCoverageMap[existingFileCoverage.filename] = existingFileCoverage;
 
-    // Process new coverage files
-    for (const newFile of newCoverage.files) {
-        if (mergedFiles[newFile.filename]) {
-            // Merge with existing file
-            const existingFile = mergedFiles[newFile.filename];
-
-            // Merge line coverage
-            // Union
-            existingFile.lines.covered = Array.from(
-                new Set([...existingFile.lines.covered, ...newFile.lines.covered])
-            );
-            // Intersection
-            existingFile.lines.skipped = existingFile.lines.skipped.filter(line =>
-                newFile.lines.skipped.includes(line) && !existingFile.lines.covered.includes(line)
-            );
-            // Intersection
-            existingFile.lines.missed = existingFile.lines.missed.filter(line =>
-                newFile.lines.missed.includes(line) && !existingFile.lines.covered.includes(line)
-            );
-
-            // Merge branch coverage
-            // Union
-            existingFile.lines.branches_covered = Array.from(
-                [...existingFile.lines.branches_covered, ...newFile.lines.branches_covered]
-            );
-            // Remove duplicates
-            existingFile.lines.branches_covered = existingFile.lines.branches_covered.filter((branch, index, self) =>
-                index === self.findIndex(t => t.every((line, index) => line === branch[index]))
-            );
-
-            // Intersection
-            existingFile.lines.branches_missed = existingFile.lines.branches_missed.filter(branch =>
-                newFile.lines.branches_missed.some(newBranch =>
-                    branch.every((line, index) => line === newBranch[index])
-                    && !existingFile.lines.branches_covered.some(existingBranch =>
-                        branch.every((line, index) => line === existingBranch[index])
-                    )
-                ));
-
-            // Recalculate file summary
-            const totalLines = new Set([
-                ...existingFile.lines.covered,
-                ...existingFile.lines.skipped,
-                ...existingFile.lines.missed,
-            ]).size;
-            const coveredLines = existingFile.lines.covered.length;
-            const skippedLines = existingFile.lines.skipped.length;
-            const missedLines = totalLines - coveredLines - skippedLines;
-
-            // Now for branches
-            const coveredBranches = existingFile.lines.branches_covered.length;
-            const missedBranches = existingFile.lines.branches_missed.length;
-
-            existingFile.summary = {
-                covered: coveredLines,
-                skipped: skippedLines,
-                missed: missedLines,
-                branches_covered: coveredBranches,
-                branches_missed: missedBranches,
-                total: totalLines,
-                percentCovered: totalLines ? (coveredLines / totalLines) * 100 : 0,
-            };
-        } else {
-            // New file, add it
-            mergedFiles[newFile.filename] = { ...newFile };
+        // Add existing file to output if not in new coverage
+        if (!newCoverage.files.find(newFileCoverage => newFileCoverage.filename === existingFileCoverage.filename)) {
+            outputFileCoverage.push(existingFileCoverage);
         }
     }
 
-    // Remove deleted files (only keep files present in the new coverage report)
-    const finalFiles = Object.values(mergedFiles).filter(file =>
-        newCoverage.files.some(newFile => newFile.filename === file.filename)
-    );
+    // Loop through each new file coverage
+    for (const newFileCoverage of newCoverage.files) {
+        if (!mergedCoverageMap[newFileCoverage.filename]) {
+            // Add new file
+            outputFileCoverage.push(newFileCoverage);
+            continue;
+        }
 
-    // Recalculate overall summary, including branch coverage
-    let totalCovered = 0,
-        totalSkipped = 0,
-        totalMissed = 0,
-        totalLines = 0,
-        totalBranchesCovered = 0,
-        totalBranchesMissed = 0,
-        totalBranches = 0;
+        // Update the existing file coverage
+        const existingCoverage = mergedCoverageMap[newFileCoverage.filename];
 
-    for (const file of finalFiles) {
-        totalCovered += file.summary.covered;
-        totalSkipped += file.summary.skipped;
-        totalMissed += file.summary.missed;
-        totalLines += file.summary.total;
-        totalBranchesCovered += file.summary.branches_covered;
-        totalBranchesMissed += file.summary.branches_missed;
+        // Union for covered
+        const linesCoveredSet = new Set(existingCoverage.lines.covered.concat(newFileCoverage.lines.covered));
+        const linesCovered = Array.from(linesCoveredSet);
+
+        // Intersection for missed
+        const linesMissedSet = intersectSets(new Set(existingCoverage.lines.missed), new Set(newFileCoverage.lines.missed));
+        const linesMissed = Array.from(linesMissedSet);
+
+        // Intersection for skipped
+        const linesSkippedSet = intersectSets(new Set(existingCoverage.lines.skipped), new Set(newFileCoverage.lines.skipped));
+        const linesSkipped = Array.from(linesSkippedSet);
+
+        // Union for branches covered
+        // Since 2d array, just concat and remove duplicates
+        let branchesCovered = existingCoverage.lines.branches_covered.concat(newFileCoverage.lines.branches_covered);
+        branchesCovered = removeDuplicates(branchesCovered);
+
+        // Intersection for branches missed
+        const branchesMissed = intersect2DArrays(existingCoverage.lines.branches_missed, newFileCoverage.lines.branches_missed);
+
+        // Calculate new file totals and add
+        const totalLines = linesCovered.length + linesSkipped.length + linesMissed.length;
+
+        outputFileCoverage.push({
+            filename: existingCoverage.filename,
+            lines: {
+                covered: linesCovered,
+                skipped: linesSkipped,
+                missed: linesMissed,
+                branches_covered: branchesCovered,
+                branches_missed: branchesMissed,
+            },
+            summary: {
+                covered: linesCovered.length,
+                skipped: linesSkipped.length,
+                missed: linesMissed.length,
+                branches_covered: branchesCovered.length,
+                branches_missed: branchesMissed.length,
+                percentCovered: (linesCovered.length / totalLines * 100) || 100,
+                total: totalLines
+            }
+        });
     }
 
-    totalBranches = totalBranchesCovered + totalBranchesMissed;
+    // Calculate new overall totals
+    let totalLines = 0;
+    let linesCovered = 0;
+    let linesSkipped = 0;
+    let linesMissed = 0;
+    let branchesCovered = 0;
+    let branchesMissed = 0;
+    let branchesTotal = 0;
+
+    for (const fileCoverage of outputFileCoverage) {
+        totalLines += fileCoverage.summary.total || 0;
+        linesCovered += fileCoverage.summary.covered || 0;
+        linesSkipped += fileCoverage.summary.skipped || 0;
+        linesMissed += fileCoverage.summary.missed || 0;
+        branchesCovered += fileCoverage.summary.branches_covered || 0;
+        branchesMissed += fileCoverage.summary.branches_missed || 0;
+        branchesTotal += (fileCoverage.summary.branches_covered + fileCoverage.summary.branches_missed) || 0;
+    }
 
     return {
-        files: finalFiles,
+        files: outputFileCoverage,
         totals: {
-            covered: totalCovered,
-            skipped: totalSkipped,
-            missed: totalMissed,
+            covered: linesCovered,
+            skipped: linesSkipped,
+            missed: linesMissed,
             total: totalLines,
-            percentCovered: totalLines ? (totalCovered / totalLines) * 100 : 0,
-            branches_covered: totalBranchesCovered,
-            branches_missed: totalBranchesMissed,
-            branches_total: totalBranches,
-        },
+            percentCovered: (linesCovered / totalLines * 100) || 100,
+            branches_covered: branchesCovered,
+            branches_missed: branchesMissed,
+            branches_total: branchesTotal
+        }
     };
+}
+
+function intersectSets<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+    let intersection = new Set<T>();
+    for (let elem of setB) {
+        if (setA.has(elem)) {
+            intersection.add(elem);
+        }
+    }
+    return intersection;
+}
+
+function removeDuplicates(arr: number[][]): number[][] {
+    const seen = new Set<string>(); // Use a Set to store unique string representations of subarrays
+    return arr.filter(subArr => {
+        const key = JSON.stringify(subArr); // Convert subarray to string for comparison
+        if (seen.has(key)) return false; // If already seen, skip it
+        seen.add(key); // Otherwise, mark as seen and keep it
+        return true;
+    });
+}
+
+function intersect2DArrays(arr1: number[][], arr2: number[][]): number[][] {
+    const set1 = new Set(arr1.map(subArr => JSON.stringify(subArr))); // Convert to Set for quick lookup
+    return arr2.filter(subArr => set1.has(JSON.stringify(subArr))); // Keep only common subarrays
 }
