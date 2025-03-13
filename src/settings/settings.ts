@@ -13,6 +13,11 @@ export class Settings {
         return config.get<number>('numberOfSlowestTests') || 5;
     }
 
+    public static get NUMBER_OF_MEMORY_INTENSIVE_TESTS(): number {
+        const config = Settings.getConfig();
+        return config.get<number>('numberOfMemoryIntensiveTests') || 5;
+    }
+
     public static get CODE_COVERAGE_HIGHLIGHTING(): boolean {
         const config = Settings.getConfig();
         const setting = config.get<boolean>('codeCoverageHighlighting');
