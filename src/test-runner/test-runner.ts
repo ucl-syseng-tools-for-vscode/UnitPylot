@@ -18,7 +18,6 @@ type TestRunnerState = {
     * Class to hold test results and coverage data for the whole project.
     * Only one instance of this class should exist at any given time.
 */
-
 export class TestRunner {
     private static instance: TestRunner;
     private results: TestResult | undefined;
@@ -58,7 +57,9 @@ export class TestRunner {
         }
     }
 
-    // Save the test results and coverage data to the workspace state
+    /**
+     * Save the state of the TestRunner
+     */
     public saveState(): void {
         const state = {
             results: this.results,
