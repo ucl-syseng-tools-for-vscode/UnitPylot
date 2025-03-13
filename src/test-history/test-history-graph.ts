@@ -1,6 +1,12 @@
+/**
+ * Generates the HTML content for the webview that displays the test pass/fail history graph
+ * 
+ * @param graphData The data to display in the graph
+ * @returns The HTML content for the webview
+ */
 export function getWebviewContent(graphData: { date: Date, pass: number, fail: number }[]): string {
     const dataStr = JSON.stringify(graphData);
-    
+
     return `
         <!DOCTYPE html>
         <html lang="en">
