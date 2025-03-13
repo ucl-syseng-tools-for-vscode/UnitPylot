@@ -5,7 +5,18 @@ import * as path from 'path';
 import { Llm } from '../llm/llm';
 import { LlmMessage } from '../llm/llm-message';
 
-// Includes helper function to annotate chat response in-line
+/**
+ * This file contains helper functions for the editor annotations.
+ */
+
+/**
+ * This function is used to send the code to the model and get the response.
+ * 
+ * @param textEditor The active text editor
+ * @param ANNOTATION_PROMPT The prompt to be given to the model
+ * @param codeWithLineNumbers The code in the editor with line numbers
+ * @param decorationMethod The method of decoration to be used
+ */
 export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATION_PROMPT: string, codeWithLineNumbers: string, decorationMethod: number) {
     const messages: LlmMessage[] = [
         { role: 'user', content: ANNOTATION_PROMPT },
@@ -51,7 +62,7 @@ async function parseChatResponse(
                         console.log('Annotation:', annotation);
                         handleAnnotation(textEditor, annotation, decorationMethod);
                     }
-                    parsedSuccessfully = true; 
+                    parsedSuccessfully = true;
                 } catch {
                     console.warn('Parsing attempt failed for fragment:', fragment);
                 }
@@ -65,6 +76,7 @@ async function parseChatResponse(
     }
 }
 
+// Handles the annotation based on the decoration method
 function handleAnnotation(
     editor: vscode.TextEditor,
     annotation: { line: number; suggestion: string; category: string, test_name?: string, code_snippet: string, file: string, bottleneck?: string },
@@ -98,7 +110,7 @@ function handleAnnotation(
 
         hoverMessage.appendMarkdown(
             `\n #### [✅ Accept](command:extension.acceptSuggestion?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
-             `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+            `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
         );
 
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
@@ -107,6 +119,7 @@ function handleAnnotation(
     }
 }
 
+// Displays the annotation in the editor
 function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: string, category?: string) {
     console.log('suggestion', suggestion);
     console.log('category', category);
@@ -152,11 +165,12 @@ function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: 
     return decorationType; // Return to allow clearing later
 }
 
+// Apply decoration based on line numbers
 function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, suggestion: string, category?: string) {
     displayAnnotation(editor, line, suggestion, category!);
 }
 
-
+// Apply decoration based on function name
 function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: string, suggestion: string, code_snippet: string, bottleneck?: string) {
     const decorationType = vscode.window.createTextEditorDecorationType({
         after: {
@@ -188,7 +202,7 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         const range = new vscode.Range(
             new vscode.Position(startPos.line, lineLength),
             new vscode.Position(startPos.line, lineLength)
-        ); //CHECK??
+        );
 
         const hoverMessage = new vscode.MarkdownString();
         hoverMessage.isTrusted = true;
@@ -212,10 +226,6 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
             )})`
         );
 
-
-
-
-
         editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 
     } else {
@@ -223,6 +233,12 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
     }
 }
 
+/**
+ * Add suggestion to the test file.
+ * 
+ * @param editor The active text editor
+ * @param text The text to be added to the test file
+ */
 export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     const currentFileUri = editor.document.uri;
@@ -283,6 +299,7 @@ export async function addToTestFile(editor: vscode.TextEditor, text: string) {
     }
 }
 
+// Apply decoration for failing tests
 function applyDecorationFixFailing(
     editor: vscode.TextEditor,
     line: number,
@@ -315,12 +332,18 @@ function applyDecorationFixFailing(
 
     hoverMessage.appendMarkdown(
         `\n #### [✅ Accept](command:${acceptCommand}?${encodeURIComponent(JSON.stringify({ line, code_snippet, decorationType }))})` +
-         `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
+        `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(JSON.stringify({ line, decorationType }))})`
     );
 
     editor.setDecorations(decorationType, [{ range, hoverMessage }]);
 }
 
+/**
+ * Add suggestions to the active file.
+ * 
+ * @param editor The active text editor
+ * @param text The text to be added to the currently open file
+ */
 export async function addToSameFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     const currentFileUri = editor.document.uri;
@@ -344,6 +367,12 @@ export async function addToSameFile(editor: vscode.TextEditor, text: string) {
     }
 }
 
+/**
+ * Add suggestions to the main file.
+ * 
+ * @param editor The active text editor
+ * @param text The text to be added to the main file
+ */
 export async function addToMainFile(editor: vscode.TextEditor, text: string) {
     const cleanedText = text.replace(/Here is the corrected code:\s*/i, '');
     const currentFileUri = editor.document.uri;

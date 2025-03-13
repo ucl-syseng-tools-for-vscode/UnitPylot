@@ -50,12 +50,17 @@ Here is an example of the expected response format:
 }
 `;
 
-
-// Chat Functionality for Annotation
+/**
+ * Handle the "Optimise Memory" command.
+ * This command is used to optimise the tests that use the most memory in the test suite.
+ * 
+ * @param textEditor The active text editor
+ * @param mostMemoryTests The tests that use the most memory in the test suite
+ */
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
     console.log(mostMemoryTests);
     var codeWithLineNumbers = checkIfTestIsPresent(textEditor, mostMemoryTests);
-    if  (codeWithLineNumbers.length > 0) {
+    if (codeWithLineNumbers.length > 0) {
         vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
         try {
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
@@ -85,7 +90,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
             if (functionName) {
                 const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`);
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 

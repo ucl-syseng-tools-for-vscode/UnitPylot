@@ -30,8 +30,13 @@ Here is an example of the expected response format:
 }
 `;
 
-
-// Chat Functionality for annotations
+/**
+ * Handle the "Fix Failing Tests" command.
+ * This command is used to fix failing tests based on the provided failing tests.
+ * 
+ * @param textEditor The active text editor
+ * @param failingTests The failing tests to be fixed
+ */
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResult[]) {
   hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), 3);
 }

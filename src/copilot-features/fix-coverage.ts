@@ -33,7 +33,12 @@ Here is an example of the expected response format:
 }
 `;
 
-
+/**
+ * Handle the "Fix Coverage" command.
+ * This command is used to analyse the coverage data for the current file and suggest test cases to improve coverage.
+ * 
+ * @param textEditor The active text editor
+ */
 export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     try {
         const currentFile = textEditor.document.fileName; // Get current file path
@@ -43,7 +48,7 @@ export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
 
         const visibleCode = getVisibleCodeWithLineNumbers(textEditor);
 
-        const testFilePath = await findCorrespondingTestFile(currentFile); 
+        const testFilePath = await findCorrespondingTestFile(currentFile);
         let testFileContents = '';
         if (testFilePath) {
             testFileContents = fs.readFileSync(testFilePath, 'utf-8');
@@ -94,7 +99,7 @@ function getVisibleCodeWithLineNumbers(textEditor: vscode.TextEditor) {
 }
 
 // Parse the coverage JSON file and extract missing lines for the given file
-export function parseCoverage(currentFile: string): { filename: string; missingLines: number[] } | null {
+function parseCoverage(currentFile: string): { filename: string; missingLines: number[] } | null {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
         throw new Error('No workspace folder found');
@@ -123,6 +128,7 @@ export function parseCoverage(currentFile: string): { filename: string; missingL
     }
 }
 
+// Find the corresponding test file for the given Python file
 async function findCorrespondingTestFile(currentFilePath: string): Promise<string | null> {
     if (!currentFilePath.endsWith('.py')) {
         return null; // Only search for Python test files
@@ -142,7 +148,7 @@ async function findCorrespondingTestFile(currentFilePath: string): Promise<strin
         if (fs.existsSync(path.join(parentDir, 'tests'))) {
             testsFolderPath = path.join(parentDir, 'tests');
         } else {
-            return null; 
+            return null;
         }
     }
 
@@ -157,5 +163,5 @@ async function findCorrespondingTestFile(currentFilePath: string): Promise<strin
         return testFileFallback;
     }
 
-    return null; 
+    return null;
 }

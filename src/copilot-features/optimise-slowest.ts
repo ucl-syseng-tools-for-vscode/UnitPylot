@@ -40,10 +40,16 @@ Here is an example of the expected response format:
 }
 `;
 
-// Chat Functionality for Annotation
+/**
+ * Handle the "Optimise Slowest Tests" command.
+ * This command is used to optimise the tests that are the slowest in the test suite.
+ * 
+ * @param textEditor The active text editor
+ * @param slowestTests The tests that are the slowest in the test suite
+ */
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
     var codeWithLineNumbers = checkIfTestIsPresent(textEditor, slowestTests);
-    if  (codeWithLineNumbers.length > 0) {
+    if (codeWithLineNumbers.length > 0) {
         vscode.window.showInformationMessage("Slowest tests are present in the current file.");
         try {
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
@@ -56,7 +62,6 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
         vscode.window.showInformationMessage("None of the slowest tests are present in the current file.");
     }
 }
-
 
 
 // Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
@@ -74,7 +79,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
             if (functionName) {
                 const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`);
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 

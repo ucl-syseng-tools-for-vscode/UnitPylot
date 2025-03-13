@@ -38,7 +38,12 @@ Guidelines:
 - Adherence: Follow Python's docstring conventions for readability and consistency.
 `;
 
-// Chat Functionality for Annotation
+/**
+ * The main function for the "Generate Pydoc" command.
+ * This command is used to generate pydoc suggestions for the functions and classes in the currently open file.
+ * 
+ * @param textEditor The active text editor
+ */
 export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) {
     try {
         const funcLines = await groupFunctions(textEditor)
@@ -48,8 +53,6 @@ export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) 
     }
 }
 
-
-//CHECK +1 LOGIC IS OK 
 // Extract a line numbers of each test case in the currently open file
 function groupFunctions(textEditor: vscode.TextEditor) {
     const document = textEditor.document;
@@ -60,7 +63,7 @@ function groupFunctions(textEditor: vscode.TextEditor) {
 
     let match;
     while ((match = functionRegex.exec(text)) !== null) {
-        const startLine = document.positionAt(match.index).line +1;
+        const startLine = document.positionAt(match.index).line + 1;
         let endLine = document.lineCount - 1;
 
         // Find the next assert statement after the start line
@@ -69,7 +72,7 @@ function groupFunctions(textEditor: vscode.TextEditor) {
         while ((assertMatch = assertRegex.exec(text)) !== null) {
             const assertLine = document.positionAt(assertMatch.index).line;
             if (assertLine > startLine) {
-                endLine = assertLine+1;
+                endLine = assertLine + 1;
                 break;
             }
         }
@@ -79,6 +82,3 @@ function groupFunctions(textEditor: vscode.TextEditor) {
 
     return functions;
 }
-
-
-
