@@ -64,9 +64,6 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       if (msg.command === 'slowestTests') {
         vscode.commands.executeCommand('vscode-slowest-tests.slowestTests');
       }
-      if (msg.command === 'getMemory') {
-        vscode.commands.executeCommand('vscode-run-tests.getMemory');
-      }
     });
 
     vscode.commands.registerCommand('vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {

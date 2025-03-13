@@ -120,20 +120,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(slowestTests);
 
-    // Register the getMemory command 
-    const getMemory = vscode.commands.registerCommand('vscode-run-tests.getMemory', async () => {
-        try {
-
-            const memory = await testRunner.getMemory();
-            // vscode.commands.executeCommand('vscode-run-tests.updateMemory', { memory });
-
-        } catch (error) {
-            vscode.window.showErrorMessage('Failed to run memory check.');
-        }
-    });
-
-    context.subscriptions.push(getMemory);
-
 
     // Register the annotate command
     const annotateCommand = vscode.commands.registerTextEditorCommand(

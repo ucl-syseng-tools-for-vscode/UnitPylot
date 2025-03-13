@@ -93,10 +93,6 @@
         "title": "TestPylot: Update Slowest Tests Results"
       },
       {
-        "command": "vscode-run-tests.getMemory",
-        "title": "TestPylot: Get Memory"
-      },
-      {
         "command": "vscode-run-tests.updateMemory",
         "title": "TestPylot: Update Memory Results"
       },
