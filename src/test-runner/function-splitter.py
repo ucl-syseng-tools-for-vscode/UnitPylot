@@ -1,7 +1,10 @@
 import ast
 import argparse
 import json
-
+'''
+    This file contains Python code to extract function bodies of functions in a python file.
+    It is used for hashing the directory.
+'''
 class ParentNodeVisitor(ast.NodeVisitor):
     def __init__(self):
         self.parent_map = {}
