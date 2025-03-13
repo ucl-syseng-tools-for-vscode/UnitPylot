@@ -171,7 +171,9 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
 
     if (funcMatch) {
         functionName = funcMatch[1];  // Extracted function name
-        console.log(functionName);
+        functionName = functionName.replace(/\[.*\]$/, "");
+
+        console.log(`Searching for function: ${functionName}`);
     }
 
     const documentText = editor.document.getText();

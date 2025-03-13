@@ -65,10 +65,13 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
     var codeWithLineNumbers: string[] = [];
 
     for (const test of tests) {
-        const testName = test.testName;
+        let testName = test.testName;
 
         if (testName) {
             // Extracts everything after the last '::'
+            testName = testName.replace(/\[.*\]$/, "");
+            console.log("UNPARAMETRIZED TEST NAME: ", testName);
+
             const funcMatch = testName.match(/([^:]+)$/);
             const functionName = funcMatch ? funcMatch[1] : null;
 
