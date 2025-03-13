@@ -55,16 +55,6 @@
     },
     "commands": [
       {
-        "command": "dashboard.openview",
-        "title": "Sidebar View"
-      },
-      {
-        "command": "dashboard.menu.view",
-        "category": "vscode-extension-sidebar-html",
-        "title": "Sample WebView in VS Code Sidebar",
-        "icon": "$(clear-all)"
-      },
-      {
         "command": "vscode-run-tests.runTests",
         "title": "TestPylot: Run Tests"
       },
