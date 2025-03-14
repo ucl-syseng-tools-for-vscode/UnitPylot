@@ -166,13 +166,22 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
     });
 
 
-    let functionName: string = '';
-    const funcMatch = pathToFunctionName.match(/::([^:]+)$/);
 
-    if (funcMatch) {
-        functionName = funcMatch[1];  // Extracted function name
-        console.log(functionName);
+    let functionName: string = '';
+
+    // Check if `pathToFunctionName` contains "::" before extracting
+    if (pathToFunctionName.includes("::")) {
+        const funcMatch = pathToFunctionName.match(/::([^:]+)$/);
+        console.log(`func match: ${funcMatch}`);
+
+        if (funcMatch) {
+            functionName = funcMatch[1];  // Extracted function name
+        }
+    } else {
+        functionName = pathToFunctionName; // If there's no "::", it's already just the function name
     }
+
+    functionName = functionName.replace(/\[.*\]$/, "");
 
     const documentText = editor.document.getText();
     const functionRegex = new RegExp(`def\\s+${functionName}\\s*\\(`);

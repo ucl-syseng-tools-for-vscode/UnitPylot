@@ -10,7 +10,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 Analyse Slow Tests:
 For the provided test suite:
 
-1. Review the tests based on their execution time.
+1. Review the slowest tests.
 
 2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
 
@@ -18,7 +18,7 @@ Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Do no include any markdown syntax 
 - Must include a **test_name** field to specify the name of the slowest test.
-- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with .
+- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with.
 - Must include a **code_snippet** field with an optimized version of the test code.
 
 Guidelines:
@@ -42,11 +42,12 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, slowestTests);
-    if  (codeWithLineNumbers.length > 0) {
+    var slowestTestsData = checkIfTestIsPresent(textEditor, slowestTests);
+
+    if  (slowestTestsData.length > 0) {
         vscode.window.showInformationMessage("Slowest tests are present in the current file.");
         try {
-            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(slowestTestsData), 1);
 
         } catch (error) {
             console.error("Error in handleOptimiseSlowestTestsCommand:", error);
@@ -57,18 +58,18 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
     }
 }
 
-
-
 // Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
-    var codeWithLineNumbers: string[] = [];
+    var slowestTestsData: string[] = [];
 
     for (const test of tests) {
-        const testName = test.testName;
+        let testName = test.testName;
 
         if (testName) {
-            // Extracts everything after the last '::'
+            testName = testName.replace(/\[.*\]$/, "");
+            console.log("UNPARAMETRIZED TEST NAME: ", testName);
+
             const funcMatch = testName.match(/([^:]+)$/);
             const functionName = funcMatch ? funcMatch[1] : null;
 
@@ -78,11 +79,12 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                    if (test.testName) {
+                        slowestTestsData.push(test.testName);
+                    }
                 }
             }
         }
     }
-    return codeWithLineNumbers;
+    return slowestTestsData;
 }
-
