@@ -8,7 +8,7 @@ const ANNOTATION_PROMPT: string = `
 You are a test optimization assistant. Your task is to analyze the performance of a given list of tests cases with their total memory allocation, and suggest ways to optimize the tests that use the most memory.
 
 ## Analysis Scope:
-For each of the memory intensive test provided within memory_tests, recommend optimizations that reduce memory usage while maintaining correctness.
+For each of the tests provided, recommend optimizations that reduce memory usage while maintaining correctness.
 
 ## Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
@@ -78,7 +78,9 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    memoryData.push(test.testName + " " + test.totalMemory);
+                    if (test.testName) {
+                        memoryData.push(test.testName);
+                    }
                 }
             }
         }

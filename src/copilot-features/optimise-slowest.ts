@@ -10,7 +10,7 @@ You are a test optimization assistant. Your task is to analyze the performance o
 Analyse Slow Tests:
 For the provided test suite:
 
-1. Review the tests based on their execution time.
+1. Review the slowest tests.
 
 2. Identify potential bottlenecks and inefficient patterns within those tests (e.g., unnecessary setup, redundant operations, or overly complex assertions).
 
@@ -79,7 +79,9 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    slowestTestsData.push(test.testName + " " + test.time + "s");
+                    if (test.testName) {
+                        slowestTestsData.push(test.testName);
+                    }
                 }
             }
         }
