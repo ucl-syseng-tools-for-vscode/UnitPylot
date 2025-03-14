@@ -18,7 +18,7 @@ Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Do no include any markdown syntax 
 - Must include a **test_name** field to specify the name of the slowest test.
-- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with .
+- Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with.
 - Must include a **code_snippet** field with an optimized version of the test code.
 
 Guidelines:
@@ -42,18 +42,12 @@ Here is an example of the expected response format:
 
 // Chat Functionality for Annotation
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
-    const visibleCodeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
     var slowestTestsData = checkIfTestIsPresent(textEditor, slowestTests);
 
     if  (slowestTestsData.length > 0) {
         vscode.window.showInformationMessage("Slowest tests are present in the current file.");
         try {
-            const combinedContext = {
-                visible_code: visibleCodeWithLineNumbers,
-                slowest_tests: slowestTestsData
-            };
-
-            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(combinedContext), 1);
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(slowestTestsData), 1);
 
         } catch (error) {
             console.error("Error in handleOptimiseSlowestTestsCommand:", error);
@@ -91,17 +85,4 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
         }
     }
     return slowestTestsData;
-}
-
-function getVisibleCodeWithLineNumbers(textEditor: vscode.TextEditor) {
-    let currentLine = textEditor.visibleRanges[0].start.line;
-    const endLine = textEditor.visibleRanges[0].end.line;
-
-    let code = '';
-
-    while (currentLine <= endLine) {
-        code += `${currentLine + 1}: ${textEditor.document.lineAt(currentLine).text}\n`;
-        currentLine++;
-    }
-    return code;
 }
