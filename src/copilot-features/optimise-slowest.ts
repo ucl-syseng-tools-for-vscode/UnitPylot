@@ -73,7 +73,6 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
         let testName = test.testName;
 
         if (testName) {
-            // Extracts everything after the last '::'
             testName = testName.replace(/\[.*\]$/, "");
             console.log("UNPARAMETRIZED TEST NAME: ", testName);
 
@@ -86,7 +85,7 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    slowestTestsData.push(test.filePath + "::" + test.testName + " " + test.time + "s");
+                    slowestTestsData.push(test.testName + " " + test.time + "s");
                 }
             }
         }
