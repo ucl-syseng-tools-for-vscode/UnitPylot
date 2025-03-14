@@ -72,7 +72,6 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 
         if (fragment.includes('}')) {
             try {
-                console.log("AR", accumulatedResponse);
                 const annotation = JSON.parse(accumulatedResponse);
                 console.log('Annotation:', annotation);
 
@@ -136,9 +135,6 @@ function applyDecorationLineNumbers(editor: vscode.TextEditor, line: number, sug
 
 // Generic annotation display
 function displayAnnotation(editor: vscode.TextEditor, line: number, suggestion: string, category?: string) {
-    console.log('suggestion', suggestion);
-    console.log('category', category);
-
     let decorationType: vscode.TextEditorDecorationType;
     if (category) {
         decorationType = vscode.window.createTextEditorDecorationType({
