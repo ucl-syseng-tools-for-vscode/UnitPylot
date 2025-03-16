@@ -5,7 +5,7 @@ import * as hf from '../copilot-features/helper-func';
 
 
 const ANNOTATION_PROMPT = `
-You are an expert Python debugger specializing in refactoring failing test cases. Given the failiing test cases, return the corrected and refactored code in the corresponsing source file based on the failing test. 
+You are an expert Python debugger specializing in refactoring failing test cases. Given the failing test cases, return the corrected and refactored code in the corresponsing source file or test file based on the failing test. 
 
 Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
@@ -30,13 +30,9 @@ Here is an example of the expected response format:
 }
 `;
 
-/**
- * Handle the "Fix Failing Tests" command.
- * This command is used to fix failing tests based on the provided failing tests.
- * 
- * @param textEditor The active text editor
- * @param failingTests The failing tests to be fixed
- */
+
+// Command for sending the failing test data and prompt
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResult[]) {
+  console.log("Failing Tests:", failingTests);
   hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), 3);
 }

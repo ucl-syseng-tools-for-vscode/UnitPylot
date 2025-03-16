@@ -5,99 +5,89 @@ import { TestFunctionResult } from '../test-runner/results';
 
 // Annotation Prompt for Optimising the tests that use the most memory in the test suite
 const ANNOTATION_PROMPT: string = `
-You are a test optimization assistant. Your task is to analyze the performance of a given test suite and suggest ways to optimize the tests that use the most memory.
+You are a test optimization assistant. Your task is to analyze the performance of a given list of tests cases with their total memory allocation, and suggest ways to optimize the tests that use the most memory.
 
 ## Analysis Scope:
-For the provided test suite, which includes test code, and the total memory allocations and size from a memray report:
-
-1. Review all the test cases based on total memory allocated.
-2. Detect potential inefficiencies such as:
-   - Unnecessary data structures or excessive object creation.
-   - Inefficient loops or redundant computations.
-   - Large fixtures or setups that can be minimized.
-   - Repeated expensive operations that could be optimized.
-3. Recommend optimizations that reduce memory usage while maintaining correctness.
+For each of the tests provided, recommend optimizations that reduce memory usage while maintaining correctness. Suggest removing or reducing the size of unecessary data structures. 
 
 ## Response Format:
-The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
-
-
-### Required Fields:
-- **"test_name"**: Name of the most memory-intensive test.
-- **"suggestion"**: Clear and concise recommendations for optimization.
-- **"code_snippet"**: Optimized version of the test code
-- **"bottleneck"**: Explanation of what is causing high memory usage.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
+- Must include a **test_name** field of the name of the most memory-intensive test.
+- Include a **suggestion** field with clear and concise recommendations for optimization.
+- Must include a **code_snippet** field for the optimized version of the test code that must be changed.
+- Include a **bottleneck** field with an explanation of what is causing high memory usage.
 
 ## Guidelines:
 - Ensure optimizations are actionable and focused on reducing memory usage.
 - Keep suggestions clear and directly applicable.
 - Maintain readability and maintainability in the optimized test case.
 
-
 Here is an example of the expected response format:
 
 {
   "test_name": test name,
   "suggestion": issue,
-  "code_snippet": <corrected_code>
+  "code_snippet": <corrected_code>,
   "bottleneck": issue
 }, 
 {
   "test_name": test name,
   "suggestion": issue,
-  "code_snippet": <corrected_code>
+  "code_snippet": <corrected_code>,
   "bottleneck": issue
 }
 `;
 
-/**
- * Handle the "Optimise Memory" command.
- * This command is used to optimise the tests that use the most memory in the test suite.
- * 
- * @param textEditor The active text editor
- * @param mostMemoryTests The tests that use the most memory in the test suite
- */
-export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
-    console.log(mostMemoryTests);
-    var codeWithLineNumbers = checkIfTestIsPresent(textEditor, mostMemoryTests);
-    if (codeWithLineNumbers.length > 0) {
-        vscode.window.showInformationMessage("Memory intensive test is present in the current file.");
-        try {
-            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 1);
 
+// Command for sending the memory data and prompt
+export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
+    const fileContent = textEditor.document.getText();
+    var memoryTestsData = checkIfTestIsPresent(textEditor, mostMemoryTests);
+    
+    if (memoryTestsData.length > 0) {
+        vscode.window.showInformationMessage("There are memory-intensive tests are present in the current file, running command...");
+        try {
+            const payload = {
+                fileContent,  
+                memoryTests: memoryTestsData
+            };
+
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 1);
         } catch (error) {
             console.error("Error in handleOptimiseMemoryCommand:", error);
         }
     }
     else {
-        vscode.window.showInformationMessage("None of the most memory intensive tests are present in the current file.");
+        vscode.window.showInformationMessage("None of the most memory-intensive tests are present in the current file.");
     }
 }
 
 
-// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+// Checks if there is a memory intensive test present in the current file
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
-    var codeWithLineNumbers: string[] = [];
+    var memoryData: string[] = [];
 
     for (const test of tests) {
-        const testName = test.testName;
+        let testName = test.testName;
 
         if (testName) {
-            // Extracts everything after the last '::'
+            testName = testName.replace(/\[.*\]$/, "");
             const funcMatch = testName.match(/([^:]+)$/);
             const functionName = funcMatch ? funcMatch[1] : null;
 
             if (functionName) {
                 const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`);
+                const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 
 
                 const match = documentText.match(functionRegex);
                 if (match) { // Test case is present in this file 
-                    codeWithLineNumbers.push(test.filePath + "::" + test.testName + " " + test.totalMemory + "s");
+                    if (test.testName) {
+                        memoryData.push(test.testName);
+                    }
                 }
             }
         }
     }
-    return codeWithLineNumbers;
+    return memoryData;
 }
