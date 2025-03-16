@@ -49,7 +49,7 @@ export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor,
         try {
             const payload = {
                 fileContent,  
-                slowestTests: memoryTestsData
+                memoryTests: memoryTestsData
             };
 
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 1);
