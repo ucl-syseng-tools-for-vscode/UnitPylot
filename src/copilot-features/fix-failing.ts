@@ -31,7 +31,7 @@ Here is an example of the expected response format:
 `;
 
 
-// Chat Functionality for annotations
+// Command for sending the failing test data and prompt
 export async function handleFixFailingTestsCommand(textEditor: vscode.TextEditor, failingTests: TestFunctionResult[]) {
   console.log("Failing Tests:", failingTests);
   hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(failingTests), 3);

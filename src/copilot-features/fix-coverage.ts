@@ -31,6 +31,7 @@ Here is an example of the expected response format:
 }
 `;
 
+// Command for sending the coverage data and prompt
 export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
     try {
         const currentFile = textEditor.document.fileName;
@@ -43,12 +44,36 @@ export async function handleFixCoverageCommand(textEditor: vscode.TextEditor) {
             testFileContents,
             coverage: coverageData
         };
-
-        console.log("Coverage Data with File Context:", payload);
-
         hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 2);
     } catch (error) {
         vscode.window.showErrorMessage(`Error handling coverage: ${(error instanceof Error) ? error.message : 'Unknown error'}`);
+    }
+}
+
+// Get coverage data for the current file
+export function parseCoverage(currentFile: string): { filename: string; missingLines: number[] } | null {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        throw new Error('No workspace folder found');
+    }
+    const workspacePath = workspaceFolders[0].uri.fsPath;
+    const relativeFilePath = path.relative(workspacePath, currentFile);
+    const coveragePath = path.join(workspacePath, 'coverage.json');
+
+    try {
+        const coverageData = readJsonFile(coveragePath);
+        const fileCoverage = coverageData.files?.[relativeFilePath];
+        if (fileCoverage) {
+            return {
+                filename: currentFile,
+                missingLines: fileCoverage.missing_lines || [],
+            };
+        }
+        console.warn(`No coverage data found for file: ${currentFile}`);
+        return null;
+    } catch (error) {
+        console.error("Error reading coverage.json:", error);
+        return null;
     }
 }
 
@@ -59,37 +84,6 @@ function getTestFileContent(currentFilePath: string): string {
         : "";
 }
 
-export function parseCoverage(currentFile: string): { filename: string; missingLines: number[] } | null {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders || workspaceFolders.length === 0) {
-        throw new Error('No workspace folder found');
-    }
-
-    const workspacePath = workspaceFolders[0].uri.fsPath;
-    const relativeFilePath = path.relative(workspacePath, currentFile);
-    const coveragePath = path.join(workspacePath, 'coverage.json');
-
-    try {
-        const coverageData = readJsonFile(coveragePath);
-        console.log("Full Coverage Data:", coverageData);
-        
-        console.log("Current File:", currentFile);
-        const fileCoverage = coverageData.files?.[relativeFilePath];
-        if (fileCoverage) {
-            return {
-                filename: currentFile,
-                missingLines: fileCoverage.missing_lines || [],
-            };
-        }
-
-        console.warn(`No coverage data found for file: ${currentFile}`);
-        return null;
-    } catch (error) {
-        console.error("Error reading coverage.json:", error);
-        return null;
-    }
-}
-
 function findCorrespondingTestFile(currentFilePath: string): string | null {
     if (!currentFilePath.endsWith('.py')) return null;
     
@@ -98,7 +92,6 @@ function findCorrespondingTestFile(currentFilePath: string): string | null {
     const testsFolder = findTestsFolder(projectRoot);
     
     if (!testsFolder) return null;
-    
     const testFilePreferred = path.join(testsFolder, `${fileName}_test.py`);
     const testFileFallback = path.join(testsFolder, `test_${fileName}.py`);
 

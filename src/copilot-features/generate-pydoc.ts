@@ -31,7 +31,7 @@ Here is an example of the expected response format:
 }
 `;
 
-// Chat Functionality for Annotation
+// Command for sending the pydoc data and prompt
 export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) {
     try {
         const fileContent = textEditor.document.getText();
@@ -40,14 +40,14 @@ export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) 
         const payload = {
             fileContent,  
             functions: funcLines
-        };
-        
+        };   
         hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 0);
     } catch (error) {
         console.error("Error in handleGeneratePydocCommand:", error);
     }
 }
 
+// Retrieves the start line of each function in the file for display
 function groupFunctions(textEditor: vscode.TextEditor) {
     const document = textEditor.document;
     const text = document.getText();

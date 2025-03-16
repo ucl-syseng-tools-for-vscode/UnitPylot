@@ -7,7 +7,6 @@ import { TestFunctionResult } from '../test-runner/results';
 const ANNOTATION_PROMPT = `
 You are a test optimization assistant. Your task is to analyze the performance of a given test suite and suggest ways to optimize the slowest tests.
 
-
 For the provided test suite:
 
 1. Review the slowest tests.
@@ -34,21 +33,19 @@ Here is an example of the expected response format:
 }
 `;
 
-// Chat Functionality for Annotation
+// Command for sending the slowest tests data and prompt
 export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextEditor, slowestTests: TestFunctionResult[]) {
     const fileContent = textEditor.document.getText();
     var slowestTestsData = checkIfTestIsPresent(textEditor, slowestTests);
 
     if  (slowestTestsData.length > 0) {
-        vscode.window.showInformationMessage("Slowest tests are present in the current file.");
+        vscode.window.showInformationMessage("There are slow tests are present in the current file, running command...");
         try {
             const payload = {
                 fileContent,  
                 slowestTests: slowestTestsData
             };
-
             hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 1);
-
         } catch (error) {
             console.error("Error in handleOptimiseSlowestTestsCommand:", error);
         }
@@ -58,7 +55,7 @@ export async function handleOptimiseSlowestTestsCommand(textEditor: vscode.TextE
     }
 }
 
-// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+// Checks if there is a slowest test present in the current file
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
     var slowestTestsData: string[] = [];
@@ -68,10 +65,8 @@ function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResu
 
         if (testName) {
             testName = testName.replace(/\[.*\]$/, "");
-
             const funcMatch = testName.match(/([^:]+)$/);
             const functionName = funcMatch ? funcMatch[1] : null;
-
             if (functionName) {
                 const safeFunctionName = functionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const functionRegex = new RegExp(`def\\s+${safeFunctionName}\\s*\\(`); 

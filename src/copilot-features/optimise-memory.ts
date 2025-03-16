@@ -39,13 +39,13 @@ Here is an example of the expected response format:
 `;
 
 
-// Chat Functionality for Annotation
+// Command for sending the memory data and prompt
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
     const fileContent = textEditor.document.getText();
     var memoryTestsData = checkIfTestIsPresent(textEditor, mostMemoryTests);
     
     if (memoryTestsData.length > 0) {
-        vscode.window.showInformationMessage("Memory-intensive tests are present in the current file.");
+        vscode.window.showInformationMessage("There are memory-intensive tests are present in the current file, running command...");
         try {
             const payload = {
                 fileContent,  
@@ -63,7 +63,7 @@ export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor,
 }
 
 
-// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+// Checks if there is a memory intensive test present in the current file
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
     var memoryData: string[] = [];
