@@ -5,7 +5,16 @@ import { Snapshot } from "./snapshot";
 import { HistoryProcessor } from './history-processor';
 import { HistoryManager } from './history-manager';
 
+/**
+ * ReportGenerator
+ * Generates a report from the test history data.
+ */
 export class ReportGenerator {
+    /**
+     * Generate a snapshot report and save it as a JSON or Markdown file.
+     * 
+     * @returns None
+     */
     public static async generateSnapshotReport() {
         const passFailHistory = HistoryProcessor.getPassFailHistory();
         const snapshots = HistoryManager.getSnapshots();
@@ -55,6 +64,7 @@ export class ReportGenerator {
         }
     }
 
+    // Generate a markdown report from the snapshot data
     private static generateMarkdownReport(
         passFailHistory: { date: Date; pass: number; fail: number }[],
         snapshots: Snapshot[]

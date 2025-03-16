@@ -5,12 +5,7 @@ import { Snapshot } from "./snapshot";
 import { readJsonFile } from '../test-runner/helper-functions';
 import { TestRunner } from '../test-runner/test-runner';
 
-const workspaceFolders = vscode.workspace.workspaceFolders;
-if (!workspaceFolders) {
-    throw new Error('No workspace folder found');
-}
-const workspacePath = workspaceFolders[0].uri.fsPath;
-const TEST_HISTORY_FILE = path.join(workspacePath, 'snapshots.json');
+const TEST_HISTORY_FILE = 'snapshots.json';
 
 /**
  * HistoryManager
@@ -27,11 +22,12 @@ export class HistoryManager {
     }
 
     public static getSnapshots(numberOfSnapshots?: number): Snapshot[] {
-        if (!fs.existsSync(TEST_HISTORY_FILE)) {
-            fs.writeFileSync(TEST_HISTORY_FILE, JSON.stringify([]));
+        const testHistoryFile = this.getSnapshotFilePath();
+        if (!fs.existsSync(testHistoryFile)) {
+            fs.writeFileSync(testHistoryFile, JSON.stringify([]));
         }
         // Read the json file and return the last n snapshots or all snapshots
-        const snapshots: Snapshot[] = readJsonFile(TEST_HISTORY_FILE) || [];
+        const snapshots: Snapshot[] = readJsonFile(testHistoryFile) || [];
         if (numberOfSnapshots) {
             return snapshots.slice(-numberOfSnapshots);
         }
@@ -49,7 +45,7 @@ export class HistoryManager {
     public static clearHistory() {
         // Clear all snapshots
         try {
-            fs.unlinkSync(TEST_HISTORY_FILE);
+            fs.unlinkSync(this.getSnapshotFilePath());
         } catch (error) {
             console.error(error);
         }
@@ -71,19 +67,32 @@ export class HistoryManager {
     }
 
     private static addSnapshot(snapshot: Snapshot) {
+        const testHistoryFile = this.getSnapshotFilePath();
+
         // Append the snapshot to the json file
         const snapshots: Snapshot[] = this.getSnapshots();
         snapshots.push(snapshot);
 
         // Create a new directory if it doesn't exist
-        if (!fs.existsSync(TEST_HISTORY_FILE)) {
-            fs.mkdirSync(TEST_HISTORY_FILE);
+        if (!fs.existsSync(testHistoryFile)) {
+            fs.mkdirSync(testHistoryFile);
         }
 
         try {
-            fs.writeFileSync(TEST_HISTORY_FILE, JSON.stringify(snapshots, null, 4));
+            fs.writeFileSync(testHistoryFile, JSON.stringify(snapshots, null, 4));
         } catch (error) {
             console.error(error);
         }
+    }
+
+    private static getSnapshotFilePath(): string {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            throw new Error('No workspace folder found');
+        }
+        const workspacePath = workspaceFolders[0].uri.fsPath;
+        const filePath = path.join(workspacePath, TEST_HISTORY_FILE);
+
+        return filePath;
     }
 }

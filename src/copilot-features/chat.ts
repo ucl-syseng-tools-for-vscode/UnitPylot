@@ -16,8 +16,14 @@ async function fetchContext(): Promise<string> {
     return pythonFile;
 }
 
+/**
+ * Fetches the context of the current Python file and generates a prompt for improving testing practices.
+ * 
+ * @param userQuery The user's query
+ * @returns A promise that resolves to an array of chat messages
+ */
 export async function fetchPrompt(userQuery: string): Promise<vscode.LanguageModelChatMessage[]> {
-    const contextContent = await fetchContext(); 
+    const contextContent = await fetchContext();
     return [
         vscode.LanguageModelChatMessage.User(
             `Given this Python code and its tests:\n\n${contextContent}\n\nHelp improve testing practices for the following query ensuring you always use the AAA (Arrange, Act, Assert) pattern:\n\n${userQuery}`

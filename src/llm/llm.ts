@@ -3,6 +3,9 @@ import { Settings } from "../settings/settings";
 import { LlmMessage } from "./llm-message";
 import { format } from "path";
 
+/**
+ * LLM Service
+ */
 export class Llm {
     /**
      * Send a request to the LLM service
@@ -33,6 +36,7 @@ export class Llm {
         });
     }
 
+    // Use copilot model to send request
     private static async sendRequestToCopilot(messages: LlmMessage[]): Promise<vscode.LanguageModelChatResponse> {
         let [model] = await vscode.lm.selectChatModels({
             vendor: 'copilot',
@@ -51,6 +55,7 @@ export class Llm {
         return Promise.reject('No model found');
     }
 
+    // Use custom LLM endpoint to send request
     private static async sendRequestToCustomLlm(messages: LlmMessage[], json: boolean = false): Promise<vscode.LanguageModelChatResponse> {
         const endpoint = Settings.CUSTOM_LLM_ENDPOINT;
         const apiKey = Settings.CUSTOM_LLM_API_KEY;
@@ -161,7 +166,8 @@ export class Llm {
             dataStr = dataStr.slice(start + 3, end);
         }
 
-        // If it is contained in a list, then remove the outer brackets (helper-func expects a list of objects with no outer brackets)
+        // If it is contained in a list, then remove the outer brackets 
+        // (helper-func expects a list of objects with no outer brackets)
         let containsList = false;
         let start = 0;
         for (let i = 0; i < dataStr.length; i++) {

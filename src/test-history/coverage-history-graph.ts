@@ -1,6 +1,12 @@
+/**
+ * Generates the HTML content for the coverage graph webview 
+ * 
+ * @param graphData The data to display in the coverage graph
+ * @returns The HTML content for the coverage graph webview
+ */
 export function getCoverageWebviewContent(graphData: { date: Date, covered: number, missed: number, branchesCovered: number }[]): string {
     const dataStr = JSON.stringify(graphData);
-    
+
     return `
         <!DOCTYPE html>
         <html lang="en">

@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+/**
+ * Tree view provider for the Graph Doc tree view.
+ */
 export class GraphDocTreeViewProvider implements vscode.TreeDataProvider<GraphDocItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<GraphDocItem | undefined | void> = new vscode.EventEmitter<GraphDocItem | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<GraphDocItem | undefined | void> = this._onDidChangeTreeData.event;
@@ -17,6 +20,7 @@ export class GraphDocTreeViewProvider implements vscode.TreeDataProvider<GraphDo
     }
   }
 
+  // Commands to show
   private getRootNodes(): GraphDocItem[] {
     return [
       new GraphDocItem('Pass/Fail Graph', 'test-history.showPassFailGraph', 'graph.svg'),
@@ -46,6 +50,11 @@ class GraphDocItem extends vscode.TreeItem {
   }
 }
 
+/**
+ * The activate function to set up the Graph Doc tree view.
+ * 
+ * @param context The extension context
+ */
 export function activate(context: vscode.ExtensionContext) {
   const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
   vscode.window.registerTreeDataProvider('graphDocTreeView', graphDocTreeViewProvider);

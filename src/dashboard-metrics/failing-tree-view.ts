@@ -4,8 +4,10 @@ import { TestResult } from '../test-runner/results';
 import { TestRunner } from '../test-runner/test-runner';
 import { Settings } from '../settings/settings';
 
-// make a combined tree view with memory and duration
 
+/**
+ * Provider for the failing tests tree view.
+ */
 export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest> {
     private _onDidChangeTreeData: vscode.EventEmitter<FailingTest | undefined | void> = new vscode.EventEmitter<FailingTest | undefined | void>();
     readonly onDidChangeTreeData: vscode.Event<FailingTest | undefined | void> = this._onDidChangeTreeData.event;
@@ -15,6 +17,9 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         this.testRunner = TestRunner.getInstance(workspaceState);
     }
 
+    /**
+     * Refresh the tree view.
+     */
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
@@ -45,6 +50,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         }
     }
 
+    // Only allow non passing tests to be expanded
     private getCollapsibleState(file: string, testResults: TestResult): vscode.TreeItemCollapsibleState {
         for (const test in testResults[file]) {
             const testResult = testResults[file][test];
@@ -55,6 +61,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         return vscode.TreeItemCollapsibleState.None;
     }
 
+    // Get the root files in the tree view
     private async getRootFiles(): Promise<FailingTest[]> {
         const testResults = await this.testRunner.getAllResults(true);
         const slowestTests = await this.testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true);
@@ -192,6 +199,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
         return failingTestsOutput;
     }
 
+    // Get the tests in a file
     private async getFunctionsInFile(file: string): Promise<FailingTest[]> {
         const failingTests = await this.testRunner.getResultsForFile(file, true);
         const failingTestsOutput: FailingTest[] = [];
@@ -258,7 +266,24 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
     }
 }
 
+/**
+ * Represents a failing test in the tree view.
+ */
 export class FailingTest extends vscode.TreeItem {
+
+    /**
+     * Create a new failing test.
+     * 
+     * @param label The label of the node
+     * @param file The file the test is in
+     * @param type The type of node
+     * @param collapsibleState The collapsible state of the node
+     * @param failureLocation The line number of the failure
+     * @param duration The duration of the test
+     * @param isFunction If the node is a function
+     * @param memoryUsage The memory usage of the test
+     * @param passes If the test passes
+     */
     constructor(
         public readonly label: string,
         public file: string,

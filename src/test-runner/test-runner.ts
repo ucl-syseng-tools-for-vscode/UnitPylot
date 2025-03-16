@@ -1,16 +1,12 @@
 import * as vscode from 'vscode';
-import { exec, spawn } from 'child_process';
-import { convertToBits, getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
+import { spawn } from 'child_process';
+import { getPythonPath, getTestsForFunction, getTestsForFunctions, parseCoverage } from './helper-functions';
 import { TestResult, TestFileResult, TestFunctionResult } from './results';
-import { Coverage, FileCoverage, mergeCoverage } from './coverage';
-import { Hash, FileHash, FunctionHash, getWorkspaceHash, getModifiedFiles } from './file-hash';
+import { Coverage, mergeCoverage } from './coverage';
+import { Hash, getWorkspaceHash, getModifiedFiles } from './file-hash';
 import { getPytestResult, PYTEST_MONITOR_OUTPUT_FILE, PYTEST_OUTPUT_FILE } from './parser';
-import { fail } from 'assert';
-import { promisify } from 'util';
 import { Settings } from '../settings/settings';
 import { HistoryManager } from '../test-history/history-manager';
-
-const execPromise = promisify(exec);
 
 type TestRunnerState = {
     results: TestResult;
@@ -22,21 +18,24 @@ type TestRunnerState = {
     * Class to hold test results and coverage data for the whole project.
     * Only one instance of this class should exist at any given time.
 */
-
 export class TestRunner {
     private static instance: TestRunner;
     private results: TestResult | undefined;
     private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
     private hash: Hash = {};
-    private testDurationsToRun: number = 5;
     private testProcess: any = null; // Store the process reference
-
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
     }
 
+    /**
+     * Get the singleton instance of the TestRunner
+     * 
+     * @param workspaceState The workspace state to store/get the test results
+     * @returns The singleton instance of the TestRunner
+     */
     public static getInstance(workspaceState: vscode.Memento): TestRunner {
         if (!TestRunner.instance) {
             TestRunner.instance = new TestRunner(workspaceState);
@@ -44,6 +43,7 @@ export class TestRunner {
         return TestRunner.instance;
     }
 
+    // Load the test results and coverage data from the workspace state
     private loadState(): void {
         const state = this.workspaceState.get(this.stateKey);
         const typedState = state as TestRunnerState;
@@ -57,6 +57,9 @@ export class TestRunner {
         }
     }
 
+    /**
+     * Save the state of the TestRunner
+     */
     public saveState(): void {
         const state = {
             results: this.results,
@@ -66,14 +69,9 @@ export class TestRunner {
         this.workspaceState.update(this.stateKey, state);
     }
 
-    public setTestDurationsToRun(n: number): void {
-        if (Number.isInteger(n)) {
-            this.testDurationsToRun = n;
-        } else {
-            throw new Error('Test durations to run must be an integer');
-        }
-    }
-
+    /**
+     * Reset the state of the TestRunner
+     */
     public resetState(): void {
         this.results = undefined;
         this.coverage = undefined;
@@ -81,7 +79,14 @@ export class TestRunner {
         this.saveState();
     }
 
-    // Get n slowest tests (default n = 5)
+
+    /**
+     * Get the slowest tests
+     * 
+     * @param n The number of slowest tests to return, defaults to 5
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to an array of the slowest tests
+     */
     public async getSlowestTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -99,7 +104,12 @@ export class TestRunner {
         return slowestTests.slice(0, n);
     }
 
-    // Get coverage data
+    /**
+     * Get the coverage data
+     * 
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to the coverage data
+     */
     public async getCoverage(doNotRunTests?: boolean): Promise<Coverage | undefined> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -107,28 +117,12 @@ export class TestRunner {
         return this.coverage;
     }
 
-
-    // Get memory of tests biggestAllocations
-    public async getMemory(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
-        if (!doNotRunTests) {
-            await this.runNeccecaryTests();
-        }
-
-        const memoryTests: TestFunctionResult[] = [];
-        console.log("RESULTS", this.results);
-        if (this.results) {
-            for (const filePath in this.results) {
-                for (const test in this.results[filePath]) {
-                    memoryTests.push(this.results[filePath][test]);
-                }
-            }
-        }
-        console.log("MEMORY", memoryTests);
-        return memoryTests
-    }
-
-
-    // Get all test results
+    /**
+     * Get all test results
+     * 
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to the test results
+     */
     public async getAllResults(doNotRunTests?: boolean): Promise<TestResult | undefined> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -136,7 +130,12 @@ export class TestRunner {
         return this.results;
     }
 
-    // Get overall pass / fail results
+    /**
+     * Get the summary of the test results
+     * 
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to the number of passed and failed tests
+     */
     public async getResultsSummary(doNotRunTests?: boolean): Promise<{ passed: number, failed: number }> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -159,7 +158,13 @@ export class TestRunner {
         return { passed, failed };
     }
 
-    // Get pass / fail results for a specific file
+    /**
+     * Get the test results for a specific file
+     * 
+     * @param filePath The relative path to the file
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to the test results for the file
+     */
     public async getResultsForFile(filePath: string, doNotRunTests?: boolean): Promise<TestFileResult> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -171,7 +176,12 @@ export class TestRunner {
         return {};
     }
 
-    // Get failing tests with their line numbers
+    /**
+     * Get a list of all failing tests
+     * 
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to the test results for the failing tests
+     */
     public async getAllFailingTests(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -190,7 +200,13 @@ export class TestRunner {
         return failingTests;
     }
 
-    // Get n highest memory usage tests
+    /**
+     * Get the tests that use the most memory (in MB)
+     * 
+     * @param n The number of tests to return, defaults to 5
+     * @param doNotRunTests Whether to run tests or not
+     * @returns A promise that resolves to an array of the tests with the highest memory usage
+     */
     public async getHighestMemoryTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
             await this.runNeccecaryTests();
@@ -377,12 +393,12 @@ export class TestRunner {
         }
     }
 
-    /*
-        * Run tests
-        * Only run tests that have changes since the last run
-        * OR run tests that correspond to code that has changed since the last run
-    */
-
+    /**
+     * Run specified tests or all tests if none are specified
+     * 
+     * @param testsToRun The tests to run
+     * @returns None
+     */
     public async runTests(testsToRun?: TestFunctionResult[]): Promise<void> {
         if (testsToRun && testsToRun.length === 0) {  // No tests to run
             return;

@@ -29,7 +29,11 @@ Here is an example of the expected response format:
 }
 `;
 
-// Chat Functionality for Annotation
+/**
+ * Handles the annotate command
+ * 
+ * @param textEditor The active text editor
+ */
 export async function handleAnnotateCommand(textEditor: vscode.TextEditor) {
     const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
     hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(codeWithLineNumbers), 0);

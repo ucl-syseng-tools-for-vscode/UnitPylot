@@ -2,6 +2,9 @@ import ast
 import sys
 import json
 
+'''
+    This Python file outputs the functions called by tests in a given test file.
+'''
 def get_imported_functions(file_path):
     """Extract functions that are imported in the test file."""
     imported_functions = {}

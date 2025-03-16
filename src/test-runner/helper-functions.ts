@@ -4,7 +4,11 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import { Coverage, FileCoverage, FileCoverageRaw } from './coverage';
 
-// Get the Python Extension API
+/**
+ * Get the full path to the Python interpreter
+ * 
+ * @returns The full path to the Python interpreter
+ */
 export async function getPythonPath(): Promise<string | undefined> {
     const extension = vscode.extensions.getExtension('ms-python.python');
     if (extension) {
@@ -17,6 +21,12 @@ export async function getPythonPath(): Promise<string | undefined> {
     return undefined;
 }
 
+/**
+ * Read a JSON file and parse it
+ * 
+ * @param filePath The path to the JSON file
+ * @returns The parsed JSON object or null if an error occurred
+ */
 export function readJsonFile(filePath: string): any {
     try {
         const rawData = fs.readFileSync(filePath, 'utf-8');
@@ -27,38 +37,7 @@ export function readJsonFile(filePath: string): any {
     }
 }
 
-export function convertToBits(input: string): number {
-    // Define unit multipliers in bits
-    const unitMultipliers: { [key: string]: number } = {
-        "kb": 1000 * 8,
-        "kB": 1000 * 8,
-        "KiB": 1024 * 8,
-        "mb": 1000 * 1000 * 8,
-        "MB": 1000 * 1000 * 8,
-        "MiB": 1024 * 1024 * 8,
-        "gb": 1000 * 1000 * 1000 * 8,
-        "GB": 1000 * 1000 * 1000 * 8,
-        "GiB": 1024 * 1024 * 1024 * 8
-    };
-
-    // Regular expression to extract number and unit
-    const regex = /^(\d+(\.\d+)?)\s*([kKmMgG][iI]?[bB])$/;
-    const match = input.match(regex);
-
-    if (!match) {
-        throw new Error("Invalid input format. Expected format: '<number> <unit>' e.g., '10 MB'");
-    }
-
-    const value = parseFloat(match[1]); // Numeric value
-    const unit = match[3]; // Unit part
-
-    if (!(unit in unitMultipliers)) {
-        throw new Error("Unsupported unit. Use kB, KiB, kb, MB, MiB, mb, GB, GiB, or gb.");
-    }
-
-    return value * unitMultipliers[unit];
-}
-
+// Map the raw file coverage data to a more usable format
 function mapFileCoverage(fileCoverage: [FileCoverageRaw], workspacePath: string): FileCoverage[] {
     let files: FileCoverage[] = [];
     let n = 0;
@@ -88,6 +67,11 @@ function mapFileCoverage(fileCoverage: [FileCoverageRaw], workspacePath: string)
     return files;
 }
 
+/**
+ * Parse the coverage JSON file and extract the coverage data
+ * 
+ * @returns The parsed coverage data
+ */
 export function parseCoverage(): Coverage {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
@@ -114,6 +98,7 @@ export function parseCoverage(): Coverage {
     return coverage;
 }
 
+// Returns a dictionary of {function name: [test name]}
 async function getTestsForFunctionsInTestFile(testFilePath: string): Promise<{ [key: string]: string[] }> {
     const pythonPath = await getPythonPath();
     const scriptPath = path.join(__dirname, 'test-extractor.py');
@@ -146,6 +131,7 @@ async function getTestsForFunctionsInTestFile(testFilePath: string): Promise<{ [
 }
 
 // Returns a dictionary of {function name: [test name]}
+// Used to get all the tests for each function in the workspace
 export async function getTestsForFunctions(): Promise<{ [key: string]: string[] }> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
@@ -193,7 +179,13 @@ export async function getTestsForFunctions(): Promise<{ [key: string]: string[] 
     return functionTests;
 }
 
-
+/**
+ * Get the tests for the given function
+ * 
+ * @param functionName The name of the function
+ * @param functionTests The dictionary containing the tests for each function
+ * @returns The list of tests for the given function
+ */
 export function getTestsForFunction(functionName: string, functionTests: { [key: string]: string[] }): string[] {
     // The function tests may not contain the full function name
     const functionNameNormal = functionName.split('::')[0];
