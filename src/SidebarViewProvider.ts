@@ -17,7 +17,11 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
   public async update(): Promise<void> {
     if (this._view) {
       const { passed, failed } = await this.testRunner.getResultsSummary(true) || { passed: 0, failed: 0 };
-      this.updateResults({ passed, failed });
+      if (passed === 0 && failed === 0) {
+        this._view.webview.postMessage({ command: 'noResults' });
+      } else {
+        this.updateResults({ passed, failed });
+      }
 
       const defaultCoverage: Coverage = {
         files: [],
