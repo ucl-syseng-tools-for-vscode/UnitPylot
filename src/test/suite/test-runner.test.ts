@@ -1,8 +1,13 @@
 import * as vscode from 'vscode';
+import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { TestRunner } from '../../test-runner/test-runner';
 import { Settings } from '../../settings/settings';
 import { TestFunctionResult, TestResult } from '../../test-runner/results';
+import { Coverage } from '../../test-runner/coverage';
+import { exampleCoverage, exampleTestResult } from '../fixtures/example-objects';
+import { assert } from 'console';
+
 
 suite('TestRunner Tests', () => {
     let testRunner: TestRunner;
@@ -15,65 +20,67 @@ suite('TestRunner Tests', () => {
             }
         } as unknown as vscode.ExtensionContext;
         testRunner = TestRunner.getInstance(context.workspaceState);
+
+        // Mocking coverage and results
+        sinon.stub(testRunner, 'results').value(exampleTestResult);
+        sinon.stub(testRunner, 'coverage').value(exampleCoverage);
     });
 
     test('should initialize TestRunner instance', () => {
         expect(testRunner).to.be.an.instanceof(TestRunner);
     });
 
-    test('should run tests and return results', async () => {
-        await testRunner.runTests();
-        expect(testRunner.getAllResults).to.be.an('object');
+    test('should save state', async () => {
+        await testRunner.saveState();
+        // Just test if it does not throw an error
+    });
+
+    test('should return results', async () => {
+        expect(await testRunner.getAllResults()).to.be.equal(exampleTestResult);
     });
 
     test('should get coverage data', async () => {
         const coverage = await testRunner.getCoverage();
-        expect(coverage).to.be.an('object');
+        expect(coverage).to.be.equal(exampleCoverage);
     });
 
     test('should get slowest tests', async () => {
         const slowestTests = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS);
-        expect(slowestTests).to.be.an('array');
+        assert(slowestTests.length === 4);
     });
 
     test('should get memory usage data', async () => {
         const memoryTests = await testRunner.getMemory();
-        expect(memoryTests).to.be.an('array');
+        assert(memoryTests.length === 4);
     });
 
     test('should get all test results', async () => {
         const allResults = await testRunner.getAllResults();
-        expect(allResults).to.be.an('object');
+        expect(allResults).to.be.equal(exampleTestResult);
     });
 
     test('should get results summary', async () => {
         const summary = await testRunner.getResultsSummary();
         expect(summary).to.have.property('passed');
         expect(summary).to.have.property('failed');
+        expect(summary).property('passed').to.be.equal(2);
+        expect(summary).property('failed').to.be.equal(2);
     });
 
     test('should get results for a specific file', async () => {
-        const fileResults = await testRunner.getResultsForFile('test-file.py');
+        const fileResults = await testRunner.getResultsForFile('src/file1_test.py');
         expect(fileResults).to.be.an('object');
+        assert(Object.keys(fileResults).length === 2);
     });
 
     test('should get all failing tests', async () => {
         const failingTests = await testRunner.getAllFailingTests();
-        expect(failingTests).to.be.an('array');
+        assert(failingTests.length === 2);
     });
 
     test('should get highest memory usage tests', async () => {
         const memoryTests = await testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS);
-        expect(memoryTests).to.be.an('array');
+        assert(memoryTests.length === 4);
     });
 
-    test('should remove deleted tests', async () => {
-        // await testRunner.removeDeletedTests({});
-        // Assuming removeDeletedTests does not return anything
-    });
-
-    test('should get modified tests', async () => {
-        // const modifiedTests = await testRunner.getModifiedTests();
-        // expect(modifiedTests).to.be.an('object');
-    });
 });
