@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { TestRunner } from '../../test-runner/test-runner';
-import { Settings } from '../../settings/settings';
-import { TestFunctionResult, TestResult } from '../../test-runner/results';
-import { Coverage } from '../../test-runner/coverage';
-import { exampleCoverage, exampleTestResult } from '../fixtures/example-objects';
+import { TestRunner } from '../../../test-runner/test-runner';
+import { Settings } from '../../../settings/settings';
+import { exampleCoverage, exampleTestResult } from '../../fixtures/example-objects';
 import { assert } from 'console';
 
 
