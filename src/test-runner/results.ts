@@ -1,3 +1,7 @@
+/**
+ * This file contains the types for the test results
+ */
+
 export type TestResult = {
     [key: string]: TestFileResult  // File path : TestFileResults
 }

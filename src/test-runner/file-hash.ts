@@ -7,10 +7,16 @@ import { exec } from 'child_process';
 import { TestFunctionResult } from './results';
 import { get } from 'http';
 
+/**
+ * A hash of the workspace files
+ */
 export type Hash = {
     [key: string]: FileHash
 }
 
+/**
+ * A hash of a file
+ */
 export type FileHash = {
     hash: string;
     isTestFile: boolean;
@@ -19,15 +25,22 @@ export type FileHash = {
     };
 }
 
+/**
+ * A hash of a function
+ */
 export type FunctionHash = {
     hash: string;
 }
 
+/**
+ * Represents the difference between two hashes
+ */
 export type FilesDiff = {
     added: Hash;
     deleted: Hash;
 }
 
+// Get the functions in a file with their bodies
 async function getFunctionsInFile(filePath: string): Promise<{ [key: string]: string }> {  // Returns {functionName: functionBody}
     const pythonPath = await getPythonPath();
     const scriptPath = path.join(__dirname, 'function-splitter.py');
@@ -63,6 +76,7 @@ async function getFunctionsInFile(filePath: string): Promise<{ [key: string]: st
     }
 }
 
+// Hash a file
 async function hashFile(filePath: string): Promise<FileHash> {
     const fileData = fs.readFileSync(filePath, 'utf-8');
     const fileHash = crypto.createHash('sha256').update(fileData).digest('hex');
@@ -83,6 +97,7 @@ async function hashFile(filePath: string): Promise<FileHash> {
     };
 }
 
+// Hash a directory
 async function hashDirectory(directoryPath: string): Promise<Hash> {
     const hash: Hash = {};
     const files = fs.readdirSync(directoryPath);
@@ -99,13 +114,13 @@ async function hashDirectory(directoryPath: string): Promise<Hash> {
                 hash[path.join(relativeFilePath, key)] = value;
             }
         } else {
-            if (!file.endsWith('.py')) {
+            if (!file.endsWith('.py')) { // Only hash python files
                 continue;
             }
             try {
                 const fileHash = await hashFile(filePath);
                 hash[relativeFilePath] = fileHash;
-            } catch (e) {
+            } catch (e) { // Ignore errors usually caused by obscure Files
                 console.error(`Error hashing file: ${e}`);
             }
         }
@@ -113,7 +128,12 @@ async function hashDirectory(directoryPath: string): Promise<Hash> {
     return hash;
 }
 
-export async function getWorkspaceHash() {
+/**
+ * Get the hash of the workspace files
+ * 
+ * @returns A promise that resolves to a hash of the workspace files
+ */
+export async function getWorkspaceHash(): Promise<Hash> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
         throw new Error('No workspace folder found');
@@ -125,11 +145,11 @@ export async function getWorkspaceHash() {
 
 /**
  * Get the hash difference between two hashes
+ * 
  * @param {Hash} oldHash - The old hash of the workspace
  * @param {Hash} newHash - The new hash of the workspace
  * @returns {Hash} - The difference between the two hashes 
 */
-
 function getHashDiff(oldHash: Hash, newHash: Hash): Hash {
     const diff: Hash = {};
 
@@ -167,7 +187,6 @@ function getHashDiff(oldHash: Hash, newHash: Hash): Hash {
  * @param {Hash} oldHash - The old hash of the workspace
  * @returns {Promise<FilesDiff>} - A promise that resolves to a dictionary of test results that have been added or removed.
  */
-
 export function getModifiedFiles(oldHash: Hash, newHash: Hash): FilesDiff {  // TODO: Write more comments for this outrageous method
     const testsChanged: FilesDiff = {
         added: getHashDiff(oldHash, newHash),

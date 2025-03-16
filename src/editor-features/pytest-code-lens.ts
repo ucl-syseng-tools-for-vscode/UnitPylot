@@ -1,9 +1,19 @@
 import * as vscode from 'vscode';
 
+/**
+ * CodeLens provider for pytest test functions and classes.
+ */
 export class PytestCodeLensProvider implements vscode.CodeLensProvider {
     private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
     public readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
 
+    /**
+     * Trigger a refresh of the code lenses.
+     * 
+     * @param document The document in which the code lenses are being provided.
+     * @param token The cancellation token.
+     * @returns An array of code lenses.
+     */
     public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] {
         const codeLenses: vscode.CodeLens[] = [];
         const functionRegex = /^(\t| )*def (test_\w+)\(/; // Detects pytest functions

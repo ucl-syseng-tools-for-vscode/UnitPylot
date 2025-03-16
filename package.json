@@ -55,16 +55,6 @@
     },
     "commands": [
       {
-        "command": "dashboard.openview",
-        "title": "Sidebar View"
-      },
-      {
-        "command": "dashboard.menu.view",
-        "category": "vscode-extension-sidebar-html",
-        "title": "Sample WebView in VS Code Sidebar",
-        "icon": "$(clear-all)"
-      },
-      {
         "command": "vscode-run-tests.runTests",
         "title": "TestPylot: Run Tests"
       },
@@ -91,10 +81,6 @@
       {
         "command": "vscode-slowest-tests.updateSlowestTests",
         "title": "TestPylot: Update Slowest Tests Results"
-      },
-      {
-        "command": "vscode-run-tests.getMemory",
-        "title": "TestPylot: Get Memory"
       },
       {
         "command": "vscode-run-tests.updateMemory",

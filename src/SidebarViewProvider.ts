@@ -4,6 +4,10 @@ import * as path from 'path';
 import { Coverage } from "./test-runner/coverage";
 import { TestRunner } from "./test-runner/test-runner";
 
+/**
+ * Provider for the sidebar view.
+ * The provider registers the view and also handles messages from the webview.
+ */
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "dashboard.openview";
 
@@ -14,6 +18,9 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
     this.testRunner = TestRunner.getInstance(workspace);
   }
 
+  /**
+   * Update the content of the sidebar view.
+   */
   public async update(): Promise<void> {
     if (this._view) {
       const { passed, failed } = await this.testRunner.getResultsSummary(true) || { passed: 0, failed: 0 };
@@ -38,6 +45,11 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  /**
+   * This is called when the view is first loaded.
+   * 
+   * @param webviewView The webview view that is being resolved.
+   */
   public resolveWebviewView(webviewView: vscode.WebviewView): void {
     this._view = webviewView;
 
@@ -58,22 +70,15 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       if (msg.command === 'vscode-run-tests.runAllTests') {
         vscode.commands.executeCommand('vscode-run-tests.runAllTests');
       }
-      if (msg.command === 'getCoverage') {
-        vscode.commands.executeCommand('vscode-run-tests.getCoverage');
-      }
-      if (msg.command === 'slowestTests') {
-        vscode.commands.executeCommand('vscode-slowest-tests.slowestTests');
-      }
-      if (msg.command === 'getMemory') {
-        vscode.commands.executeCommand('vscode-run-tests.getMemory');
-      }
     });
 
+    // Register update pass/fail results command
     vscode.commands.registerCommand('vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {
       console.log('Updating results:', results);
       this.updateResults(results);
     });
 
+    // Register update coverage command
     vscode.commands.registerCommand('vscode-run-tests.updateCoverage', (coverage: Coverage) => {
       console.log('Updating coverage:', coverage);
       this.updateCoverage(coverage);

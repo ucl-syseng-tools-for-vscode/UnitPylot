@@ -10,8 +10,6 @@ import { handleOptimiseSlowestTestsCommand } from './copilot-features/optimise-s
 import { getWebviewContent } from './test-history/test-history-graph';
 import { getCoverageWebviewContent } from './test-history/coverage-history-graph';
 
-import { getTestDependencies } from './dependency-management/dependencies';
-import { DependenciesProvider } from './dependency-management/tree-view-provider';
 import { FailingTestsProvider } from './dashboard-metrics/failing-tree-view';
 import { TestRunner } from './test-runner/test-runner';
 
@@ -27,13 +25,9 @@ import { fetchPrompt } from './copilot-features/chat';
 import { ReportGenerator } from './test-history/report-generator';
 
 import { Settings } from './settings/settings';
-import { LlmMessage } from './llm/llm-message';
-import { Llm } from './llm/llm';
 
 import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
 
-
-export const jsonStore: Map<string, any> = new Map();
 
 // Activation Method for the Extension
 export function activate(context: vscode.ExtensionContext) {
@@ -43,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Initialise HistoryManager
     HistoryManager.initialise(context);
 
+    // Handle file open event
     vscode.window.onDidChangeActiveTextEditor((editor) => {
         if (editor) {
             handleFileOpen(editor, testRunner);
@@ -52,11 +47,6 @@ export function activate(context: vscode.ExtensionContext) {
     if (vscode.window.activeTextEditor) {
         handleFileOpen(vscode.window.activeTextEditor, testRunner);
     }
-
-    const disposable = vscode.commands.registerCommand('test.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from test!');
-    });
-    context.subscriptions.push(disposable);
 
     // Register the chat participant
     vscode.chat.createChatParticipant("vscode-testing-chat", async (request, context, response, token) => {
@@ -78,7 +68,6 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage('Failed to run pytest.');
         }
     });
-
     context.subscriptions.push(runTests);
 
     // Register the runAllTests command
@@ -89,29 +78,24 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage('Failed to run pytest. Error: ' + error);
         }
     });
-
     context.subscriptions.push(runAllTests);
 
 
     // Register the getCoverage command
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
         try {
-            const coverage = await testRunner.getCoverage();
-            jsonStore.set('coverage', coverage);
+            const coverage = await testRunner.getCoverage(true);
             handleFileOpen(vscode.window.activeTextEditor!, testRunner);
             vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run coverage check.');
         }
     });
-
     context.subscriptions.push(getCoverage);
-
 
     // Register the slowestTests command
     const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
         try {
-            // runSlowestTests();
             const slowest = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS);
             vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
@@ -119,20 +103,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
     context.subscriptions.push(slowestTests);
-
-    // Register the getMemory command 
-    const getMemory = vscode.commands.registerCommand('vscode-run-tests.getMemory', async () => {
-        try {
-
-            const memory = await testRunner.getMemory();
-            // vscode.commands.executeCommand('vscode-run-tests.updateMemory', { memory });
-
-        } catch (error) {
-            vscode.window.showErrorMessage('Failed to run memory check.');
-        }
-    });
-
-    context.subscriptions.push(getMemory);
 
 
     // Register the annotate command
@@ -150,6 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixFailingTestsCommand);
 
+    // Register the show pass/fail graph command
     let passFailPanel: vscode.WebviewPanel | undefined;
     const showGraphCommand = vscode.commands.registerCommand('test-history.showPassFailGraph', async () => {
         HistoryManager.saveSnapshot();
@@ -178,6 +149,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(showGraphCommand);
 
+    // Register the show coverage graph command
     let coveragePanel: vscode.WebviewPanel | undefined;
     const showCoverageGraphCommand = vscode.commands.registerCommand(
         'test-history.showCoverageGraph', async () => {
@@ -219,10 +191,10 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(fixCoverageCommand);
 
+    // Register the export snapshot report command (markdown file)
     let exportSnapshotReport = vscode.commands.registerCommand('extension.exportSnapshotReport', () => {
         ReportGenerator.generateSnapshotReport();
     });
-
     context.subscriptions.push(exportSnapshotReport);
 
     // Register the optimise slowest tests command
@@ -232,23 +204,12 @@ export function activate(context: vscode.ExtensionContext) {
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
-
-
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
         'optimise-memory.optimiseMemory',
         async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS, true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
-
-
-    // Register the getDependencies command
-    context.subscriptions.push(vscode.commands.registerCommand(
-        'dependencies.getDependencies', async () => {
-            const dependencies = await getTestDependencies();
-            jsonStore.set('dependencies', dependencies);
-        }
-    ));
 
     // Register the generate Pydoc command
     const generatePydocCommand = vscode.commands.registerTextEditorCommand(
@@ -270,6 +231,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Register the in-line accept and reject commands
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.rejectSuggestion', (args) => {
             const { line, decorationType } = args;
@@ -281,6 +243,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Register the in-line suggestions commands
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.addSuggestiontoSameFile', (args) => {
             const { line, code_snippet, decorationType } = args;
@@ -305,9 +268,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-
-    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
-
     // Update dashboard on save
     vscode.workspace.onDidSaveTextDocument(async (document) => {
         if (!Settings.RUN_TESTS_ON_SAVE || document.fileName.endsWith('settings.json')) {
@@ -315,36 +275,15 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // Call functions to update dashboard
-        const { passed, failed } = await testRunner.getResultsSummary();
-        vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
-
-        const coverage = await testRunner.getCoverage(true);
-        if (coverage) {
-            jsonStore.set('coverage', coverage);
-            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
-        }
-        const slowest = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true);
-        vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+        vscode.commands.executeCommand('extension.updateSidebar');
     });
+
+    // Register the webview view provider (pass/fail results + coverage)
+    const webviewProvider = new SidebarViewProvider(context.extensionUri, context.workspaceState);
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(SidebarViewProvider.viewType, webviewProvider)
     );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('dashboard.menu.view', () => {
-            vscode.window.showInformationMessage('Exit button of extension was clicked!');
-        })
-    );
-
-    const openWebView = vscode.commands.registerCommand('dashboard.openview', () => {
-        vscode.window.showInformationMessage(
-            'Command " Sidebar View [dashboard.openview] " called.'
-        );
-    });
-
-    context.subscriptions.push(openWebView);
-
 
     // Register the settings page command
     context.subscriptions.push(
@@ -374,7 +313,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the open test file command
     vscode.commands.registerCommand('failingTestsProvider.openTestFile', (file: string, lineNumber: number) => {
         console.log(`Opening file: ${file} at line: ${lineNumber}`);
-        const workspaceRoot = vscode.workspace.rootPath;
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         if (!workspaceRoot) {
             vscode.window.showErrorMessage('No workspace folder is open.');
             return;
@@ -399,6 +338,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 
+    // Register the tree view for accessible commands
     const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
     vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
 
@@ -446,6 +386,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const relativePath = path.relative(workspaceFolder, file.fsPath);
             vscode.window.showInformationMessage(`Running: ${testName}`);
+            // Only the filePath and testName are required by TestRunner
             testRunner.runTests(
                 [{
                     filePath: relativePath,
@@ -467,6 +408,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Add functions to run periodically
     startIntervalTask(context);
 
 }
@@ -503,11 +445,9 @@ function startIntervalTask(context: vscode.ExtensionContext) {
 export async function handleFileOpen(editor: vscode.TextEditor, testRunner: TestRunner) {
     const fileName = editor.document.fileName;
     if (Settings.CODE_COVERAGE_HIGHLIGHTING && fileName.endsWith('.py')) {
-        highlightCodeCoverage(fileName, jsonStore.get('coverage'));
+        highlightCodeCoverage(fileName, await testRunner.getCoverage(true));
     }
 }
-
-
 
 // Deactivation Method for the Extension
 export function deactivate() { }

@@ -2,8 +2,6 @@ import * as vscode from 'vscode';
 import * as hf from '../copilot-features/helper-func';
 
 // Annotation Prompt for generating pydoc suggestions tests in the currently open file
-
-// Added suggestion field in order to reuse previous functions
 const ANNOTATION_PROMPT = `
 You are a Python documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed pydoc annotations for its functions and classes.
 
@@ -62,6 +60,5 @@ function groupFunctions(textEditor: vscode.TextEditor) {
 
     return functions;
 }
-
 
 

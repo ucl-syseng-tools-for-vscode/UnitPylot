@@ -1,15 +1,14 @@
-
-/* 
-    * This file contains functions related to parsing the pytest json output.
-    * The TestRunner class still manages what tests are run.
-*/
-
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as sqlite3 from 'sqlite3';
 import { readJsonFile } from "./helper-functions";
 import { TestFunctionResult, TestResult, MemoryAllocation } from "./results";
+
+/* 
+    * This file contains functions related to parsing the pytest json output.
+    * The TestRunner class still manages what tests are run.
+*/
 
 export const PYTEST_OUTPUT_FILE = '.pytest_results.json';
 export const PYTEST_MONITOR_OUTPUT_FILE = '.pytest_resource_usage.sqlite';
