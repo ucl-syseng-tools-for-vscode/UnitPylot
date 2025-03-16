@@ -7,7 +7,7 @@ import * as hf from '../copilot-features/helper-func';
 const ANNOTATION_PROMPT = `
 You are a Python documentation assistant. Your task is to analyse the Python code in the currently open file and generate detailed pydoc annotations for its functions and classes.
 
-For each test case provided, based on its start and end line numbers:
+For each test case provided, based on its start line number:
 1. Analyse the test case to understand its purpose, inputs, and expected behavior.
 2. Generate a concise and accurate pydoc suggestion that describes what the test case does.
 
@@ -19,7 +19,6 @@ A pydoc-compliant docstring typically includes:
 
 Include all this in the suggestion field.
 
-
 Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Do not include any markdown syntax.
@@ -30,51 +29,35 @@ Here is an example of the expected response format:
   "line": 1,
   "suggestion": "This function calculates the sum of two numbers. It takes two arguments, a and b, and returns their sum."
 }
-
-
-Guidelines:
-- Clarity: Write pydoc strings that are easy to understand for other developers.
-- Completeness: Ensure every function and class has a corresponding annotation that fully documents its behavior.
-- Adherence: Follow Python's docstring conventions for readability and consistency.
 `;
 
-// Chat Functionality for Annotation
+// Command for sending the pydoc data and prompt
 export async function handleGeneratePydocCommand(textEditor: vscode.TextEditor) {
     try {
+        const fileContent = textEditor.document.getText();
         const funcLines = await groupFunctions(textEditor)
-        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(funcLines), 0);
+
+        const payload = {
+            fileContent,  
+            functions: funcLines
+        };   
+        hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 0);
     } catch (error) {
         console.error("Error in handleGeneratePydocCommand:", error);
     }
 }
 
-
-//CHECK +1 LOGIC IS OK 
-// Extract a line numbers of each test case in the currently open file
+// Retrieves the start line of each function in the file for display
 function groupFunctions(textEditor: vscode.TextEditor) {
     const document = textEditor.document;
     const text = document.getText();
     const functionRegex = /def\s+test_\w+\s*\(.*\)\s*:/g;
-    const assertRegex = /assert\s+/g;
-    const functions: { startLine: number, endLine: number }[] = [];
+    const functions: { startLine: number }[] = [];
 
     let match;
     while ((match = functionRegex.exec(text)) !== null) {
-        const startLine = document.positionAt(match.index).line +1;
-        let endLine = document.lineCount - 1;
-
-        // Find the next assert statement after the start line
-        assertRegex.lastIndex = match.index;
-        let assertMatch;
-        while ((assertMatch = assertRegex.exec(text)) !== null) {
-            const assertLine = document.positionAt(assertMatch.index).line;
-            if (assertLine > startLine) {
-                endLine = assertLine+1;
-                break;
-            }
-        }
-
-        functions.push({ startLine, endLine });
+        const startLine = document.positionAt(match.index).line + 1;
+        functions.push({ startLine });
     }
 
     return functions;

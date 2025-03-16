@@ -8,13 +8,13 @@ const ANNOTATION_PROMPT: string = `
 You are a test optimization assistant. Your task is to analyze the performance of a given list of tests cases with their total memory allocation, and suggest ways to optimize the tests that use the most memory.
 
 ## Analysis Scope:
-For each of the tests provided, recommend optimizations that reduce memory usage while maintaining correctness.
+For each of the tests provided, recommend optimizations that reduce memory usage while maintaining correctness. Suggest removing or reducing the size of unecessary data structures. 
 
 ## Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Must include a **test_name** field of the name of the most memory-intensive test.
 - Include a **suggestion** field with clear and concise recommendations for optimization.
-- Must include a **code_snippet** field for the optimized version of the test code.
+- Must include a **code_snippet** field for the optimized version of the test code that must be changed.
 - Include a **bottleneck** field with an explanation of what is causing high memory usage.
 
 ## Guidelines:
@@ -39,16 +39,20 @@ Here is an example of the expected response format:
 `;
 
 
-// Chat Functionality for Annotation
+// Command for sending the memory data and prompt
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
+    const fileContent = textEditor.document.getText();
     var memoryTestsData = checkIfTestIsPresent(textEditor, mostMemoryTests);
-    console.log("memoryTestsData", memoryTestsData);
     
     if (memoryTestsData.length > 0) {
-        vscode.window.showInformationMessage("Memory-intensive tests are present in the current file.");
+        vscode.window.showInformationMessage("There are memory-intensive tests are present in the current file, running command...");
         try {
-            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(memoryTestsData), 1);
+            const payload = {
+                fileContent,  
+                memoryTests: memoryTestsData
+            };
 
+            hf.chatFunctionality(textEditor, ANNOTATION_PROMPT, JSON.stringify(payload), 1);
         } catch (error) {
             console.error("Error in handleOptimiseMemoryCommand:", error);
         }
@@ -59,7 +63,7 @@ export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor,
 }
 
 
-// Checking if at least one of the tests is present in the current file (return 1 if present, 0 if not present)
+// Checks if there is a memory intensive test present in the current file
 function checkIfTestIsPresent(editor: vscode.TextEditor, tests: TestFunctionResult[]) {
     const documentText = editor.document.getText();
     var memoryData: string[] = [];
