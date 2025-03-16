@@ -4,81 +4,96 @@ TestPylot is a Visual Studio Code (VSCode) extension designed to enhance the exp
 
 ## Features
 
-- **CodeLens for Pytest**: Easily run and debug individual tests directly from the editor.
-- **Test Coverage Visualisation**: Highlight code coverage within the editor to identify untested code.
-- **Tests Tree View**: View and navigate test issues in a dedicated tree view.
-- **Test History**: Track the history of test results, including pass/fail rates and coverage over time.
-- **Memory and Performance Optimisation**: Identify and optimise the slowest and most memory-intensive tests.
-- **Custom LLM Integration**: Use GitHub Copilot or other custom language models to assist with test writing and optimisation.
+### Test Performance & Coverage Insights
+
+* **Granular Test Metrics Breakdown**: displays the structure of the project's test suite within a **tree view** highlighting,
+  * passing/failing test cases,
+  * _n_ slowest tests,
+  * _n_ most memory intensive tests.
+* **Line and Branch Coverage Display**: provides functionality that highlights untested areas of code within the editor, providing real-time feedback.
+* **Test History Tracker**: tracks test performance with interactive graphs of pass/fail rates and coverage trends.
+* **Exportable Logs**: saves test results and coverage trends into _json_ or _markdown_ formats.
+
+### Automated Test Optimisation & Debugging 
+TestPylot offers **AI assitance** that provides suggestions to improve the following metrics, allowing them to be **accepted directly into corresponding files**:
+* **Fix Failing Tests**: detects failure points and suggests fixes to improve test reliability.
+* **Improve Coverage**: detects untested code such as edge cases or missed branches and suggests additional test cases.
+* **Optimise Slowest Tests**: detects the _n_ slowest tests and suggests explanations and improved test cases with faster execution time.
+* **Optimise Memory-intensive Tests**: detects the _n_ most memory intensive tests and suggests tests which use lesser memory.
+
+### AI-Powered Enhancements
+* **Code Insights**: highlights vulnerabilities and suggests improvements in test cases to detect bottlenecks and prevent regressions.
+* **Pydoc Generation**: generates documentation for test cases to enhance readability and maintainability.
+* **AAA ChatBot**: provides guidance on how to follow the best testing practices by adhering to AAA techniques. 
+
+### Smart Execution and Customisation
+* **Customise _n_**: allows user to chose the number of slowest and memory intensive tests to display dynamically.
+* **Continuous Background Testing**: runs necessary tests automatically when changes are detected.
+* **Refreshing Suite History**: allows user to customise whether to **periodically save snapshots** or **track changes based on file changes**.
+* **Selective Test Execution**: allows running only relevant tests based on recent changes to shorten feedback loops.
 
 ## Installation
 
-1. Install Visual Studio Code.
-2. Install the TestPylot extension from the VSCode marketplace or by downloading it from the repository.
+### For Testing: Clone the example-codebases Repository
+```sh
+git clone https://github.com/ucl-syseng-tools-for-vscode/example-codebases.git
+```
 
-### Build from source
+### From the Marketplace
+1. Open VS Code.
+2. Search for **TestPylot** in the VS Code Marketplace.
+3. Click Install to add the extension.
+
+### Build From Source
 To build TestPylot from source, follow these steps:
-
 1. Clone the repository:
   ```sh
   git clone https://github.com/ucl-syseng-tools-for-vscode/MVP.git
   cd MVP
   ```
-
 2. Install the dependencies:
   ```sh
   npm install
   ```
-
 3. Compile the extension:
   ```sh
   npm run compile
   ```
-
 4. Open the project in Visual Studio Code:
   ```sh
   code .
   ```
 
-5. Launch the extension:
-  - Press `F5` to open a new VSCode window with the extension loaded.
+### Launch the Extension
+To begin using TestPylot, follow these steps:
+1. Press `F5` _OR_ open the **Command Palette (Shift + Command + P)** and run **Debug: Start Debugging**.
+2. Open one of the projects within the **example-codebases** folder.
+3. Run the `make.sh` file to create a virtual environment (venv) to run the project within _OR_ ensure that you have the necessary dependencies installed by running: `pip install pytest pytest-cov pytest-json-report pytest-monitor`.
 
-## Prerequisites
-This extension works with `pytest` and needs some extra dependencies which include:
-- `pytest` of course
-- `pytest-cov` for code coverage
-- `pytest-json-report` to help us parse the pytest results
-- `pytest-monitor` for resource usage
-
-Install these into your Python project by running:
-```sh
-pip install pytest pytest-cov pytest-json-report pytest-monitor
-```
-
-## Usage
+## Usage Instructions
+### Dashboard View
+- Locate and open the **🔧** icon on the left-side VSCode navigation bar.
+- Access the granular test suite view from the **dashboard view** under the **Tests Overview** collapsable view.
+- Access the test history graphs to analyse the pass/fail rates and coverage trends over time from the **dashboard view** under the **Graphs & Docs** collapsable view.
 
 ### Running Tests
-
 - Open a Python file with tests.
-- Use the CodeLens links above each test function to run or debug the test.
+- Use the CodeLens links above each test function to run or debug particular tests.
+- _OR_ click the run tests / run all tests button within the **dashboard view**.
 
 ### Viewing Test Coverage
-
 - Enable code coverage highlighting in the settings.
 - Run your tests to see the coverage data directly in the editor.
 
-### Optimising Tests
+### Functions for Optimising Tests
+- Locate the **Code Insights** button on the top right next to the run button to generate code insights. 
+- Right click and navigate to the **TestPylot Commands** to find:
+  - the fix coverage command when in a src file.
+  - the fix failing, optimise slowest, optimise memory, and generate pydoc commands when the current editor is in a test file.
 
-- Right click to use the commands provided by the extension to find optimise the slowest and most memory-intensive tests as well as fix failing ones.
-
-### Test History
-
-- Access the test history graphs to analyse the pass/fail rates and coverage trends over time.
-
-## Configuration
-
+## Settings Configuration
+Navigate to the TestPylot **settings page** by clicking the ⚙️ icon on the top right of the expandable **dashboard view**.
 TestPylot provides several configuration options to customise its behavior. These can be accessed through the VSCode settings:
-
 - `test-pylot.runNecessaryTestsOnly`: Run only necessary tests instead of all tests.
 - `test-pylot.copilotEnabled`: Enable GitHub Copilot integration.
 - `test-pylot.codeCoverageHighlighting`: Enable code coverage highlighting.
@@ -95,18 +110,14 @@ TestPylot provides several configuration options to customise its behavior. Thes
 
 ### Custom LLM Support
 TestPylot supports custom language models (LLMs) through an OpenAI-style API. This allows you to integrate your own LLMs for test writing and optimisation.
-
 To configure a custom LLM, set the following options in the VSCode settings:
-
 - `test-pylot.customLLM Endpoint`: The endpoint URL for your custom LLM API (e.g., `http://xxxxxx/v1/chat/completions`).
 - `test-pylot.customLLM Model`: The model name to use with your custom LLM.
 - `test-pylot.customLLM APIKey`: The API key for authenticating with your custom LLM.
 - `test-pylot.customLLM MaxTokens`: The maximum number of tokens to use for each request to your custom LLM.
 
-## Commands
-
-TestPylot provides several commands accessible through the command palette:
-
+## List of Commands
+Below are all the TestPylot commands also accessible through the command palette:
 - `TestPylot: Test Insights`
 - `TestPylot: Fix Failing Tests`
 - `TestPylot: Fix Coverage`
