@@ -25,13 +25,13 @@ type TestRunnerState = {
 
 export class TestRunner {
     private static instance: TestRunner;
-    private results: TestResult | undefined;
-    private coverage: Coverage | undefined;
     private readonly stateKey: string = 'testResultsState';
-    private hash: Hash = {};
     private testDurationsToRun: number = 5;
     private testProcess: any = null; // Store the process reference
 
+    public results: TestResult | undefined;  // These have to be public for mocking in tests
+    public coverage: Coverage | undefined;
+    public hash: Hash = {};
 
     private constructor(private workspaceState: vscode.Memento) {
         this.loadState();
