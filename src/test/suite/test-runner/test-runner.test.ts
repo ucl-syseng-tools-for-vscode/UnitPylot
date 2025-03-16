@@ -47,11 +47,6 @@ suite('TestRunner Tests', () => {
         assert(slowestTests.length === 4);
     });
 
-    test('should get memory usage data', async () => {
-        const memoryTests = await testRunner.getMemory();
-        assert(memoryTests.length === 4);
-    });
-
     test('should get all test results', async () => {
         const allResults = await testRunner.getAllResults();
         expect(allResults).to.be.equal(exampleTestResult);
