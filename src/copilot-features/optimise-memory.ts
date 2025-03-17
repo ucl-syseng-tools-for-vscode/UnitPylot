@@ -43,8 +43,6 @@ Here is an example of the expected response format:
 export async function handleOptimiseMemoryCommand(textEditor: vscode.TextEditor, mostMemoryTests: TestFunctionResult[]) {
     const fileContent = textEditor.document.getText();
     var memoryTestsData = checkIfTestIsPresent(textEditor, mostMemoryTests);
-
-    console.log("Memory Tests Data:", memoryTestsData);
     
     if (memoryTestsData.length > 0) {
         vscode.window.showInformationMessage("There are memory-intensive tests are present in the current file, running command...");
