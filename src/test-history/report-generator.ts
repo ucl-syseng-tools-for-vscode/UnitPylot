@@ -76,7 +76,7 @@ export class ReportGenerator {
             const totalTests = entry.pass + entry.fail;
             const currentPassRate = totalTests > 0 ? (entry.pass / totalTests) * 100 : null;
             const currentCoverage = snapshots[index]?.coverage?.totals?.percentCovered
-                ? parseFloat(snapshots[index].coverage?.totals.percentCovered.toFixed(2))
+                ? parseFloat((snapshots[index].coverage?.totals.percentCovered ?? 0).toFixed(2))
                 : null;
             
             let coverageChange = "";
