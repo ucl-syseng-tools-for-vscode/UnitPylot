@@ -1,6 +1,8 @@
 # ✨ TestPylot ✨
 
-**TestPylot** is a Visual Studio Code (VSCode) extension designed to enhance the experience of using pytest for testing Python code. It provides various features to streamline the testing process, improve code coverage, and optimise test performance.
+**TestPylot** is a Copilot-enabled Visual Studio Code (VS Code) extension designed to enhance the unit testing experience for Python developers wokring for Brownfield Codebases. Developers can use our extension on an existing codebase to get immediate insights into their testing suite. 
+
+It offers a range of features to streamline unit testing, enhance code coverage, and optimise test performance. The interactive dashboard visualises key test metrics and intelligent suggestions are provided to improve test quality.
 
 ## Features 🌟
 
@@ -24,7 +26,7 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 ### 🤖 AI-Powered Enhancements 
 * **Code Insights**: highlights vulnerabilities and suggests improvements in test cases to detect bottlenecks and prevent regressions.
 * **Pydoc Generation**: generates documentation for test cases to enhance readability and maintainability.
-* **AAA ChatBot**: provides guidance on how to follow the best testing practices by adhering to AAA techniques. 
+* **AAA Chat Participant**: provides guidance on how to follow the best testing practices by adhering to the AAA design pattern. 
 
 ### ⚙️ Smart Execution and Customisation 
 * **Customise _n_**: allows user to chose the number of slowest and memory intensive tests to display dynamically.
