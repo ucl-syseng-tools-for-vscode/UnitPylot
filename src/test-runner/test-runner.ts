@@ -90,7 +90,7 @@ export class TestRunner {
      */
     public async getSlowestTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
 
         const slowestTests: TestFunctionResult[] = [];
@@ -113,7 +113,7 @@ export class TestRunner {
      */
     public async getCoverage(doNotRunTests?: boolean): Promise<Coverage | undefined> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
         return this.coverage;
     }
@@ -126,7 +126,7 @@ export class TestRunner {
      */
     public async getAllResults(doNotRunTests?: boolean): Promise<TestResult | undefined> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
         return this.results;
     }
@@ -139,7 +139,7 @@ export class TestRunner {
      */
     public async getResultsSummary(doNotRunTests?: boolean): Promise<{ passed: number, failed: number }> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
         console.log("PASRESULTS", this.results);
 
@@ -168,7 +168,7 @@ export class TestRunner {
      */
     public async getResultsForFile(filePath: string, doNotRunTests?: boolean): Promise<TestFileResult> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
 
         if (this.results) {
@@ -185,7 +185,7 @@ export class TestRunner {
      */
     public async getAllFailingTests(doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
 
         const failingTests: TestFunctionResult[] = [];
@@ -210,7 +210,7 @@ export class TestRunner {
      */
     public async getHighestMemoryTests(n: number = 5, doNotRunTests?: boolean): Promise<TestFunctionResult[]> {
         if (!doNotRunTests) {
-            await this.runNeccecaryTests();
+            await this.runNecessaryTests();
         }
         const tests: TestFunctionResult[] = [];
         if (this.results) {
@@ -306,7 +306,7 @@ export class TestRunner {
     }
 
     // Run necessary tests
-    private async runNeccecaryTests(): Promise<void> {
+    private async runNecessaryTests(): Promise<void> {
         if (!Settings.RUN_NECESSARY_TESTS_ONLY || !this.results || !this.coverage || !this.hash) {
             vscode.window.showInformationMessage('Running all tests...');
             await this.runTests();
