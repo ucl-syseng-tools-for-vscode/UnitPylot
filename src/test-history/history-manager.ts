@@ -38,7 +38,8 @@ export class HistoryManager {
         // Get snapshots between the start and end date
         const snapshots: Snapshot[] = this.getSnapshots();
         return snapshots.filter(snapshot => {
-            return snapshot.time >= startDate && snapshot.time <= endDate;
+            const snapshotDate = new Date(snapshot.time); // Convert time to Date object
+            return snapshotDate >= startDate && snapshotDate <= endDate;
         });
     }
 
