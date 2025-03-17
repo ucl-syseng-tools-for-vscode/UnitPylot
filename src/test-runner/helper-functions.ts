@@ -98,7 +98,12 @@ export function parseCoverage(): Coverage {
     return coverage;
 }
 
-// Returns a dictionary of {function name: [test name]}
+/**
+ * Get the tests for each function in the test file
+ * 
+ * @param testFilePath The path to the test file
+ * @returns The tests for each function in the test file
+ */
 async function getTestsForFunctionsInTestFile(testFilePath: string): Promise<{ [key: string]: string[] }> {
     const pythonPath = await getPythonPath();
     const scriptPath = path.join(__dirname, 'test-extractor.py');
@@ -130,8 +135,11 @@ async function getTestsForFunctionsInTestFile(testFilePath: string): Promise<{ [
     }
 }
 
-// Returns a dictionary of {function name: [test name]}
-// Used to get all the tests for each function in the workspace
+/**
+ * Get the tests for each function in the workspace
+ * 
+ * @returns A dictionary containing the tests for each function
+ */
 export async function getTestsForFunctions(): Promise<{ [key: string]: string[] }> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
