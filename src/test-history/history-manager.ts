@@ -17,10 +17,21 @@ const TEST_HISTORY_FILE = 'snapshots.json';
 export class HistoryManager {
     private static testRunner: TestRunner;
 
+    /**
+     * Initialise the HistoryManager
+     * 
+     * @param context The extension context
+     */
     public static initialise(context: vscode.ExtensionContext) {
         this.testRunner = TestRunner.getInstance(context.workspaceState);
     }
 
+    /**
+     * Get the last n snapshots or all snapshots
+     * 
+     * @param numberOfSnapshots The number of snapshots to return
+     * @returns The last n snapshots or all snapshots
+     */
     public static getSnapshots(numberOfSnapshots?: number): Snapshot[] {
         const testHistoryFile = this.getSnapshotFilePath();
         if (!fs.existsSync(testHistoryFile)) {
@@ -34,6 +45,14 @@ export class HistoryManager {
         return snapshots;
     }
 
+    /**
+     * Get snapshots between two dates
+     * 
+     * @param startDate The start date
+     * @param endDate The end date
+     * @returns Snapshots between the start and end date
+     * @throws Error if no workspace folder is found
+     */
     public static getSnapshotsByDate(startDate: Date, endDate: Date): Snapshot[] {
         // Get snapshots between the start and end date
         const snapshots: Snapshot[] = this.getSnapshots();
@@ -43,6 +62,9 @@ export class HistoryManager {
         });
     }
 
+    /**
+     * Clear the snapshot history
+     */
     public static clearHistory() {
         // Clear all snapshots
         try {
@@ -52,6 +74,9 @@ export class HistoryManager {
         }
     }
 
+    /**
+     * Save the current test results and coverage data as a snapshot
+     */
     public static async saveSnapshot() {
         // Save the current test results and coverage data as a snapshot
         const testResult = await this.testRunner.getAllResults(true);
@@ -67,6 +92,11 @@ export class HistoryManager {
         this.addSnapshot(snapshot);
     }
 
+    /**
+     * Add a snapshot to the snapshot history
+     * 
+     * @param snapshot The snapshot to add
+     */
     private static addSnapshot(snapshot: Snapshot) {
         const testHistoryFile = this.getSnapshotFilePath();
 
@@ -86,6 +116,12 @@ export class HistoryManager {
         }
     }
 
+    /**
+     * Get the path to the snapshot history file
+     * 
+     * @returns The path to the snapshot history file
+     * @throws Error if no workspace folder is
+     */
     private static getSnapshotFilePath(): string {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
