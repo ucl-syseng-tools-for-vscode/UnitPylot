@@ -39,7 +39,7 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 ### Prerequisites
 - Access to Copilot: To use any GitHub Copilot extension in Visual Studio Code, you need either an active Copilot subscription (such as Copilot Pro, Copilot Enterprise, or Copilot Business) 
 - Visual Studio Code should be installed
-- Copilot in Visual Studio Code: Follow this if not yet set-up: http://code.visualstudio.com/docs/copilot/setup
+- Copilot in Visual Studio Code: Follow this if not yet set-up - http://code.visualstudio.com/docs/copilot/setup
 
 ### Overview
 
