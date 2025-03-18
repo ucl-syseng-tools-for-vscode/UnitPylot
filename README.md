@@ -43,7 +43,7 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 
 1. Make sure you have the GitHub Copilot activated in VS Code Follow the link above if you need assisstance. 
 2. Add our extension by searching for "TestPylot" in the VS Code Extension Marketplace
-3. Download an example codebase to try out our extension from here: https://github.com/ucl-syseng-tools-for-vscode/example-codebases
+3. Download an example codebase as below to try out our extension!
 
 ### 🔬 For Testing: Clone the example-codebases Repository
 ```sh
