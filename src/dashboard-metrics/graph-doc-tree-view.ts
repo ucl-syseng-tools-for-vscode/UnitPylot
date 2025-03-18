@@ -25,7 +25,6 @@ export class GraphDocTreeViewProvider implements vscode.TreeDataProvider<GraphDo
     return [
       new GraphDocItem('Pass/Fail Graph', 'test-history.showPassFailGraph', 'graph.svg'),
       new GraphDocItem('Coverage Graph', 'test-history.showCoverageGraph', 'graph.svg'),
-      new GraphDocItem('Generate Pydoc', 'generate-pydoc.generatePydoc', 'doc.svg'),
       new GraphDocItem('Generate Report', 'extension.exportSnapshotReport', 'doc.svg')
     ];
   }

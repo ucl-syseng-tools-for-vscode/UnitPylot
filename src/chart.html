@@ -6,16 +6,74 @@
     <title>Test Results</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
         background-color: #1e1e1e;
-        color: #d4d4d4;
-        margin: 0;
-        padding: 20px;
+      }
+      /* Coverage Chart Container */
+      #coverage-chart-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        flex-direction: column;
+        align-items: center; /* Center vertically */
+        justify-content: space-between;
+        background: #1e1e1e; /* Dark background to match VS Code theme */
+        padding: 15px;
+        border-radius: 8px;
+        max-width: 350px; /* Make it compact */
+        margin: 10px auto; /* Center and add spacing */
+        margin-bottom: 20px;
+      }
+
+      /* Coverage Pie Chart */
+      #coverage-chart {
+        max-width: 105px;
+        max-height: 105px;
+      }
+
+      /* Coverage Results Text */
+      #coverage-results {
+        margin-left: 20px;
+        color: #ffffff;
+        font-family: "Segoe UI", sans-serif; /* Matches VS Code font */
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      #coverage-results strong {
+        font-size: 14px;
+        color: #bbbbbb; /* Slightly lighter for contrast */
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      #coverage-results p {
+        margin: 2px 0;
+        font-size: 13px;
+        color: #d4d4d4;
+      }
+
+      /* Test Results Chart Container */
+      /* Ensure chart container stacks elements */
+      #chart-container {
+        display: flex;
+        flex-direction: column; /* Stack elements vertically */
+        align-items: center; /* Center align */
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 0px;
+        max-width: 350px;
+        margin: 10px auto; /* Center it */
+        margin-bottom: 0px;
+      }
+
+      /* Ensuring canvas inside adjusts properly */
+      #chart {
+        width: 100%;
+        height: auto !important; /* Allow Chart.js to determine height */
+        max-height: 120px;
+      }
+
+      /* Ensure the chart canvas doesn't overflow */
+      canvas {
+        max-width: 100%;
+        height: auto;
       }
 
       #button-container {
@@ -24,14 +82,7 @@
         justify-content: center; /* Center align buttons */
         margin: 0; /* Remove top margin */
         padding: 0; /* Remove padding */
-      }
-
-      .dropdown-container {
-        display: flex;
-        align-items: center;
-        position: relative;
-        width: 100%; /* Take full width of parent */
-        max-width: 600px; /* Optional: set a max width */
+        position: relative; /* Ensure dropdown is positioned relative to this container */
       }
 
       #run-tests-btn {
@@ -50,17 +101,15 @@
         outline: none;
         transition: background-color 0.3s ease;
         position: relative;
-        flex-grow: 4; /* 80% width */
+        flex-grow: 10;
       }
 
       #run-tests-btn:hover {
         background-color: #0e639c;
-        transform: translateY(-2px);
       }
 
       #run-tests-btn:active {
         background-color: #094771;
-        transform: translateY(1px);
       }
 
       #dropdown-btn {
@@ -79,30 +128,28 @@
         outline: none;
         transition: background-color 0.3s ease;
         position: relative;
-        flex-grow: 1; /* 20% width */
-        margin-left: 5px; /* Add some space between buttons */
-      }
-
-      #dropdown-btn:hover {
-        background-color: #0e639c;
-        transform: translateY(-2px);
+        flex-grow: 1;
       }
 
       #dropdown-btn:active {
         background-color: #094771;
-        transform: translateY(1px);
+      }
+
+      #dropdown-btn:hover {
+        background-color: #0e639c;
       }
 
       #dropdown {
         display: none;
         position: absolute;
-        margin-top: 2px;
-        background-color: #0097fb;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-        top: 100%; /* Position below the button */
-        left: 0;
-        width: 100%;
+        background: #252526; /* VS Code-style dark background */
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        z-index: 10;
+        width: 160px;
+        top: 40px; /* Position below button */
+        right: 0; /* Align to the right */
+        padding: 5px 0;
       }
 
       #dropdown a {
@@ -115,40 +162,6 @@
       #dropdown a:hover {
         background-color: #575757;
       }
-
-      #chart-container {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        height: auto;
-        margin: 0; /* Remove margin */
-        padding: 0; /* Remove padding */
-      }
-
-      #chart {
-        display: none;
-        width: 100%;
-        height: 30px;
-      }
-
-      #coverage-chart-container {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        height: auto;
-        margin-bottom: 0;
-        padding: 0;
-      }
-
-      #coverage-chart {
-        max-width: 105px;
-        max-height: 105px;
-      }
-
-      #coverage-results {
-        margin-left: 30px;
-        line-height: 0.5;
-      }
     </style>
   </head>
 
@@ -159,7 +172,6 @@
         <strong>Line Coverage</strong>
         <p id="coverage-results-covered">Covered</p>
         <p id="coverage-results-missed">Missed</p>
-        <p id="coverage-results-skipped">Skipped</p>
         <strong>Branch Coverage</strong>
         <p id="coverage-results-branches-covered">Covered Branches</p>
       </div>
@@ -167,10 +179,14 @@
 
     <div id="chart-container">
       <canvas id="chart"></canvas>
-    </div>
-
-    <div id="button-container">
-      <div class="dropdown-container">
+      <div
+        id="placeholder"
+        style="display: none; color: #d4d4d4; text-align: center; padding: 20px"
+      >
+        No test results available. Please run tests to see the results.
+      </div>
+      <!-- Button container inside chart-container, now BELOW the chart -->
+      <div id="button-container">
         <button id="run-tests-btn" onclick="runTests()">
           <span class="btn-text">Run Tests</span>
         </button>
@@ -239,8 +255,19 @@
 
       function toggleDropdown() {
         const dropdown = document.getElementById("dropdown");
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        dropdown.style.display =
+          dropdown.style.display === "block" ? "none" : "block";
       }
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function (event) {
+        const dropdown = document.getElementById("dropdown");
+        const dropdownBtn = document.getElementById("dropdown-btn");
+
+        if (!dropdown.contains(event.target) && event.target !== dropdownBtn) {
+          dropdown.style.display = "none";
+        }
+      });
 
       window.addEventListener("message", (event) => {
         if (event.data.command === "updateResults") {
@@ -266,10 +293,34 @@
           return results;
         }
       }
+      window.addEventListener("message", (event) => {
+        if (event.data.command === "updateResults") {
+          console.log("Updating chart with results:", event.data.results);
+          state.testResults = structuredClone(event.data.results);
+          saveState();
+          updateChart(event.data.results);
+        } else if (event.data.command === "noResults") {
+          showPlaceholder();
+        }
+      });
+
+      function showPlaceholder() {
+        document.getElementById("chart").style.display = "none";
+        document.getElementById("placeholder").style.display = "block";
+      }
 
       function updateChart(results) {
         const { passed, failed } = results;
         const total = passed + failed;
+
+        if (total === 0) {
+          showPlaceholder();
+          return;
+        }
+
+        document.getElementById("chart").style.display = "block";
+        document.getElementById("placeholder").style.display = "none";
+
         const { passed: prettyPassed, failed: prettyFailed } = prettifyResults({
           passed,
           failed,
@@ -279,11 +330,8 @@
           testResultsChart.destroy();
         }
 
-        const ctx = chart.getContext("2d");
+        const ctx = document.getElementById("chart").getContext("2d");
         if (!ctx) return;
-
-        chartContainer.style.margin = "0";
-        chartContainer.style.padding = "0";
 
         testResultsChart = new Chart(ctx, {
           type: "bar",
@@ -294,28 +342,22 @@
                 label: "Passed",
                 data: [prettyPassed],
                 backgroundColor: ["#327e36"],
-                maxBarThickness: 30,
+                maxBarThickness: 40, // Allow bars to be visible
               },
               {
                 label: "Failed",
                 data: [prettyFailed],
                 backgroundColor: ["#f14c4c"],
-                maxBarThickness: 30,
+                maxBarThickness: 40, // Consistent with "Passed"
               },
             ],
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false, // Let it resize dynamically
             indexAxis: "y",
             plugins: {
               legend: {
-                position: "top",
-                labels: {
-                  color: "#d4d4d4",
-                  font: {
-                    size: 14,
-                  },
-                },
                 display: false,
               },
               datalabels: {
@@ -332,13 +374,10 @@
               },
               tooltip: {
                 callbacks: {
-                  title: function (context) {
-                    return context[0].dataset.label;
-                  },
-                  label: function (context) {
+                  title: (context) => context[0].dataset.label,
+                  label: (context) => {
                     const label = context.dataset.label;
                     const actualValue = results[label.toLowerCase()];
-
                     const percentage = ((actualValue / total) * 100).toFixed(1);
                     return `${percentage}%`;
                   },
@@ -407,9 +446,6 @@
           "coverage-results-missed"
         ).innerText = `${totals.missed} Missed`;
         document.getElementById(
-          "coverage-results-skipped"
-        ).innerText = `${totals.skipped} Skipped`;
-        document.getElementById(
           "coverage-results-branches-covered"
         ).innerText = `${totals.branches_covered} / ${totals.branches_total}`;
 
@@ -469,12 +505,12 @@
                 const ctx = chart.ctx;
                 ctx.restore();
 
-                const fontSize = (height / 50).toFixed(2);
+                const fontSize = (height / 70).toFixed(2);
                 ctx.font = `${fontSize}em sans-serif`;
                 ctx.fillStyle = "white";
                 ctx.textBaseline = "middle";
 
-                const text = `${((totals.covered / total) * 100).toFixed(0)}`;
+                const text = `${((totals.covered / total) * 100).toFixed(0)}%`;
                 const textX = Math.round(
                   (width - ctx.measureText(text).width) / 2
                 );

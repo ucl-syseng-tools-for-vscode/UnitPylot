@@ -306,6 +306,9 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     });
+    vscode.commands.registerCommand('failingTestsProvider.showInfo', () => {
+        vscode.window.showInformationMessage('This tree view displays failing tests, slow tests, and memory-intensive tests. Red Cross icon: Indicates a failing test. Stopwatch icon: Indicates a slow test. Brain icon: Indicates a memory-intensive test. Green Tick icon: Indicates a passing test file.');
+    });
 
     // Register the refresh command
     vscode.commands.registerCommand('failingtests.refreshView', () => failingTestsProvider.refresh());
@@ -341,6 +344,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the tree view for accessible commands
     const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
     vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+
+    vscode.commands.registerCommand('graphsDocsProvider.showInfo', () => {
+        vscode.window.showInformationMessage('This tree view displays buttons to view graphs and documentation related to the tests.');
+    });
 
     // Register the run tests in file command
     vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
