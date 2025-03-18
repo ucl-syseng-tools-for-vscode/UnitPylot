@@ -4,6 +4,13 @@
 
 It offers a range of features to streamline unit testing, enhance code coverage, and optimise test performance. The interactive dashboard visualises key test metrics and intelligent suggestions are provided to improve test quality.
 
+## Table of Contents
+1. Features 🌟
+2. Installation 📥
+3. Usage Instructions 📖
+4. Settings Configuration ⚙️
+5. List of Commands 🗂
+
 ## Features 🌟
 
 ### 📊 Test Performance & Coverage Insights 
