@@ -41,6 +41,8 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 - Visual Studio Code should be installed
 - Copilot in Visual Studio Code: Follow this if not yet set-up: http://code.visualstudio.com/docs/copilot/setup
 
+### Overview
+
 1. Make sure you have the GitHub Copilot activated in VS Code Follow the link above if you need assisstance. 
 2. Add our extension by searching for "TestPylot" in the VS Code Extension Marketplace
 3. Download an example codebase as below to try out our extension!
