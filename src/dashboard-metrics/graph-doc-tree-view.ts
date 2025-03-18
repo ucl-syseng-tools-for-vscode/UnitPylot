@@ -23,10 +23,10 @@ export class GraphDocTreeViewProvider implements vscode.TreeDataProvider<GraphDo
   // Commands to show
   private getRootNodes(): GraphDocItem[] {
     return [
-      new GraphDocItem('Pass/Fail Graph', 'test-history.showPassFailGraph', 'graph.svg'),
-      new GraphDocItem('Coverage Graph', 'test-history.showCoverageGraph', 'graph.svg'),
-      new GraphDocItem('Generate Pydoc', 'testpylot.generate-pydoc.generatePydoc', 'doc.svg'),
-      new GraphDocItem('Generate Report', 'testpylot.exportSnapshotReport', 'doc.svg')
+      new GraphDocItem('Pass/Fail Graph', 'test-history.showPassFailGraph', 'graph.png'),
+      new GraphDocItem('Coverage Graph', 'test-history.showCoverageGraph', 'graph.png'),
+      new GraphDocItem('Generate Pydoc', 'testpylot.generate-pydoc.generatePydoc', 'doc.png'),
+      new GraphDocItem('Generate Report', 'testpylot.exportSnapshotReport', 'doc.png')
     ];
   }
 }
