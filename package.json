@@ -35,91 +35,94 @@
       "custom-activitybar": [
         {
           "type": "webview",
-          "id": "dashboard.openview",
+          "id": "testpylot.webview",
           "name": "Dashboard",
-          "contextualTitle": "View"
+          "contextualTitle": "View",
+          "icon": "assets/test-data-svgrepo-com.svg"
         },
         {
           "type": "tree",
-          "id": "dashboard.failingtreeview",
+          "id": "testpylot.failingtreeview",
           "name": "Tests Overview",
-          "contextualTitle": "Tests Overview"
+          "contextualTitle": "Tests Overview",
+          "icon": "assets/test-data-svgrepo-com.svg"
         },
         {
           "type": "tree",
-          "id": "dashboard.graphdoctreeview",
+          "id": "testpylot.graphdoctreeview",
           "name": "Graphs & Docs",
-          "contextualTitle": "Graphs and Docs"
+          "contextualTitle": "Graphs and Docs",
+          "icon": "assets/test-data-svgrepo-com.svg"
         }
       ]
     },
     "commands": [
       {
-        "command": "vscode-run-tests.runTests",
+        "command": "testpylot.vscode-run-tests.runTests",
         "title": "TestPylot: Run Tests"
       },
       {
-        "command": "vscode-run-tests.runAllTests",
+        "command": "testpylot.vscode-run-tests.runAllTests",
         "title": "TestPylot: Run All Tests"
       },
       {
-        "command": "vscode-run-tests.updateResults",
+        "command": "testpylot.vscode-run-tests.updateResults",
         "title": "TestPylot: Update Results"
       },
       {
-        "command": "vscode-run-tests.getCoverage",
+        "command": "testpylot.vscode-run-tests.getCoverage",
         "title": "TestPylot: Get Coverage"
       },
       {
-        "command": "vscode-run-tests.updateCoverage",
+        "command": "testpylot.vscode-run-tests.updateCoverage",
         "title": "TestPylot: Update Coverage Results"
       },
       {
-        "command": "vscode-slowest-tests.slowestTests",
+        "command": "testpylot.vscode-slowest-tests.slowestTests",
         "title": "TestPylot: Find Slowest Tests"
       },
       {
-        "command": "vscode-slowest-tests.updateSlowestTests",
+        "command": "testpylot.vscode-slowest-tests.updateSlowestTests",
         "title": "TestPylot: Update Slowest Tests Results"
       },
       {
-        "command": "vscode-run-tests.updateMemory",
+        "command": "testpylot.vscode-run-tests.updateMemory",
         "title": "TestPylot: Update Memory Results"
       },
       {
-        "command": "code-tutor.annotate",
+        "command": "testpylot.code-tutor.annotate",
         "title": "TestPylot: Test Insights"
       },
       {
-        "command": "fix-failing-tests.fixFailingTests",
+        "command": "testpylot.fix-failing-tests.fixFailingTests",
         "title": "TestPylot: Fix Failing Tests"
       },
       {
-        "command": "fix-coverage.fixCoverage",
+        "command": "testpylot.fix-coverage.fixCoverage",
         "title": "TestPylot: Fix Coverage"
       },
       {
-        "command": "optimise-slowest.optimiseSlowest",
+        "command": "testpylot.optimise-slowest.optimiseSlowest",
         "title": "TestPylot: Optimise Slowest Tests"
       },
       {
-        "command": "generate-pydoc.generatePydoc",
+        "command": "testpylot.generate-pydoc.generatePydoc",
         "title": "TestPylot: Generate Pydoc"
       },
       {
-        "command": "extension.acceptSuggestion",
+        "command": "testpylot.acceptSuggestion",
         "title": "TestPylot: Accept Annotation onto corresponding test file for coverage"
       },
       {
-        "command": "extension.rejectSuggestion",
+        "command": "testpylot.rejectSuggestion",
         "title": "TestPylot: Reject Annotation"
       },
       {
-        "command": "extension.addSuggestiontoSameFile",
+        "command": "testpylot.addSuggestiontoSameFile",
         "title": "TestPylot: Add Annotation to Same File"
       },
       {
-        "command": "extension.addSuggestiontoMainFile",
+        "command": "testpylot.addSuggestiontoMainFile",
         "title": "TestPylot: Add Annotation to corresponding Main File"
       },
       {
@@ -131,59 +134,54 @@
         "title": "TestPylot: Show coverage history graph"
       },
       {
-        "command": "extension.openSettings",
+        "command": "testpylot.openSettings",
         "title": "Open Settings",
         "icon": "$(gear)"
       },
       {
-        "command": "extension.openSettings",
-        "title": "Open Settings",
-        "icon": "$(gear)"
-      },
-      {
-        "command": "optimise-memory.optimiseMemory",
+        "command": "testpylot.optimise-memory.optimiseMemory",
         "title": "TestPylot: Optimise Memory Usage of Tests"
       },
       {
-        "command": "failingtests.refreshView",
+        "command": "testpylot.failingtests.refreshView",
         "title": "TestPylot: Refresh Failing Tests"
       },
       {
-        "command": "extension.openTestFile",
+        "command": "testpylot.openTestFile",
         "title": "Open Test File"
       },
       {
-        "command": "extension.runTestsInFile",
+        "command": "testpylot.runTestsInFile",
         "title": "TestPylot: Run Tests in File"
       },
       {
-        "command": "extension.runSpecificTest",
+        "command": "testpylot.runSpecificTest",
         "title": "TestPylot: Run Specific Test"
       },
       {
-        "command": "extension.exportSnapshotReport",
+        "command": "testpylot.exportSnapshotReport",
         "title": "Testpylot: Download Snapshot Report"
       },
       {
-        "command": "extension.updateSidebar",
+        "command": "testpylot.updateSidebar",
         "title": "TestPylot: Update Sidebar"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "extension.openSettings",
-          "when": "view == dashboard.openview",
+          "command": "testpylot.openSettings",
+          "when": "view == testpylot.webview",
           "group": "navigation"
         }
       ],
       "editor/title": [
         {
-          "command": "code-tutor.annotate",
+          "command": "testpylot.code-tutor.annotate",
           "group": "navigation"
         },
         {
-          "command": "extension.runTestsInFile",
+          "command": "testpylot.runTestsInFile",
           "group": "navigation"
         }
       ],
@@ -195,27 +193,27 @@
       ],
       "testpylot.commands": [
         {
-          "command": "fix-failing-tests.fixFailingTests",
+          "command": "testpylot.fix-failing-tests.fixFailingTests",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "fix-coverage.fixCoverage",
+          "command": "testpylot.fix-coverage.fixCoverage",
           "group": "llm-commands",
           "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
         },
         {
-          "command": "optimise-slowest.optimiseSlowest",
+          "command": "testpylot.optimise-slowest.optimiseSlowest",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "generate-pydoc.generatePydoc",
+          "command": "testpylot.generate-pydoc.generatePydoc",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "optimise-memory.optimiseMemory",
+          "command": "testpylot.optimise-memory.optimiseMemory",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }
@@ -312,9 +310,9 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
-    "compile": "tsc -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
-    "watch": "tsc -watch -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py",
+    "vscode:prepublish": "npm run compile && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
+    "compile": "tsc -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
+    "watch": "tsc -watch -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"

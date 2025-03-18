@@ -60,10 +60,10 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // Register the runTests command
-    const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
+    const runTests = vscode.commands.registerCommand('testpylot.vscode-run-tests.runTests', async () => {
         try {
             const { passed, failed } = await testRunner.getResultsSummary();
-            vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
+            vscode.commands.executeCommand('testpylot.vscode-run-tests.updateResults', { passed, failed });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
         }
@@ -71,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(runTests);
 
     // Register the runAllTests command
-    const runAllTests = vscode.commands.registerCommand('vscode-run-tests.runAllTests', async () => {
+    const runAllTests = vscode.commands.registerCommand('testpylot.vscode-run-tests.runAllTests', async () => {
         try {
             const results = await testRunner.runTests();
         } catch (error) {
@@ -82,11 +82,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     // Register the getCoverage command
-    const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
+    const getCoverage = vscode.commands.registerCommand('testpylot.vscode-run-tests.getCoverage', async () => {
         try {
             const coverage = await testRunner.getCoverage(true);
             handleFileOpen(vscode.window.activeTextEditor!, testRunner);
-            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+            vscode.commands.executeCommand('testpylot.vscode-run-tests.updateCoverage', { coverage });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run coverage check.');
         }
@@ -94,10 +94,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(getCoverage);
 
     // Register the slowestTests command
-    const slowestTests = vscode.commands.registerCommand('vscode-slowest-tests.slowestTests', async () => {
+    const slowestTests = vscode.commands.registerCommand('testpylot.vscode-slowest-tests.slowestTests', async () => {
         try {
             const slowest = await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS);
-            vscode.commands.executeCommand('vscode-slowest-tests.updateSlowestTests', { slowest });
+            vscode.commands.executeCommand('testpylot.vscode-slowest-tests.updateSlowestTests', { slowest });
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
         }
@@ -107,14 +107,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the annotate command
     const annotateCommand = vscode.commands.registerTextEditorCommand(
-        'code-tutor.annotate',
+        'testpylot.code-tutor.annotate',
         handleAnnotateCommand
     );
     context.subscriptions.push(annotateCommand);
 
     // Register the fix failing tests command
     const fixFailingTestsCommand = vscode.commands.registerTextEditorCommand(
-        'fix-failing-tests.fixFailingTests',
+        'testpylot.fix-failing-tests.fixFailingTests',
         async (editor, edit, ...args) => handleFixFailingTestsCommand(editor, await testRunner.getAllFailingTests(true))
 
     );
@@ -186,41 +186,41 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the fix coverage command
     const fixCoverageCommand = vscode.commands.registerTextEditorCommand(
-        'fix-coverage.fixCoverage',
+        'testpylot.fix-coverage.fixCoverage',
         handleFixCoverageCommand
     );
     context.subscriptions.push(fixCoverageCommand);
 
     // Register the export snapshot report command (markdown file)
-    let exportSnapshotReport = vscode.commands.registerCommand('extension.exportSnapshotReport', () => {
+    let exportSnapshotReport = vscode.commands.registerCommand('testpylot.exportSnapshotReport', () => {
         ReportGenerator.generateSnapshotReport();
     });
     context.subscriptions.push(exportSnapshotReport);
 
     // Register the optimise slowest tests command
     const optimiseSlowestTestsCommand = vscode.commands.registerTextEditorCommand(
-        'optimise-slowest.optimiseSlowest',
+        'testpylot.optimise-slowest.optimiseSlowest',
         async (editor, edit, ...args) => handleOptimiseSlowestTestsCommand(editor, await testRunner.getSlowestTests(Settings.NUMBER_OF_SLOWEST_TESTS, true))
     );
     context.subscriptions.push(optimiseSlowestTestsCommand);
 
     // Register the optimise memory usage of tests command
     const optimiseMemoryCommand = vscode.commands.registerTextEditorCommand(
-        'optimise-memory.optimiseMemory',
+        'testpylot.optimise-memory.optimiseMemory',
         async (editor, edit, ...args) => handleOptimiseMemoryCommand(editor, await testRunner.getHighestMemoryTests(Settings.NUMBER_OF_MEMORY_INTENSIVE_TESTS, true))
     );
     context.subscriptions.push(optimiseMemoryCommand);
 
     // Register the generate Pydoc command
     const generatePydocCommand = vscode.commands.registerTextEditorCommand(
-        'generate-pydoc.generatePydoc',
+        'testpylot.generate-pydoc.generatePydoc',
         handleGeneratePydocCommand
     );
     context.subscriptions.push(generatePydocCommand);
 
     // Register the in-line accept and reject commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.acceptSuggestion', (args) => {
+        vscode.commands.registerCommand('testpylot.acceptSuggestion', (args) => {
             const { line, code_snippet, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -233,7 +233,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the in-line accept and reject commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.rejectSuggestion', (args) => {
+        vscode.commands.registerCommand('testpylot.rejectSuggestion', (args) => {
             const { line, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -245,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the in-line suggestions commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.addSuggestiontoSameFile', (args) => {
+        vscode.commands.registerCommand('testpylot.addSuggestiontoSameFile', (args) => {
             const { line, code_snippet, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -257,7 +257,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.addSuggestiontoMainFile', (args) => {
+        vscode.commands.registerCommand('testpylot.addSuggestiontoMainFile', (args) => {
             const { line, code_snippet, decorationType } = args;
             const editor = vscode.window.activeTextEditor;
             if (editor) {
@@ -275,7 +275,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // Call functions to update dashboard
-        vscode.commands.executeCommand('extension.updateSidebar');
+        vscode.commands.executeCommand('testpylot.updateSidebar');
     });
 
     // Register the webview view provider (pass/fail results + coverage)
@@ -287,14 +287,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the settings page command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.openSettings', () => {
+        vscode.commands.registerCommand('testpylot.openSettings', () => {
             vscode.commands.executeCommand('workbench.action.openSettings', 'test-pylot');
         })
     );
 
     // Register the failing test tree view
     const failingTestsProvider = new FailingTestsProvider(context.extensionUri.fsPath, context.workspaceState);
-    const failingTreeView = vscode.window.createTreeView('dashboard.failingtreeview', {
+    const failingTreeView = vscode.window.createTreeView('testpylot.failingtreeview', {
         treeDataProvider: failingTestsProvider
     });
     failingTreeView.onDidChangeSelection((e) => {
@@ -308,7 +308,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // Register the refresh command
-    vscode.commands.registerCommand('failingtests.refreshView', () => failingTestsProvider.refresh());
+    vscode.commands.registerCommand('testpylot.failingtests.refreshView', () => failingTestsProvider.refresh());
 
     // Register the open test file command
     vscode.commands.registerCommand('failingTestsProvider.openTestFile', (file: string, lineNumber: number) => {
@@ -340,10 +340,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the tree view for accessible commands
     const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
-    vscode.window.registerTreeDataProvider('dashboard.graphdoctreeview', graphDocTreeViewProvider);
+    vscode.window.registerTreeDataProvider('testpylot.graphdoctreeview', graphDocTreeViewProvider);
 
     // Register the run tests in file command
-    vscode.commands.registerCommand('extension.runTestsInFile', (file: vscode.Uri) => {
+    vscode.commands.registerCommand('testpylot.runTestsInFile', (file: vscode.Uri) => {
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         if (!workspaceFolder) {
             vscode.window.showErrorMessage("No workspace folder found.");
@@ -377,7 +377,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the run specific test command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.runSpecificTest', (testName: string, file: vscode.Uri) => {
+        vscode.commands.registerCommand('testpylot.runSpecificTest', (testName: string, file: vscode.Uri) => {
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!workspaceFolder) {
                 vscode.window.showErrorMessage("No workspace folder found.");
@@ -400,7 +400,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the update sidebar command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extension.updateSidebar', () => {
+        vscode.commands.registerCommand('testpylot.updateSidebar', () => {
             // Update the web view
             webviewProvider.update();
             // Update the tree view

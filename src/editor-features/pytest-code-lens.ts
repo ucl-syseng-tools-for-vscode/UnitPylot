@@ -36,7 +36,7 @@ export class PytestCodeLensProvider implements vscode.CodeLensProvider {
 
                 codeLenses.push(new vscode.CodeLens(range, {
                     title: "▶ Run Tests in Class",
-                    command: "extension.runSpecificTest",
+                    command: "testpylot.runSpecificTest",
                     arguments: [currentClassName, document.uri] // Only class name, no function name
                 }));
             }
@@ -54,7 +54,7 @@ export class PytestCodeLensProvider implements vscode.CodeLensProvider {
 
                 codeLenses.push(new vscode.CodeLens(range, {
                     title: "▶ Run Test",
-                    command: "extension.runSpecificTest",
+                    command: "testpylot.runSpecificTest",
                     arguments: [functionName, document.uri] // Pass both class and function name
                 }));
             }
