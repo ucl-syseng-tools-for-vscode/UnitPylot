@@ -172,7 +172,6 @@
         <strong>Line Coverage</strong>
         <p id="coverage-results-covered">Covered</p>
         <p id="coverage-results-missed">Missed</p>
-        <p id="coverage-results-skipped">Skipped</p>
         <strong>Branch Coverage</strong>
         <p id="coverage-results-branches-covered">Covered Branches</p>
       </div>
@@ -446,9 +445,6 @@
         document.getElementById(
           "coverage-results-missed"
         ).innerText = `${totals.missed} Missed`;
-        document.getElementById(
-          "coverage-results-skipped"
-        ).innerText = `${totals.skipped} Skipped`;
         document.getElementById(
           "coverage-results-branches-covered"
         ).innerText = `${totals.branches_covered} / ${totals.branches_total}`;
