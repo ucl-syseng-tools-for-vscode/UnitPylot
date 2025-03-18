@@ -11,6 +11,7 @@ It offers a range of features to streamline unit testing, enhance code coverage,
 4. Settings Configuration ⚙️
 5. List of Commands 🗂
 
+<br><br>  
 ## Features 🌟
 
 ### 📊 Test Performance & Coverage Insights 
@@ -41,6 +42,7 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 * **Refreshing Suite History**: allows user to customise whether to **periodically save snapshots** or **track changes based on file changes**.
 * **Selective Test Execution**: allows running only relevant tests based on recent changes to shorten feedback loops.
 
+<br><br>  
 ## Installation 📥 
 
 ### Prerequisites
@@ -83,13 +85,14 @@ To build TestPylot from source, follow these steps:
   ```sh
   code .
   ```
-
+<br><br>  
 ### 🚀 Launch the Extension
 To begin using TestPylot, follow these steps:
 1. Press `F5` _OR_ open the **Command Palette (Shift + Command + P)** and run **Debug: Start Debugging**.
 2. Open one of the projects within the **example-codebases** folder.
 3. Run the `make.sh` file to create a virtual environment (venv) to run the project within _OR_ ensure that you have the necessary dependencies installed by running: `pip install pytest pytest-cov pytest-json-report pytest-monitor`.
 
+<br><br>  
 ## Usage Instructions 📖
 ### 🖥️ Dashboard View
 - Locate and open the **🔧** icon on the left-side VSCode navigation bar.
@@ -110,7 +113,7 @@ To begin using TestPylot, follow these steps:
 - Right click and navigate to the **TestPylot Commands** to find:
   - the fix coverage command when in a src file.
   - the fix failing, optimise slowest, optimise memory, and generate pydoc commands when the current editor is in a test file.
-
+<br><br>  
 ## Settings Configuration ⚙️ 
 Navigate to the TestPylot **settings page** by clicking the ⚙️ icon on the top right of the expandable **dashboard view**.
 TestPylot provides several configuration options to customise its behavior. These can be accessed through the VSCode settings:
