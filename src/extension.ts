@@ -122,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register the show pass/fail graph command
     let passFailPanel: vscode.WebviewPanel | undefined;
-    const showGraphCommand = vscode.commands.registerCommand('test-history.showPassFailGraph', async () => {
+    const showGraphCommand = vscode.commands.registerCommand('testpylot.test-history.showPassFailGraph', async () => {
         HistoryManager.saveSnapshot();
         const snapshots = HistoryManager.getSnapshots();
         const graphData = HistoryProcessor.getPassFailHistory();
@@ -152,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the show coverage graph command
     let coveragePanel: vscode.WebviewPanel | undefined;
     const showCoverageGraphCommand = vscode.commands.registerCommand(
-        'test-history.showCoverageGraph', async () => {
+        'testpylot.test-history.showCoverageGraph', async () => {
             await HistoryManager.saveSnapshot();
             const snapshots = HistoryManager.getSnapshots();
 

@@ -119,11 +119,11 @@
         "title": "TestPylot: Add Annotation to corresponding Main File"
       },
       {
-        "command": "test-history.showPassFailGraph",
+        "command": "testpylot.test-history.showPassFailGraph",
         "title": "TestPylot: Show test pass-fail history graph"
       },
       {
-        "command": "test-history.showCoverageGraph",
+        "command": "testpylot.test-history.showCoverageGraph",
         "title": "TestPylot: Show coverage history graph"
       },
       {
