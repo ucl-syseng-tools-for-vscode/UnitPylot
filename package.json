@@ -24,6 +24,13 @@
         }
       ]
     },
+    "chatParticipants": [
+      {
+        "id": "vscode-testing-chat",
+        "name": "TestPylot-AAA-Assistant",
+        "description": "Implement good python testing practices using the AAA pattern"
+      }
+    ],
     "views": {
       "custom-activitybar": [
         {
