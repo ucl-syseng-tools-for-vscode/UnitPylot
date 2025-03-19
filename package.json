@@ -160,12 +160,12 @@
         "title": "TestPylot: Update Sidebar"
       },
       {
-        "command": "failingTestsProvider.showInfo",
+        "command": "testpylot.failingTestsProvider.showInfo",
         "title": "Show Info",
         "icon": "$(info)"
       },
       {
-        "command": "graphsDocsProvider.showInfo",
+        "command": "testpylot.graphsDocsProvider.showInfo",
         "title": "Show Info",
         "icon": "$(info)"
       }
@@ -178,14 +178,14 @@
           "group": "navigation"
         },
         {
-          "command": "failingTestsProvider.showInfo",
-          "when": "view == dashboard.failingtreeview",
+          "command": "testpylot.failingTestsProvider.showInfo",
+          "when": "view == testpylot.failingtreeview",
           "group": "navigation",
-          "tooltip": "This tree view displays failing tests, slow tests, and memory-intensive tests.\n\nIcons:\n- Red Cross: Indicates a failing test\n- Stopwatch: Indicates a slow test\n- Brain: Indicates a memory-intensive test\n- Green Tick: Indicates a passing test file."
+          "tooltip": "This tree view displays failing tests, slow tests, and memory-intensive tests.\n\nIcons:\n- Red Cross: Indicates a failing test\n- Stopwatch: Indicates a slow test\n- RAM: Indicates a memory-intensive test\n- Green Tick: Indicates a passing test file."
         },
         {
-          "command": "graphsDocsProvider.showInfo",
-          "when": "view == dashboard.graphdoctreeview",
+          "command": "testpylot.graphsDocsProvider.showInfo",
+          "when": "view == testpylot.graphdoctreeview",
           "group": "navigation",
           "tooltip": "This tree view displays graphs and documentation related to the tests.\n\nIcons:\n- Graph: Indicates a graph\n- Doc: Indicates a documentation file."
         }
@@ -231,6 +231,144 @@
           "command": "testpylot.optimise-memory.optimiseMemory",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "testpylot.vscode-run-tests.runTests",
+          "title": "TestPylot: Run Tests"
+        },
+        {
+          "command": "testpylot.vscode-run-tests.runAllTests",
+          "title": "TestPylot: Run All Tests"
+        },
+        {
+          "command": "testpylot.vscode-run-tests.updateResults",
+          "title": "TestPylot: Update Results",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.vscode-run-tests.getCoverage",
+          "title": "TestPylot: Get Coverage",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.vscode-run-tests.updateCoverage",
+          "title": "TestPylot: Update Coverage Results",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.vscode-slowest-tests.slowestTests",
+          "title": "TestPylot: Find Slowest Tests",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.vscode-slowest-tests.updateSlowestTests",
+          "title": "TestPylot: Update Slowest Tests Results",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.vscode-run-tests.updateMemory",
+          "title": "TestPylot: Update Memory Results",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.code-tutor.annotate",
+          "title": "TestPylot: Test Insights"
+        },
+        {
+          "command": "testpylot.fix-failing-tests.fixFailingTests",
+          "title": "TestPylot: Fix Failing Tests"
+        },
+        {
+          "command": "testpylot.fix-coverage.fixCoverage",
+          "title": "TestPylot: Fix Coverage"
+        },
+        {
+          "command": "testpylot.optimise-slowest.optimiseSlowest",
+          "title": "TestPylot: Optimise Slowest Tests"
+        },
+        {
+          "command": "testpylot.generate-pydoc.generatePydoc",
+          "title": "TestPylot: Generate Pydoc"
+        },
+        {
+          "command": "testpylot.acceptSuggestion",
+          "title": "TestPylot: Accept Annotation onto corresponding test file for coverage",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.rejectSuggestion",
+          "title": "TestPylot: Reject Annotation",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.addSuggestiontoSameFile",
+          "title": "TestPylot: Add Annotation to Same File",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.addSuggestiontoMainFile",
+          "title": "TestPylot: Add Annotation to corresponding Main File",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.test-history.showPassFailGraph",
+          "title": "TestPylot: Show test pass-fail history graph",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.test-history.showCoverageGraph",
+          "title": "TestPylot: Show coverage history graph"
+        },
+        {
+          "command": "testpylot.openSettings",
+          "title": "Open Settings",
+          "icon": "$(gear)"
+        },
+        {
+          "command": "testpylot.optimise-memory.optimiseMemory",
+          "title": "TestPylot: Optimise Memory Usage of Tests"
+        },
+        {
+          "command": "testpylot.failingtests.refreshView",
+          "title": "TestPylot: Refresh Failing Tests"
+        },
+        {
+          "command": "testpylot.openTestFile",
+          "title": "Open Test File",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.runTestsInFile",
+          "title": "TestPylot: Run Tests in File",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.runSpecificTest",
+          "title": "TestPylot: Run Specific Test",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.exportSnapshotReport",
+          "title": "Testpylot: Download Snapshot Report"
+        },
+        {
+          "command": "testpylot.updateSidebar",
+          "title": "TestPylot: Update Sidebar",
+          "when": "false"
+        },
+        {
+          "command": "testpylot.failingTestsProvider.showInfo",
+          "title": "Show Info",
+          "icon": "$(info)",
+          "when": "flase"
+        },
+        {
+          "command": "testpylot.graphsDocsProvider.showInfo",
+          "title": "Show Info",
+          "icon": "$(info)",
+          "when": "false"
         }
       ]
     },

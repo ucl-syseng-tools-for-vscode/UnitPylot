@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // Register the chat participant
-    vscode.chat.createChatParticipant("vscode-testing-chat", async (request, context, response, token) => {
+    vscode.chat.createChatParticipant("testpylot-chat", async (request, context, response, token) => {
         const userQuery = request.prompt;
         const chatModels = await vscode.lm.selectChatModels({ family: 'gpt-4' });
         const messages = await fetchPrompt(userQuery);
@@ -306,8 +306,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     });
-    vscode.commands.registerCommand('failingTestsProvider.showInfo', () => {
-        vscode.window.showInformationMessage('This tree view displays failing tests, slow tests, and memory-intensive tests. Red Cross icon: Indicates a failing test. Stopwatch icon: Indicates a slow test. Brain icon: Indicates a memory-intensive test. Green Tick icon: Indicates a passing test file.');
+    vscode.commands.registerCommand('testpylot.failingTestsProvider.showInfo', () => {
+        vscode.window.showInformationMessage('This tree view displays failing tests, slow tests, and memory-intensive tests. Red Cross icon: Indicates a failing test. Stopwatch icon: Indicates a slow test. RAM icon: Indicates a memory-intensive test. Green Tick icon: Indicates a passing test file.');
     });
 
     // Register the refresh command
@@ -345,7 +345,7 @@ export function activate(context: vscode.ExtensionContext) {
     const graphDocTreeViewProvider = new GraphDocTreeViewProvider();
     vscode.window.registerTreeDataProvider('testpylot.graphdoctreeview', graphDocTreeViewProvider);
 
-    vscode.commands.registerCommand('graphsDocsProvider.showInfo', () => {
+    vscode.commands.registerCommand('testpylot.graphsDocsProvider.showInfo', () => {
         vscode.window.showInformationMessage('This tree view displays buttons to view graphs and documentation related to the tests.');
     });
 
