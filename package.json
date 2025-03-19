@@ -467,12 +467,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
-    "compile": "tsc -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
-    "watch": "tsc -watch -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
-    "pretest": "npm run compile && npm run lint",
+    "clean": "rm -rf out",
+    "vscode:prepublish": "npm run compile && npm run copy-files",
+    "compile": "tsc -p ./ && npm run copy-files",
+    "watch": "npm run copy-files && tsc -watch -p ./",
+    "pretest": "npm run compile && npm run copy-files && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "copy-files": "copyfiles -u 1 \"src/**/*.py\" \"src/**/*.html\" out/"
   },
   "devDependencies": {
     "@types/chai": "^5.2.0",
@@ -487,6 +489,7 @@
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^1.6.2",
     "chai": "4.5",
+    "copyfiles": "^2.4.1",
     "eslint": "^7.32.0",
     "glob": "^7.1.7",
     "mocha": "^9.2.2",
