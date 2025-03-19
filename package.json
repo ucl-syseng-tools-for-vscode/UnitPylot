@@ -20,7 +20,7 @@
         {
           "id": "custom-activitybar",
           "title": "TestPylot",
-          "icon": "assets/test-data-svgrepo-com.svg"
+          "icon": "assets/testpylot-icon.png"
         }
       ]
     },
@@ -38,21 +38,21 @@
           "id": "testpylot.webview",
           "name": "Dashboard",
           "contextualTitle": "View",
-          "icon": "assets/test-data-svgrepo-com.svg"
+          "icon": "assets/testpylot-icon.png"
         },
         {
           "type": "tree",
           "id": "testpylot.failingtreeview",
           "name": "Tests Overview",
           "contextualTitle": "Tests Overview",
-          "icon": "assets/test-data-svgrepo-com.svg"
+          "icon": "assets/testpylot-icon.png"
         },
         {
           "type": "tree",
           "id": "testpylot.graphdoctreeview",
           "name": "Graphs & Docs",
           "contextualTitle": "Graphs and Docs",
-          "icon": "assets/test-data-svgrepo-com.svg"
+          "icon": "assets/testpylot-icon.png"
         }
       ]
     },
