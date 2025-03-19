@@ -24,13 +24,6 @@
         }
       ]
     },
-    "chatParticipants": [
-      {
-        "id": "vscode-testing-chat",
-        "name": "TestPylot-AAA-Assistant",
-        "description": "Implement good python testing practices using the AAA pattern"
-      }
-    ],
     "views": {
       "custom-activitybar": [
         {
@@ -165,6 +158,16 @@
       {
         "command": "testpylot.updateSidebar",
         "title": "TestPylot: Update Sidebar"
+      },
+      {
+        "command": "failingTestsProvider.showInfo",
+        "title": "Show Info",
+        "icon": "$(info)"
+      },
+      {
+        "command": "graphsDocsProvider.showInfo",
+        "title": "Show Info",
+        "icon": "$(info)"
       }
     ],
     "menus": {
@@ -173,6 +176,18 @@
           "command": "testpylot.openSettings",
           "when": "view == testpylot.webview",
           "group": "navigation"
+        },
+        {
+          "command": "failingTestsProvider.showInfo",
+          "when": "view == dashboard.failingtreeview",
+          "group": "navigation",
+          "tooltip": "This tree view displays failing tests, slow tests, and memory-intensive tests.\n\nIcons:\n- Red Cross: Indicates a failing test\n- Stopwatch: Indicates a slow test\n- Brain: Indicates a memory-intensive test\n- Green Tick: Indicates a passing test file."
+        },
+        {
+          "command": "graphsDocsProvider.showInfo",
+          "when": "view == dashboard.graphdoctreeview",
+          "group": "navigation",
+          "tooltip": "This tree view displays graphs and documentation related to the tests.\n\nIcons:\n- Graph: Indicates a graph\n- Doc: Indicates a documentation file."
         }
       ],
       "editor/title": [
@@ -315,20 +330,25 @@
     "watch": "tsc -watch -p ./ && cp src/test-runner/function-splitter.py out/test-runner/function-splitter.py && cp src/test-runner/test-extractor.py out/test-runner/test-extractor.py && cp src/chart.html out/chart.html",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "vscode-test"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.0",
     "@types/glob": "^7.1.4",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^9.1.1",
     "@types/node": "14.x",
+    "@types/sinon": "^17.0.4",
     "@types/sqlite3": "^3.1.11",
     "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "@typescript-eslint/parser": "^4.31.1",
+    "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^1.6.2",
+    "chai": "4.5",
     "eslint": "^7.32.0",
     "glob": "^7.1.7",
-    "mocha": "^9.1.1",
+    "mocha": "^9.2.2",
+    "sinon": "^19.0.2",
     "typescript": "^4.4.3"
   },
   "dependencies": {

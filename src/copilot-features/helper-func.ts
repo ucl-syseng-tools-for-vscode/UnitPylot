@@ -54,7 +54,6 @@ export async function chatFunctionality(textEditor: vscode.TextEditor, ANNOTATIO
     const chatResponse = await Llm.sendRequest(messages, true);
     if (chatResponse) {
         await parseChatResponse(chatResponse, textEditor, decorationMethod);
-        console.log("Response", chatResponse);
     }
 }
 
@@ -73,7 +72,6 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
         if (fragment.includes('}')) {
             try {
                 const annotation = JSON.parse(accumulatedResponse);
-                console.log('Annotation:', annotation);
 
                 handleAnnotation(textEditor, annotation, decorationMethod);
                 accumulatedResponse = '';
@@ -83,12 +81,11 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                 try {
                     const annotations = JSON.parse(`[${fragment}]`);
                     for (const annotation of annotations) {
-                        console.log('Annotation:', annotation);
                         handleAnnotation(textEditor, annotation, decorationMethod);
                     }
                     parsedSuccessfully = true;
                 } catch {
-                    console.warn('Parsing attempt failed for fragment:', fragment);
+                    console.log('Parsing attempt failed for fragment:', fragment);
                 }
             }
         }

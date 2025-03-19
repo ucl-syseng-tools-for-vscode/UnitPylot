@@ -4,14 +4,14 @@ import { TestFunctionResult } from '../test-runner/results';
 
 
 // Annotation Prompt for Optimising the tests that use the most memory in the test suite
-const ANNOTATION_PROMPT: string = `
-You are a test optimization assistant. Your task is to analyze the performance of a given list of tests cases with their total memory allocation, and suggest ways to optimize the tests that use the most memory.
+const ANNOTATION_PROMPT = `
+You are a test optimization assistant. Your task is to analyze the performance of a given list of tests cases with their total memory allocation, and suggest ways to optimize the tests.
 
-## Analysis Scope:
-For each of the tests provided, recommend optimizations that reduce memory usage while maintaining correctness. Suggest removing or reducing the size of unecessary data structures. 
+It is important you do this for every test case provided. Recommend optimizations that reduce memory usage while maintaining correctness. Suggest removing or reducing the size of unecessary data structures. 
 
 ## Response Format:
 - The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
+- Do no include any markdown syntax. 
 - Must include a **test_name** field of the name of the most memory-intensive test.
 - Include a **suggestion** field with clear and concise recommendations for optimization.
 - Must include a **code_snippet** field for the optimized version of the test code that must be changed.
