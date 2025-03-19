@@ -13,7 +13,7 @@ export class Settings {
      */
     public static get NUMBER_OF_SLOWEST_TESTS(): number {
         const config = Settings.getConfig();
-        return config.get<number>('numberOfSlowestTests') || 5;
+        return config.get<number>('numberOfSlowestTests') || 3;
     }
 
     /**
@@ -21,7 +21,7 @@ export class Settings {
      */
     public static get NUMBER_OF_MEMORY_INTENSIVE_TESTS(): number {
         const config = Settings.getConfig();
-        return config.get<number>('numberOfMemoryIntensiveTests') || 5;
+        return config.get<number>('numberOfMemoryIntensiveTests') || 3;
     }
 
     /**

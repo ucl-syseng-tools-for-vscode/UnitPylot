@@ -406,12 +406,12 @@
         },
         "test-pylot.numberOfSlowestTests": {
           "type": "number",
-          "default": 5,
+          "default": 3,
           "description": "Number of slowest tests to display."
         },
         "test-pylot.numberOfMemoryIntensiveTests": {
           "type": "number",
-          "default": 5,
+          "default": 3,
           "description": "Number of memory intensive tests to display."
         },
         "test-pylot.snapshotInterval": {
