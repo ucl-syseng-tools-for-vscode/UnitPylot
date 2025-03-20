@@ -1,6 +1,0 @@
-pytest
-pytest-cov
-pytest-memray
-pytest-monitor
-pytest-json-report
--e .
