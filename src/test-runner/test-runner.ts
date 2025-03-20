@@ -464,7 +464,7 @@ export class TestRunner {
                         }
 
                         // Update the sidebar
-                        vscode.commands.executeCommand('extension.updateSidebar');
+                        vscode.commands.executeCommand('testpylot.updateSidebar');
 
                         // Finally save snapshot if enabled
                         if (Settings.SAVE_SNAPSHOT_ON_TEST_RUN) {

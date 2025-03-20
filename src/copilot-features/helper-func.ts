@@ -83,7 +83,7 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
                     for (const annotation of annotations) {
                         handleAnnotation(textEditor, annotation, decorationMethod);
                     }
-                    parsedSuccessfully = true; 
+                    parsedSuccessfully = true;
                 } catch {
                     console.log('Parsing attempt failed for fragment:', fragment);
                 }
@@ -98,8 +98,8 @@ async function parseChatResponse(chatResponse: vscode.LanguageModelChatResponse,
 }
 
 // Decide which decoration method to invoke 
-function handleAnnotation(editor: vscode.TextEditor, 
-    annotation: {line: number; suggestion: string; category: string; test_name?: string; code_snippet: string; file: string; bottleneck?: string}, decorationMethod: number) {
+function handleAnnotation(editor: vscode.TextEditor,
+    annotation: { line: number; suggestion: string; category: string; test_name?: string; code_snippet: string; file: string; bottleneck?: string }, decorationMethod: number) {
     const { line, suggestion, category, test_name, code_snippet, file, bottleneck } = annotation;
 
     switch (decorationMethod) {
@@ -175,10 +175,10 @@ function applyDecorationCoverage(editor: vscode.TextEditor, line: number, sugges
     hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
     hoverMessage.appendMarkdown(
-        `\n #### [✅ Accept](command:extension.acceptSuggestion?${encodeURIComponent(
+        `\n #### [✅ Accept](command:testpylot.acceptSuggestion?${encodeURIComponent(
             JSON.stringify({ line, code_snippet, decorationType })
         )})` +
-        `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+        `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
             JSON.stringify({ line, decorationType })
         )})`
     );
@@ -196,14 +196,14 @@ function applyDecorationFixFailing(editor: vscode.TextEditor, line: number, sugg
     hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
     const acceptCommand = file === "test"
-        ? "extension.addSuggestiontoSameFile"
-        : "extension.addSuggestiontoMainFile";
+        ? "testpylot.addSuggestiontoSameFile"
+        : "testpylot.addSuggestiontoMainFile";
 
     hoverMessage.appendMarkdown(
         `\n #### [✅ Accept](command:${acceptCommand}?${encodeURIComponent(
             JSON.stringify({ line, code_snippet, decorationType })
         )})` +
-        `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+        `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
             JSON.stringify({ line, decorationType })
         )})`
     );
@@ -256,10 +256,10 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         hoverMessage.appendMarkdown(`\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
         hoverMessage.appendMarkdown(
-            `\n #### [✅ Accept](command:extension.addSuggestiontoSameFile?${encodeURIComponent(
+            `\n #### [✅ Accept](command:testpylot.addSuggestiontoSameFile?${encodeURIComponent(
                 JSON.stringify({ line, code_snippet, decorationType })
             )})` +
-            `\n #### [❌ Reject](command:extension.rejectSuggestion?${encodeURIComponent(
+            `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
                 JSON.stringify({ line, decorationType })
             )})`
         );

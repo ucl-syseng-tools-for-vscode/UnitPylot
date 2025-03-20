@@ -102,7 +102,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             );
             if (fileMap[filePath]) {
                 fileMap[filePath].push(slowTestNode);
-                fileIcons[filePath].add('slowtest.svg');
+                fileIcons[filePath].add('slowtest.png');
             } else {
                 failingTestsOutput.push(slowTestNode);
             }
@@ -124,7 +124,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             );
             if (filePath && fileMap[filePath]) {
                 fileMap[filePath].push(memoryTestNode);
-                fileIcons[filePath].add('memory.svg');
+                fileIcons[filePath].add('memory.png');
             } else {
                 failingTestsOutput.push(memoryTestNode);
             }
@@ -161,7 +161,7 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             for (const test in testResultsForFile) {
                 const testResult = testResultsForFile[test];
                 if (!testResult.passed) {
-                    fileIcons[file].add('fail.svg');
+                    fileIcons[file].add('fail.png');
                 }
             }
         }
@@ -170,28 +170,28 @@ export class FailingTestsProvider implements vscode.TreeDataProvider<FailingTest
             const icons = fileIcons[fileNode.file];
             if (icons.size > 1) {
                 fileNode.iconPath = {
-                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.svg')),
-                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.svg'))
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.png')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'mixedtest.png'))
                 };
-            } else if (icons.has('fail.svg')) {
+            } else if (icons.has('fail.png')) {
                 fileNode.iconPath = {
-                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg')),
-                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.svg'))
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.png')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'fail.png'))
                 };
-            } else if (icons.has('slowtest.svg')) {
+            } else if (icons.has('slowtest.png')) {
                 fileNode.iconPath = {
-                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.svg')),
-                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.svg'))
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.png')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'slowtest.png'))
                 };
-            } else if (icons.has('memory.svg')) {
+            } else if (icons.has('memory.png')) {
                 fileNode.iconPath = {
-                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.svg')),
-                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.svg'))
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.png')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'memory.png'))
                 };
             } else {
                 fileNode.iconPath = {
-                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.svg')),
-                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.svg'))
+                    light: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.png')),
+                    dark: vscode.Uri.file(path.join(__filename, '..', '..', '..', 'assets', 'pass.png'))
                 };
             }
         }
@@ -316,13 +316,13 @@ export class FailingTest extends vscode.TreeItem {
 
         let iconFileName;
         if (this.type === 'slow test') {
-            iconFileName = 'slowtest.svg';
+            iconFileName = 'slowtest.png';
         } else if (this.type === 'memory test') {
-            iconFileName = 'memory.svg';
+            iconFileName = 'memory.png';
         } else if (this.type === 'test function' && !this.passes) {
-            iconFileName = 'fail.svg';
+            iconFileName = 'fail.png';
         } else {
-            iconFileName = 'pass.svg';
+            iconFileName = 'pass.png';
         }
 
         this.iconPath = {

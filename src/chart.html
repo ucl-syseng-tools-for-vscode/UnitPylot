@@ -237,7 +237,7 @@
 
       function runTests() {
         console.log("Run Tests button clicked");
-        vscode.postMessage({ command: "vscode-run-tests.runTests" });
+        vscode.postMessage({ command: "testpylot.vscode-run-tests.runTests" });
         runTestsBtn.style.marginTop = "0";
         chart.style.display = "block";
         // Assuming resultsBar is defined somewhere in your code
@@ -246,7 +246,7 @@
 
       function runAllTests() {
         console.log("Run All Tests button clicked");
-        vscode.postMessage({ command: "vscode-run-tests.runAllTests" });
+        vscode.postMessage({ command: "testpylot.vscode-run-tests.runAllTests" });
         runTestsBtn.style.marginTop = "0";
         chart.style.display = "block";
         // Assuming resultsBar is defined somewhere in your code
