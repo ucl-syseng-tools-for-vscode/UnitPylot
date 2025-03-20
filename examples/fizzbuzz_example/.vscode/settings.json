@@ -1,7 +1,0 @@
-{
-    "python.testing.pytestArgs": [
-        "fizzbuzz"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
