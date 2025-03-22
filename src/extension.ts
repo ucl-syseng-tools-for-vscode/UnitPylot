@@ -31,6 +31,7 @@ import { LlmMessage } from './llm/llm-message';
 import { Llm } from './llm/llm';
 
 import { GraphDocTreeViewProvider } from './dashboard-metrics/graph-doc-tree-view';
+import * as fs from 'fs';
 
 
 export const jsonStore: Map<string, any> = new Map();
@@ -73,7 +74,11 @@ export function activate(context: vscode.ExtensionContext) {
     const runTests = vscode.commands.registerCommand('vscode-run-tests.runTests', async () => {
         try {
             const { passed, failed } = await testRunner.getResultsSummary();
-            vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
+            if (passed + failed === 0) {
+                vscode.commands.executeCommand('vscode-run-tests.switchToDefaultPage');
+            } else {
+                vscode.commands.executeCommand('vscode-run-tests.updateResults', { passed, failed });
+            }
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run pytest.');
         }
@@ -97,9 +102,13 @@ export function activate(context: vscode.ExtensionContext) {
     const getCoverage = vscode.commands.registerCommand('vscode-run-tests.getCoverage', async () => {
         try {
             const coverage = await testRunner.getCoverage();
-            jsonStore.set('coverage', coverage);
-            handleFileOpen(vscode.window.activeTextEditor!, testRunner);
-            vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+            if (!coverage || coverage.totals.total === 0) {
+                vscode.commands.executeCommand('vscode-run-tests.switchToDefaultPage');
+            } else {
+                jsonStore.set('coverage', coverage);
+                handleFileOpen(vscode.window.activeTextEditor!, testRunner);
+                vscode.commands.executeCommand('vscode-run-tests.updateCoverage', { coverage });
+            }
         } catch (error) {
             vscode.window.showErrorMessage('Failed to run coverage check.');
         }
@@ -344,6 +353,21 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(openWebView);
+
+    // Register the switch to default page method
+    const switchToDefaultPage = vscode.commands.registerCommand('vscode-run-tests.switchToDefaultPage', () => {
+        const panel = vscode.window.createWebviewPanel(
+            'defaultPage',
+            'Default Page',
+            vscode.ViewColumn.One,
+            { enableScripts: true }
+        );
+
+        const defaultHtmlPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'default.html'));
+        panel.webview.html = fs.readFileSync(defaultHtmlPath.fsPath, 'utf8');
+    });
+
+    context.subscriptions.push(switchToDefaultPage);
 
 
     // Register the settings page command

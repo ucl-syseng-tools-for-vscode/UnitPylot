@@ -229,6 +229,7 @@
 
       window.addEventListener("load", () => {
         restoreState();
+        checkDataAndSwitchPage();
       });
 
       const runTestsBtn = document.getElementById("run-tests-btn");
@@ -275,6 +276,10 @@
           state.testResults = structuredClone(event.data.results);
           saveState();
           updateChart(event.data.results);
+          checkDataAndSwitchPage();
+        } else if (event.data.command === "noResults") {
+          showPlaceholder();
+          checkDataAndSwitchPage();
         }
       });
 
@@ -293,16 +298,6 @@
           return results;
         }
       }
-      window.addEventListener("message", (event) => {
-        if (event.data.command === "updateResults") {
-          console.log("Updating chart with results:", event.data.results);
-          state.testResults = structuredClone(event.data.results);
-          saveState();
-          updateChart(event.data.results);
-        } else if (event.data.command === "noResults") {
-          showPlaceholder();
-        }
-      });
 
       function showPlaceholder() {
         document.getElementById("chart").style.display = "none";
@@ -398,6 +393,12 @@
           plugins: [ChartDataLabels],
         });
       }
+
+      function checkDataAndSwitchPage() {
+        if (!state.testResults || state.testResults.passed + state.testResults.failed === 0) {
+          vscode.postMessage({ command: "switchToDefaultPage" });
+        }
+      }
     </script>
     <script>
       const coverageChartContainer = document.getElementById(
@@ -420,6 +421,7 @@
           state.coverageResults = structuredClone(event.data.coverage);
           saveState();
           updateCoverage(event.data.coverage);
+          checkDataAndSwitchPage();
         }
       });
 

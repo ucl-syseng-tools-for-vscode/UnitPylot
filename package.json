@@ -179,6 +179,10 @@
         "command": "graphsDocsProvider.showInfo",
         "title": "Show Info",
         "icon": "$(info)"
+      },
+      {
+        "command": "vscode-run-tests.switchToDefaultPage",
+        "title": "Switch to Default Page"
       }
     ],
     "menus": {
