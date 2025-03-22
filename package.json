@@ -1,6 +1,7 @@
 {
   "name": "testpylot",
   "displayName": "TestPylot",
+  "icon": "assets/testpylot-icon.png",
   "description": "",
   "version": "0.0.1",
   "engines": {
