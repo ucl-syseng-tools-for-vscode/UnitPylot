@@ -131,7 +131,9 @@ TestPylot provides several configuration options to customise its behavior. Thes
 - `test-pylot.customLLM APIKey`: Custom LLM key to use if GitHub Copilot is not enabled.
 - `test-pylot.customLLM MaxTokens`: Custom LLM max tokens to use if GitHub Copilot is not enabled.
 
-### 🔄 Custom LLM Support
+### 🔄 Custom, Third-Party LLM Support
+This extension **should** be used with GitHub Copilot, as this provides the best user experience for the developer. However there is the option to use a Third-party or Local LLM if the user wishes.
+
 TestPylot supports custom language models (LLMs) through an OpenAI-style API. This allows you to integrate your own LLMs for test writing and optimisation.
 To configure a custom LLM, set the following options in the VSCode settings:
 - `test-pylot.customLLM Endpoint`: The endpoint URL for your custom LLM API (e.g., `http://xxxxxx/v1/chat/completions`).
