@@ -1,7 +1,7 @@
 {
-  "name": "testpylot",
-  "displayName": "TestPylot",
-  "icon": "assets/testpylot-icon.png",
+  "name": "unitpylot",
+  "displayName": "UnitPylot",
+  "icon": "assets/unitpylot-icon.png",
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -17,15 +17,15 @@
       "activitybar": [
         {
           "id": "custom-activitybar",
-          "title": "TestPylot",
-          "icon": "assets/testpylot-icon.png"
+          "title": "UnitPylot",
+          "icon": "assets/unitpylot-icon.png"
         }
       ]
     },
     "chatParticipants": [
       {
-        "id": "testpylot-chat",
-        "name": "TestPylot-AAA-Assistant",
+        "id": "unitpylot-chat",
+        "name": "UnitPylot-AAA-Assistant",
         "description": "Implement good python testing practices using the AAA pattern"
       }
     ],
@@ -33,144 +33,144 @@
       "custom-activitybar": [
         {
           "type": "webview",
-          "id": "testpylot.webview",
+          "id": "unitpylot.webview",
           "name": "Dashboard",
           "contextualTitle": "View",
-          "icon": "assets/testpylot-icon.png"
+          "icon": "assets/unitpylot-icon.png"
         },
         {
           "type": "tree",
-          "id": "testpylot.failingtreeview",
+          "id": "unitpylot.failingtreeview",
           "name": "Tests Overview",
           "contextualTitle": "Tests Overview",
-          "icon": "assets/testpylot-icon.png"
+          "icon": "assets/unitpylot-icon.png"
         },
         {
           "type": "tree",
-          "id": "testpylot.graphdoctreeview",
+          "id": "unitpylot.graphdoctreeview",
           "name": "Graphs & Docs",
           "contextualTitle": "Graphs and Docs",
-          "icon": "assets/testpylot-icon.png"
+          "icon": "assets/unitpylot-icon.png"
         }
       ]
     },
     "commands": [
       {
-        "command": "testpylot.vscode-run-tests.runTests",
-        "title": "TestPylot: Run Tests"
+        "command": "unitpylot.vscode-run-tests.runTests",
+        "title": "UnitPylot: Run Tests"
       },
       {
-        "command": "testpylot.vscode-run-tests.runAllTests",
-        "title": "TestPylot: Run All Tests"
+        "command": "unitpylot.vscode-run-tests.runAllTests",
+        "title": "UnitPylot: Run All Tests"
       },
       {
-        "command": "testpylot.vscode-run-tests.updateResults",
-        "title": "TestPylot: Update Results"
+        "command": "unitpylot.vscode-run-tests.updateResults",
+        "title": "UnitPylot: Update Results"
       },
       {
-        "command": "testpylot.vscode-run-tests.getCoverage",
-        "title": "TestPylot: Get Coverage"
+        "command": "unitpylot.vscode-run-tests.getCoverage",
+        "title": "UnitPylot: Get Coverage"
       },
       {
-        "command": "testpylot.vscode-run-tests.updateCoverage",
-        "title": "TestPylot: Update Coverage Results"
+        "command": "unitpylot.vscode-run-tests.updateCoverage",
+        "title": "UnitPylot: Update Coverage Results"
       },
       {
-        "command": "testpylot.vscode-slowest-tests.slowestTests",
-        "title": "TestPylot: Find Slowest Tests"
+        "command": "unitpylot.vscode-slowest-tests.slowestTests",
+        "title": "UnitPylot: Find Slowest Tests"
       },
       {
-        "command": "testpylot.vscode-slowest-tests.updateSlowestTests",
-        "title": "TestPylot: Update Slowest Tests Results"
+        "command": "unitpylot.vscode-slowest-tests.updateSlowestTests",
+        "title": "UnitPylot: Update Slowest Tests Results"
       },
       {
-        "command": "testpylot.vscode-run-tests.updateMemory",
-        "title": "TestPylot: Update Memory Results"
+        "command": "unitpylot.vscode-run-tests.updateMemory",
+        "title": "UnitPylot: Update Memory Results"
       },
       {
-        "command": "testpylot.code-tutor.annotate",
-        "title": "TestPylot: Test Insights"
+        "command": "unitpylot.code-tutor.annotate",
+        "title": "UnitPylot: Test Insights"
       },
       {
-        "command": "testpylot.fix-failing-tests.fixFailingTests",
-        "title": "TestPylot: Fix Failing Tests"
+        "command": "unitpylot.fix-failing-tests.fixFailingTests",
+        "title": "UnitPylot: Fix Failing Tests"
       },
       {
-        "command": "testpylot.fix-coverage.fixCoverage",
-        "title": "TestPylot: Fix Coverage"
+        "command": "unitpylot.fix-coverage.fixCoverage",
+        "title": "UnitPylot: Fix Coverage"
       },
       {
-        "command": "testpylot.optimise-slowest.optimiseSlowest",
-        "title": "TestPylot: Optimise Slowest Tests"
+        "command": "unitpylot.optimise-slowest.optimiseSlowest",
+        "title": "UnitPylot: Optimise Slowest Tests"
       },
       {
-        "command": "testpylot.generate-pydoc.generatePydoc",
-        "title": "TestPylot: Generate Pydoc"
+        "command": "unitpylot.generate-pydoc.generatePydoc",
+        "title": "UnitPylot: Generate Pydoc"
       },
       {
-        "command": "testpylot.acceptSuggestion",
-        "title": "TestPylot: Accept Annotation onto corresponding test file for coverage"
+        "command": "unitpylot.acceptSuggestion",
+        "title": "UnitPylot: Accept Annotation onto corresponding test file for coverage"
       },
       {
-        "command": "testpylot.rejectSuggestion",
-        "title": "TestPylot: Reject Annotation"
+        "command": "unitpylot.rejectSuggestion",
+        "title": "UnitPylot: Reject Annotation"
       },
       {
-        "command": "testpylot.addSuggestiontoSameFile",
-        "title": "TestPylot: Add Annotation to Same File"
+        "command": "unitpylot.addSuggestiontoSameFile",
+        "title": "UnitPylot: Add Annotation to Same File"
       },
       {
-        "command": "testpylot.addSuggestiontoMainFile",
-        "title": "TestPylot: Add Annotation to corresponding Main File"
+        "command": "unitpylot.addSuggestiontoMainFile",
+        "title": "UnitPylot: Add Annotation to corresponding Main File"
       },
       {
-        "command": "testpylot.test-history.showPassFailGraph",
-        "title": "TestPylot: Show test pass-fail history graph"
+        "command": "unitpylot.test-history.showPassFailGraph",
+        "title": "UnitPylot: Show test pass-fail history graph"
       },
       {
-        "command": "testpylot.test-history.showCoverageGraph",
-        "title": "TestPylot: Show coverage history graph"
+        "command": "unitpylot.test-history.showCoverageGraph",
+        "title": "UnitPylot: Show coverage history graph"
       },
       {
-        "command": "testpylot.openSettings",
+        "command": "unitpylot.openSettings",
         "title": "Open Settings",
         "icon": "$(gear)"
       },
       {
-        "command": "testpylot.optimise-memory.optimiseMemory",
-        "title": "TestPylot: Optimise Memory Usage of Tests"
+        "command": "unitpylot.optimise-memory.optimiseMemory",
+        "title": "UnitPylot: Optimise Memory Usage of Tests"
       },
       {
-        "command": "testpylot.failingtests.refreshView",
-        "title": "TestPylot: Refresh Failing Tests"
+        "command": "unitpylot.failingtests.refreshView",
+        "title": "UnitPylot: Refresh Failing Tests"
       },
       {
-        "command": "testpylot.openTestFile",
+        "command": "unitpylot.openTestFile",
         "title": "Open Test File"
       },
       {
-        "command": "testpylot.runTestsInFile",
-        "title": "TestPylot: Run Tests in File"
+        "command": "unitpylot.runTestsInFile",
+        "title": "UnitPylot: Run Tests in File"
       },
       {
-        "command": "testpylot.runSpecificTest",
-        "title": "TestPylot: Run Specific Test"
+        "command": "unitpylot.runSpecificTest",
+        "title": "UnitPylot: Run Specific Test"
       },
       {
-        "command": "testpylot.exportSnapshotReport",
-        "title": "Testpylot: Download Snapshot Report"
+        "command": "unitpylot.exportSnapshotReport",
+        "title": "UnitPylot: Download Snapshot Report"
       },
       {
-        "command": "testpylot.updateSidebar",
-        "title": "TestPylot: Update Sidebar"
+        "command": "unitpylot.updateSidebar",
+        "title": "UnitPylot: Update Sidebar"
       },
       {
-        "command": "testpylot.failingTestsProvider.showInfo",
+        "command": "unitpylot.failingTestsProvider.showInfo",
         "title": "Show Info",
         "icon": "$(info)"
       },
       {
-        "command": "testpylot.graphsDocsProvider.showInfo",
+        "command": "unitpylot.graphsDocsProvider.showInfo",
         "title": "Show Info",
         "icon": "$(info)"
       }
@@ -178,199 +178,199 @@
     "menus": {
       "view/title": [
         {
-          "command": "testpylot.openSettings",
-          "when": "view == testpylot.webview",
+          "command": "unitpylot.openSettings",
+          "when": "view == unitpylot.webview",
           "group": "navigation"
         },
         {
-          "command": "testpylot.failingTestsProvider.showInfo",
-          "when": "view == testpylot.failingtreeview",
+          "command": "unitpylot.failingTestsProvider.showInfo",
+          "when": "view == unitpylot.failingtreeview",
           "group": "navigation",
           "tooltip": "This tree view displays failing tests, slow tests, and memory-intensive tests.\n\nIcons:\n- Red Cross: Indicates a failing test\n- Stopwatch: Indicates a slow test\n- RAM: Indicates a memory-intensive test\n- Green Tick: Indicates a passing test file."
         },
         {
-          "command": "testpylot.graphsDocsProvider.showInfo",
-          "when": "view == testpylot.graphdoctreeview",
+          "command": "unitpylot.graphsDocsProvider.showInfo",
+          "when": "view == unitpylot.graphdoctreeview",
           "group": "navigation",
           "tooltip": "This tree view displays graphs and documentation related to the tests.\n\nIcons:\n- Graph: Indicates a graph\n- Doc: Indicates a documentation file."
         }
       ],
       "editor/title": [
         {
-          "command": "testpylot.code-tutor.annotate",
+          "command": "unitpylot.code-tutor.annotate",
           "group": "navigation"
         },
         {
-          "command": "testpylot.runTestsInFile",
+          "command": "unitpylot.runTestsInFile",
           "group": "navigation"
         }
       ],
       "editor/context": [
         {
           "group": "llm-commands",
-          "submenu": "testpylot.commands"
+          "submenu": "unitpylot.commands"
         }
       ],
-      "testpylot.commands": [
+      "unitpylot.commands": [
         {
-          "command": "testpylot.fix-failing-tests.fixFailingTests",
+          "command": "unitpylot.fix-failing-tests.fixFailingTests",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "testpylot.fix-coverage.fixCoverage",
+          "command": "unitpylot.fix-coverage.fixCoverage",
           "group": "llm-commands",
           "when": "resourceLangId == 'python' && !(resourceFilename =~ /^test_/) && !(resourceFilename =~ /_test\\.py$/)"
         },
         {
-          "command": "testpylot.optimise-slowest.optimiseSlowest",
+          "command": "unitpylot.optimise-slowest.optimiseSlowest",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "testpylot.generate-pydoc.generatePydoc",
+          "command": "unitpylot.generate-pydoc.generatePydoc",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         },
         {
-          "command": "testpylot.optimise-memory.optimiseMemory",
+          "command": "unitpylot.optimise-memory.optimiseMemory",
           "group": "llm-commands",
           "when": "resourceLangId == python && (resourceFilename =~ /test_.*/ || resourceFilename =~ /.*_test.py/)"
         }
       ],
       "commandPalette": [
         {
-          "command": "testpylot.vscode-run-tests.runTests",
-          "title": "TestPylot: Run Tests"
+          "command": "unitpylot.vscode-run-tests.runTests",
+          "title": "UnitPylot: Run Tests"
         },
         {
-          "command": "testpylot.vscode-run-tests.runAllTests",
-          "title": "TestPylot: Run All Tests"
+          "command": "unitpylot.vscode-run-tests.runAllTests",
+          "title": "UnitPylot: Run All Tests"
         },
         {
-          "command": "testpylot.vscode-run-tests.updateResults",
-          "title": "TestPylot: Update Results",
+          "command": "unitpylot.vscode-run-tests.updateResults",
+          "title": "UnitPylot: Update Results",
           "when": "false"
         },
         {
-          "command": "testpylot.vscode-run-tests.getCoverage",
-          "title": "TestPylot: Get Coverage",
+          "command": "unitpylot.vscode-run-tests.getCoverage",
+          "title": "UnitPylot: Get Coverage",
           "when": "false"
         },
         {
-          "command": "testpylot.vscode-run-tests.updateCoverage",
-          "title": "TestPylot: Update Coverage Results",
+          "command": "unitpylot.vscode-run-tests.updateCoverage",
+          "title": "UnitPylot: Update Coverage Results",
           "when": "false"
         },
         {
-          "command": "testpylot.vscode-slowest-tests.slowestTests",
-          "title": "TestPylot: Find Slowest Tests",
+          "command": "unitpylot.vscode-slowest-tests.slowestTests",
+          "title": "UnitPylot: Find Slowest Tests",
           "when": "false"
         },
         {
-          "command": "testpylot.vscode-slowest-tests.updateSlowestTests",
-          "title": "TestPylot: Update Slowest Tests Results",
+          "command": "unitpylot.vscode-slowest-tests.updateSlowestTests",
+          "title": "UnitPylot: Update Slowest Tests Results",
           "when": "false"
         },
         {
-          "command": "testpylot.vscode-run-tests.updateMemory",
-          "title": "TestPylot: Update Memory Results",
+          "command": "unitpylot.vscode-run-tests.updateMemory",
+          "title": "UnitPylot: Update Memory Results",
           "when": "false"
         },
         {
-          "command": "testpylot.code-tutor.annotate",
-          "title": "TestPylot: Test Insights"
+          "command": "unitpylot.code-tutor.annotate",
+          "title": "UnitPylot: Test Insights"
         },
         {
-          "command": "testpylot.fix-failing-tests.fixFailingTests",
-          "title": "TestPylot: Fix Failing Tests"
+          "command": "unitpylot.fix-failing-tests.fixFailingTests",
+          "title": "UnitPylot: Fix Failing Tests"
         },
         {
-          "command": "testpylot.fix-coverage.fixCoverage",
-          "title": "TestPylot: Fix Coverage"
+          "command": "unitpylot.fix-coverage.fixCoverage",
+          "title": "UnitPylot: Fix Coverage"
         },
         {
-          "command": "testpylot.optimise-slowest.optimiseSlowest",
-          "title": "TestPylot: Optimise Slowest Tests"
+          "command": "unitpylot.optimise-slowest.optimiseSlowest",
+          "title": "UnitPylot: Optimise Slowest Tests"
         },
         {
-          "command": "testpylot.generate-pydoc.generatePydoc",
-          "title": "TestPylot: Generate Pydoc"
+          "command": "unitpylot.generate-pydoc.generatePydoc",
+          "title": "UnitPylot: Generate Pydoc"
         },
         {
-          "command": "testpylot.acceptSuggestion",
-          "title": "TestPylot: Accept Annotation onto corresponding test file for coverage",
+          "command": "unitpylot.acceptSuggestion",
+          "title": "UnitPylot: Accept Annotation onto corresponding test file for coverage",
           "when": "false"
         },
         {
-          "command": "testpylot.rejectSuggestion",
-          "title": "TestPylot: Reject Annotation",
+          "command": "unitpylot.rejectSuggestion",
+          "title": "UnitPylot: Reject Annotation",
           "when": "false"
         },
         {
-          "command": "testpylot.addSuggestiontoSameFile",
-          "title": "TestPylot: Add Annotation to Same File",
+          "command": "unitpylot.addSuggestiontoSameFile",
+          "title": "UnitPylot: Add Annotation to Same File",
           "when": "false"
         },
         {
-          "command": "testpylot.addSuggestiontoMainFile",
-          "title": "TestPylot: Add Annotation to corresponding Main File",
+          "command": "unitpylot.addSuggestiontoMainFile",
+          "title": "UnitPylot: Add Annotation to corresponding Main File",
           "when": "false"
         },
         {
-          "command": "testpylot.test-history.showPassFailGraph",
-          "title": "TestPylot: Show test pass-fail history graph",
+          "command": "unitpylot.test-history.showPassFailGraph",
+          "title": "UnitPylot: Show test pass-fail history graph",
           "when": "false"
         },
         {
-          "command": "testpylot.test-history.showCoverageGraph",
-          "title": "TestPylot: Show coverage history graph"
+          "command": "unitpylot.test-history.showCoverageGraph",
+          "title": "UnitPylot: Show coverage history graph"
         },
         {
-          "command": "testpylot.openSettings",
+          "command": "unitpylot.openSettings",
           "title": "Open Settings",
           "icon": "$(gear)"
         },
         {
-          "command": "testpylot.optimise-memory.optimiseMemory",
-          "title": "TestPylot: Optimise Memory Usage of Tests"
+          "command": "unitpylot.optimise-memory.optimiseMemory",
+          "title": "UnitPylot: Optimise Memory Usage of Tests"
         },
         {
-          "command": "testpylot.failingtests.refreshView",
-          "title": "TestPylot: Refresh Failing Tests"
+          "command": "unitpylot.failingtests.refreshView",
+          "title": "UnitPylot: Refresh Failing Tests"
         },
         {
-          "command": "testpylot.openTestFile",
+          "command": "unitpylot.openTestFile",
           "title": "Open Test File",
           "when": "false"
         },
         {
-          "command": "testpylot.runTestsInFile",
-          "title": "TestPylot: Run Tests in File",
+          "command": "unitpylot.runTestsInFile",
+          "title": "UnitPylot: Run Tests in File",
           "when": "false"
         },
         {
-          "command": "testpylot.runSpecificTest",
-          "title": "TestPylot: Run Specific Test",
+          "command": "unitpylot.runSpecificTest",
+          "title": "UnitPylot: Run Specific Test",
           "when": "false"
         },
         {
-          "command": "testpylot.exportSnapshotReport",
-          "title": "Testpylot: Download Snapshot Report"
+          "command": "unitpylot.exportSnapshotReport",
+          "title": "UnitPylot: Download Snapshot Report"
         },
         {
-          "command": "testpylot.updateSidebar",
-          "title": "TestPylot: Update Sidebar",
+          "command": "unitpylot.updateSidebar",
+          "title": "UnitPylot: Update Sidebar",
           "when": "false"
         },
         {
-          "command": "testpylot.failingTestsProvider.showInfo",
+          "command": "unitpylot.failingTestsProvider.showInfo",
           "title": "Show Info",
           "icon": "$(info)",
           "when": "flase"
         },
         {
-          "command": "testpylot.graphsDocsProvider.showInfo",
+          "command": "unitpylot.graphsDocsProvider.showInfo",
           "title": "Show Info",
           "icon": "$(info)",
           "when": "false"
@@ -379,87 +379,87 @@
     },
     "submenus": [
       {
-        "id": "testpylot.commands",
-        "label": "TestPylot Commands",
+        "id": "unitpylot.commands",
+        "label": "UnitPylot Commands",
         "group": "llm-commands"
       }
     ],
     "configuration": {
-      "title": "TestPylot",
+      "title": "UnitPylot",
       "properties": {
-        "test-pylot.runNecessaryTestsOnly": {
+        "unit-pylot.runNecessaryTestsOnly": {
           "type": "boolean",
           "default": true,
           "description": "Run only necessary tests instead of all tests."
         },
-        "test-pylot.copilotEnabled": {
+        "unit-pylot.copilotEnabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable GitHub Copilot integration."
         },
-        "test-pylot.codeCoverageHighlighting": {
+        "unit-pylot.codeCoverageHighlighting": {
           "type": "boolean",
           "default": true,
           "description": "Enable code coverage highlighting."
         },
-        "test-pylot.numberOfSlowestTests": {
+        "unit-pylot.numberOfSlowestTests": {
           "type": "number",
           "default": 3,
           "description": "Number of slowest tests to display."
         },
-        "test-pylot.numberOfMemoryIntensiveTests": {
+        "unit-pylot.numberOfMemoryIntensiveTests": {
           "type": "number",
           "default": 3,
           "description": "Number of memory intensive tests to display."
         },
-        "test-pylot.snapshotInterval": {
+        "unit-pylot.snapshotInterval": {
           "type": "number",
           "default": 10,
           "minimum": 1,
           "description": "Snapshot interval in minutes. (Extension restart required)"
         },
-        "test-pylot.runTestsOnSave": {
+        "unit-pylot.runTestsOnSave": {
           "type": "boolean",
           "default": false,
           "description": "Run tests on any file save."
         },
-        "test-pylot.runTestsInBackground": {
+        "unit-pylot.runTestsInBackground": {
           "type": "boolean",
           "default": true,
           "description": "Periodically run tests in the background."
         },
-        "test-pylot.saveSnapshotOnTestRun": {
+        "unit-pylot.saveSnapshotOnTestRun": {
           "type": "boolean",
           "default": true,
           "description": "Save snapshots when tests are run."
         },
-        "test-pylot.saveSnapshotPeriodically": {
+        "unit-pylot.saveSnapshotPeriodically": {
           "type": "boolean",
           "default": false,
           "description": "Periodically save snapshots in the background."
         },
-        "test-pylot.runTestsInterval": {
+        "unit-pylot.runTestsInterval": {
           "type": "number",
           "default": 10,
           "minimum": 1,
           "description": "Background test run interval in minutes. (Extension restart required)"
         },
-        "test-pylot.customLLM Endpoint": {
+        "unit-pylot.customLLM Endpoint": {
           "type": "string",
           "default": "http://localhost:8000/v1/chat/completions",
           "description": "Custom LLM endpoint to use if GitHub Copilot is not enabled.\nCompatible with OpenAI-compatible APIs. \nSome examples are: OpenAI, vLLM, Ollama, etc."
         },
-        "test-pylot.customLLM Model": {
+        "unit-pylot.customLLM Model": {
           "type": "string",
           "default": "",
           "description": "Custom LLM model to use if GitHub Copilot is not enabled."
         },
-        "test-pylot.customLLM API Key": {
+        "unit-pylot.customLLM API Key": {
           "type": "string",
           "default": "",
           "description": "Custom LLM key to use if GitHub Copilot is not enabled. (Optional)"
         },
-        "test-pylot.customLLM MaxTokens": {
+        "unit-pylot.customLLM MaxTokens": {
           "type": "number",
           "default": 500,
           "description": "Custom LLM max tokens to use if GitHub Copilot is not enabled."

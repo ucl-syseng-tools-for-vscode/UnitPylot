@@ -175,10 +175,10 @@ function applyDecorationCoverage(editor: vscode.TextEditor, line: number, sugges
     hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
     hoverMessage.appendMarkdown(
-        `\n #### [✅ Accept](command:testpylot.acceptSuggestion?${encodeURIComponent(
+        `\n #### [✅ Accept](command:unitpylot.acceptSuggestion?${encodeURIComponent(
             JSON.stringify({ line, code_snippet, decorationType })
         )})` +
-        `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
+        `\n #### [❌ Reject](command:unitpylot.rejectSuggestion?${encodeURIComponent(
             JSON.stringify({ line, decorationType })
         )})`
     );
@@ -196,14 +196,14 @@ function applyDecorationFixFailing(editor: vscode.TextEditor, line: number, sugg
     hoverMessage.appendMarkdown(`**Suggestion:** ${suggestion}\n\n\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
     const acceptCommand = file === "test"
-        ? "testpylot.addSuggestiontoSameFile"
-        : "testpylot.addSuggestiontoMainFile";
+        ? "unitpylot.addSuggestiontoSameFile"
+        : "unitpylot.addSuggestiontoMainFile";
 
     hoverMessage.appendMarkdown(
         `\n #### [✅ Accept](command:${acceptCommand}?${encodeURIComponent(
             JSON.stringify({ line, code_snippet, decorationType })
         )})` +
-        `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
+        `\n #### [❌ Reject](command:unitpylot.rejectSuggestion?${encodeURIComponent(
             JSON.stringify({ line, decorationType })
         )})`
     );
@@ -256,10 +256,10 @@ function applyDecorationFuncName(editor: vscode.TextEditor, pathToFunctionName: 
         hoverMessage.appendMarkdown(`\`\`\`typescript\n${code_snippet}\n\`\`\`\n\n`);
 
         hoverMessage.appendMarkdown(
-            `\n #### [✅ Accept](command:testpylot.addSuggestiontoSameFile?${encodeURIComponent(
+            `\n #### [✅ Accept](command:unitpylot.addSuggestiontoSameFile?${encodeURIComponent(
                 JSON.stringify({ line, code_snippet, decorationType })
             )})` +
-            `\n #### [❌ Reject](command:testpylot.rejectSuggestion?${encodeURIComponent(
+            `\n #### [❌ Reject](command:unitpylot.rejectSuggestion?${encodeURIComponent(
                 JSON.stringify({ line, decorationType })
             )})`
         );

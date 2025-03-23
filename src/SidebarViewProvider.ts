@@ -9,7 +9,7 @@ import { TestRunner } from "./test-runner/test-runner";
  * The provider registers the view and also handles messages from the webview.
  */
 export class SidebarViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = "testpylot.webview";
+  public static readonly viewType = "unitpylot.webview";
 
   private _view?: vscode.WebviewView;
   private testRunner: TestRunner;
@@ -45,7 +45,7 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
       };
 
       const coverage = await this.testRunner.getCoverage(true) || defaultCoverage;
-      vscode.commands.executeCommand('testpylot.vscode-run-tests.updateCoverage', { coverage });  // For compatibility
+      vscode.commands.executeCommand('unitpylot.vscode-run-tests.updateCoverage', { coverage });  // For compatibility
     }
   }
 
@@ -68,22 +68,22 @@ export class SidebarViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = htmlContent;
 
     webviewView.webview.onDidReceiveMessage((msg) => {
-      if (msg.command === 'testpylot.vscode-run-tests.runTests') {
-        vscode.commands.executeCommand('testpylot.vscode-run-tests.runTests');
+      if (msg.command === 'unitpylot.vscode-run-tests.runTests') {
+        vscode.commands.executeCommand('unitpylot.vscode-run-tests.runTests');
       }
-      if (msg.command === 'testpylot.vscode-run-tests.runAllTests') {
-        vscode.commands.executeCommand('testpylot.vscode-run-tests.runAllTests');
+      if (msg.command === 'unitpylot.vscode-run-tests.runAllTests') {
+        vscode.commands.executeCommand('unitpylot.vscode-run-tests.runAllTests');
       }
     });
 
     // Register update pass/fail results command
-    vscode.commands.registerCommand('testpylot.vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {
+    vscode.commands.registerCommand('unitpylot.vscode-run-tests.updateResults', (results: { passed: number; failed: number }) => {
       console.log('Updating results:', results);
       this.updateResults(results);
     });
 
     // Register update coverage command
-    vscode.commands.registerCommand('testpylot.vscode-run-tests.updateCoverage', (coverage: Coverage) => {
+    vscode.commands.registerCommand('unitpylot.vscode-run-tests.updateCoverage', (coverage: Coverage) => {
       console.log('Updating coverage:', coverage);
       this.updateCoverage(coverage);
     });
