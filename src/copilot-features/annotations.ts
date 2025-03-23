@@ -5,7 +5,7 @@ const ANNOTATION_PROMPT = `
 You are an expert coder who helps developers identify vulnerabilities in test cases given a test file. 
 
 Response Format:
-- The response must be in the format of a single **JSON object**, starting with '{'.
+- The response must be in the format of a single **JSON object**, starting directly with '{' and must not include any code fences (e.g., \\\`\\\`\\\`json or \\\`\\\`\\\`).
 - Include a **line** field to specify the line where the suggestion begins (if applicable).
 - Include a category field that specifies the type of suggestion (Test Impact, Dependency Impact, Test Quality).
 - Include a suggestion field that states if modifying a function could break or require changes in tests, mention which tests would be affected and how they would be affected.
