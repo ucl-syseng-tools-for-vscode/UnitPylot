@@ -184,6 +184,19 @@
     #dropdown a:hover {
       background-color: #575757;
     }
+
+    .placeholder {
+      text-align: center;
+    }
+
+    .placeholder h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .placeholder p {
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -201,8 +214,9 @@
 
   <div id="chart-container">
     <canvas id="chart"></canvas>
-    <div id="placeholder" style="display: none; color: #d4d4d4; text-align: center; padding: 20px">
-      No test results available. Please run tests to see the results.
+    <div id="placeholder" style="display: none; color: #d4d4d4; text-align: center; padding: 20px; font-size: 16px;">
+      <h1>No Data Available</h1>
+      <p>Please run tests to see the results.</p>
     </div>
     <!-- Button container inside chart-container, now BELOW the chart -->
     <div id="button-container">
@@ -237,16 +251,20 @@
       if (savedState) {
         state = savedState;
         console.log("State restored:", state);
-        if (state.testResults) {
+        if (state.testResults !== null && state.coverageResults !== null) {
+          hidePlaceholder();
           updateChart(state.testResults);
-        }
-        if (state.coverageResults) {
           updateCoverage(state.coverageResults);
+        } else {
+          showPlaceholder();
         }
+      } else {
+        showPlaceholder();
       }
     }
 
     window.addEventListener("load", () => {
+      console.log("Window loaded");
       restoreState();
     });
 
@@ -256,18 +274,14 @@
 
     function runTests() {
       console.log("Run Tests button clicked");
-      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runTests" });
-      runTestsBtn.style.marginTop = "0";
-      chart.style.display = "block";
+      vscode.postMessage({ command: "testpylot.vscode-run-tests.runTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
 
     function runAllTests() {
       console.log("Run All Tests button clicked");
-      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runAllTests" });
-      runTestsBtn.style.marginTop = "0";
-      chart.style.display = "block";
+      vscode.postMessage({ command: "testpylot.vscode-run-tests.runAllTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
@@ -289,11 +303,22 @@
     });
 
     window.addEventListener("message", (event) => {
+      console.log("Received message:", event.data);
       if (event.data.command === "updateResults") {
         console.log("Updating chart with results:", event.data.results);
         state.testResults = structuredClone(event.data.results);
         saveState();
         updateChart(event.data.results);
+        checkDataAndSwitchPage();
+      } else if (event.data.command === "noResults") {
+        console.log("No results received");
+        showPlaceholder();
+        checkDataAndSwitchPage();
+      } else if (event.data.command === "updateCoverage") {
+        console.log("Updating coverage with results:", event.data.coverage);
+        state.coverageResults = structuredClone(event.data.coverage);
+        saveState();
+        updateCoverage(event.data.coverage);
       }
     });
 
@@ -312,23 +337,24 @@
         return results;
       }
     }
-    window.addEventListener("message", (event) => {
-      if (event.data.command === "updateResults") {
-        console.log("Updating chart with results:", event.data.results);
-        state.testResults = structuredClone(event.data.results);
-        saveState();
-        updateChart(event.data.results);
-      } else if (event.data.command === "noResults") {
-        showPlaceholder();
-      }
-    });
 
     function showPlaceholder() {
       document.getElementById("chart").style.display = "none";
       document.getElementById("placeholder").style.display = "block";
+      document.getElementById("coverage-chart-container").style.display = "none";
+    }
+
+    function hidePlaceholder() {
+      document.getElementById("chart").style.display = "flex";
+      document.getElementById("placeholder").style.display = "none";
+      document.getElementById("coverage-chart-container").style.display = "flex";
+
+      runTestsBtn.style.marginTop = "0";
+      chart.style.display = "block";
     }
 
     function updateChart(results) {
+      hidePlaceholder();
       const { passed, failed } = results;
       const total = passed + failed;
 
@@ -417,8 +443,17 @@
         plugins: [ChartDataLabels],
       });
     }
-  </script>
-  <script>
+
+    function checkDataAndSwitchPage() {
+      console.log("Checking data to switch page");
+      if (!state.testResults || state.testResults.passed + state.testResults.failed === 0) {
+        console.log("No test results found, switching to default page");
+        vscode.postMessage({ command: "switchToDefaultPage" });
+      } else {
+        console.log("Test results found, staying on chart page");
+      }
+    }
+
     const coverageChartContainer = document.getElementById(
       "coverage-chart-container"
     );
@@ -431,6 +466,7 @@
     }
 
     window.addEventListener("message", (event) => {
+      console.log("Received message:", event.data);
       if (event.data.command === "updateCoverage") {
         console.log(
           "Frontend received updateCoverage message:",
@@ -445,10 +481,13 @@
     let coverageResultsChart; // Declare a variable to store the coverage chart instance
 
     function updateCoverage(coverage) {
+      console.log("Updating coverage:", coverage);
+      hidePlaceholder();
       const totals = coverage.coverage.totals;
       const total = totals.total;
 
       if (!totals) {
+        showPlaceholder();
         console.error("Coverage totals are undefined");
         return;
       }
@@ -475,12 +514,12 @@
       coverageResultsChart = new Chart(ctx, {
         type: "doughnut",
         data: {
-          labels: ["Covered", "Skipped", "Uncovered"],
+          labels: ["Covered", "Uncovered"],
           datasets: [
             {
               label: "Code Coverage",
-              data: [totals.covered, totals.skipped, totals.missed],
-              backgroundColor: ["#007acb", "#ed9c28", "#f14c4c"],
+              data: [totals.covered, totals.missed],
+              backgroundColor: ["#007acb", "#f14c4c"],
               borderWidth: 0,
             },
           ],
