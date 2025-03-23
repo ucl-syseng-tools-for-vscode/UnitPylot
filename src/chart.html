@@ -274,14 +274,14 @@
 
     function runTests() {
       console.log("Run Tests button clicked");
-      vscode.postMessage({ command: "testpylot.vscode-run-tests.runTests" });
+      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
 
     function runAllTests() {
       console.log("Run All Tests button clicked");
-      vscode.postMessage({ command: "testpylot.vscode-run-tests.runAllTests" });
+      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runAllTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
