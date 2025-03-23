@@ -1,13 +1,16 @@
 {
   "name": "unitpylot",
   "displayName": "UnitPylot",
-  "icon": "assets/unitpylot-icon.png",
-  "description": "",
+  "icon": "assets/unitpylot-icon-colour.png",
+  "description": "Pytest assistant with AI-powered test insights",
+  "publisher": "unitpylot",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
+    "Testing",
+    "AI",
     "Other"
   ],
   "activationEvents": [],
@@ -18,7 +21,7 @@
         {
           "id": "custom-activitybar",
           "title": "UnitPylot",
-          "icon": "assets/unitpylot-icon.png"
+          "icon": "assets/unitpylot-icon-black.png"
         }
       ]
     },
@@ -36,21 +39,21 @@
           "id": "unitpylot.webview",
           "name": "Dashboard",
           "contextualTitle": "View",
-          "icon": "assets/unitpylot-icon.png"
+          "icon": "assets/unitpylot-icon-black.png"
         },
         {
           "type": "tree",
           "id": "unitpylot.failingtreeview",
           "name": "Tests Overview",
           "contextualTitle": "Tests Overview",
-          "icon": "assets/unitpylot-icon.png"
+          "icon": "assets/unitpylot-icon-black.png"
         },
         {
           "type": "tree",
           "id": "unitpylot.graphdoctreeview",
           "name": "Graphs & Docs",
           "contextualTitle": "Graphs and Docs",
-          "icon": "assets/unitpylot-icon.png"
+          "icon": "assets/unitpylot-icon-black.png"
         }
       ]
     },
