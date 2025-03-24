@@ -1,4 +1,4 @@
-# ✨ UnitPylot ✨
+# UnitPylot
 
 **UnitPylot** is a Copilot-enabled Visual Studio Code (VS Code) extension designed to enhance the unit testing experience for Python developers wokring for Brownfield Codebases. Developers can use our extension on an existing codebase to get immediate insights into their testing suite. 
 
