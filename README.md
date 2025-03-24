@@ -1,4 +1,4 @@
-# ✨ UnitPylot ✨
+# UnitPylot
 
 **UnitPylot** is a Copilot-enabled Visual Studio Code (VS Code) extension designed to enhance the unit testing experience for Python developers wokring for Brownfield Codebases. Developers can use our extension on an existing codebase to get immediate insights into their testing suite. 
 
@@ -10,6 +10,7 @@ It offers a range of features to streamline unit testing, enhance code coverage,
 3. Usage Instructions 📖
 4. Settings Configuration ⚙️
 5. List of Commands 🗂
+6. Manuals (User and Deployment/Installation) 📁
 
 <br><br>  
 ## Features 🌟
@@ -70,8 +71,8 @@ git clone https://github.com/ucl-syseng-tools-for-vscode/example-codebases.git
 To build UnitPylot from source, follow these steps:
 1. Clone the repository:
   ```sh
-  git clone https://github.com/ucl-syseng-tools-for-vscode/MVP.git
-  cd MVP
+  git clone https://github.com/ucl-syseng-tools-for-vscode/UnitPylot.git
+  cd UnitPylot
   ```
 2. Install the dependencies:
   ```sh
@@ -143,11 +144,23 @@ To configure a custom LLM, set the following options in the VSCode settings:
 
 ## List of Commands 🗂
 Below are all the UnitPylot commands also accessible through the command palette:
-- `UnitPylot: Test Insights`
+- `UnitPylot: Download Snapshot Report`
 - `UnitPylot: Fix Failing Tests`
 - `UnitPylot: Fix Coverage`
-- `UnitPylot: Show test pass-fail history graph`
-- `UnitPylot: Show coverage history graph`
+- `UnitPylot: Focus on Dashboard View`
+- `UnitPylot: Focus on Graphs & Docs View`
+- `UnitPylot: Focus on Tests Overview View`
+- `UnitPylot: Generate Pydoc`
 - `UnitPylot: Optimise Memory Usage of Tests`
 - `UnitPylot: Optimise Slowest Tests`
-- `UnitPylot: Generate Pydoc`
+- `UnitPylot: Refresh Failing Tests`
+- `UnitPylot: Run All Tests`
+- `UnitPylot: Run Tests`
+- `UnitPylot: Show test pass-fail history graph`
+- `UnitPylot: Show coverage history graph`
+- `UnitPylot: Test Insights`
+
+## Manuals (User and Deployment/Installation) 📁
+Please find our User Manual here: https://drive.google.com/file/d/1vbBsLeV57opwqKB8SWiCx3SLCIn17_t1/view?usp=drive_link
+
+Please find our Deployment/Installation Manual here: https://drive.google.com/file/d/1LNctYDGiqrr84wNwlQs91dk-aHrXxTh_/view?usp=drive_link
