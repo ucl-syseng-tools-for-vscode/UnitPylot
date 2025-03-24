@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
  */
 export class Settings {
     private static getConfig(): vscode.WorkspaceConfiguration {
-        return vscode.workspace.getConfiguration('test-pylot');
+        return vscode.workspace.getConfiguration('unit-pylot');
     }
 
     /**

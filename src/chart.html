@@ -235,17 +235,17 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel"></script>
   <script>
     const vscode = acquireVsCodeApi();
-  
+
     let state = {
       testResults: null,
       coverageResults: null,
     };
-  
+
     function saveState() {
       vscode.setState(state);
       console.log("State saved:", state);
     }
-  
+
     function restoreState() {
       const savedState = vscode.getState();
       if (savedState) {
@@ -262,46 +262,46 @@
         showPlaceholder();
       }
     }
-  
+
     window.addEventListener("load", () => {
       console.log("Window loaded");
       restoreState();
     });
-  
+
     const runTestsBtn = document.getElementById("run-tests-btn");
     const chart = document.getElementById("chart");
     const chartContainer = document.getElementById("chart-container");
-  
+
     function runTests() {
       console.log("Run Tests button clicked");
-      vscode.postMessage({ command: "testpylot.vscode-run-tests.runTests" });
+      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
-  
+
     function runAllTests() {
       console.log("Run All Tests button clicked");
-      vscode.postMessage({ command: "testpylot.vscode-run-tests.runAllTests" });
+      vscode.postMessage({ command: "unitpylot.vscode-run-tests.runAllTests" });
       // Assuming resultsBar is defined somewhere in your code
       // resultsBar.style.display = "flex";
     }
-  
+
     function toggleDropdown() {
       const dropdown = document.getElementById("dropdown");
       dropdown.style.display =
         dropdown.style.display === "block" ? "none" : "block";
     }
-  
+
     // Close dropdown when clicking outside
     document.addEventListener("click", function (event) {
       const dropdown = document.getElementById("dropdown");
       const dropdownBtn = document.getElementById("dropdown-btn");
-  
+
       if (!dropdown.contains(event.target) && event.target !== dropdownBtn) {
         dropdown.style.display = "none";
       }
     });
-  
+
     window.addEventListener("message", (event) => {
       console.log("Received message:", event.data);
       if (event.data.command === "updateResults") {
@@ -321,9 +321,9 @@
         updateCoverage(event.data.coverage);
       }
     });
-  
+
     let testResultsChart; // Declare a variable to store the chart instance
-  
+
     // Function to modify results to make display better
     function prettifyResults(results) {
       const { passed, failed } = results;
@@ -337,47 +337,47 @@
         return results;
       }
     }
-  
+
     function showPlaceholder() {
       document.getElementById("chart").style.display = "none";
       document.getElementById("placeholder").style.display = "block";
       document.getElementById("coverage-chart-container").style.display = "none";
     }
-  
+
     function hidePlaceholder() {
       document.getElementById("chart").style.display = "flex";
       document.getElementById("placeholder").style.display = "none";
       document.getElementById("coverage-chart-container").style.display = "flex";
-  
+
       runTestsBtn.style.marginTop = "0";
       chart.style.display = "block";
     }
-  
+
     function updateChart(results) {
       hidePlaceholder();
       const { passed, failed } = results;
       const total = passed + failed;
-  
+
       if (total === 0) {
         showPlaceholder();
         return;
       }
-  
+
       document.getElementById("chart").style.display = "block";
       document.getElementById("placeholder").style.display = "none";
-  
+
       const { passed: prettyPassed, failed: prettyFailed } = prettifyResults({
         passed,
         failed,
       });
-  
+
       if (testResultsChart) {
         testResultsChart.destroy();
       }
-  
+
       const ctx = document.getElementById("chart").getContext("2d");
       if (!ctx) return;
-  
+
       testResultsChart = new Chart(ctx, {
         type: "bar",
         data: {
@@ -443,7 +443,7 @@
         plugins: [ChartDataLabels],
       });
     }
-  
+
     function checkDataAndSwitchPage() {
       console.log("Checking data to switch page");
       if (!state.testResults || state.testResults.passed + state.testResults.failed === 0) {
@@ -453,18 +453,18 @@
         console.log("Test results found, staying on chart page");
       }
     }
-  
+
     const coverageChartContainer = document.getElementById(
       "coverage-chart-container"
     );
     const coverageChart = document.getElementById("coverage-chart");
-  
+
     function getCoverage() {
       console.log("Get Coverage button clicked");
       vscode.postMessage({ command: "getCoverage" });
       coverageChart.style.display = "block"; // Show the coverage chart
     }
-  
+
     window.addEventListener("message", (event) => {
       console.log("Received message:", event.data);
       if (event.data.command === "updateCoverage") {
@@ -477,25 +477,25 @@
         updateCoverage(event.data.coverage);
       }
     });
-  
+
     let coverageResultsChart; // Declare a variable to store the coverage chart instance
-  
+
     function updateCoverage(coverage) {
       console.log("Updating coverage:", coverage);
       hidePlaceholder();
       const totals = coverage.coverage.totals;
       const total = totals.total;
-  
+
       if (!totals) {
         showPlaceholder();
         console.error("Coverage totals are undefined");
         return;
       }
-  
+
       if (coverageResultsChart) {
         coverageResultsChart.destroy();
       }
-  
+
       // Update coverage results
       document.getElementById(
         "coverage-results-covered"
@@ -506,11 +506,11 @@
       document.getElementById(
         "coverage-results-branches-covered"
       ).innerText = `${totals.branches_covered} / ${totals.branches_total}`;
-  
+
       // Generate a new coverage chart
       const ctx = coverageChart.getContext("2d");
       if (!ctx) return;
-  
+
       coverageResultsChart = new Chart(ctx, {
         type: "doughnut",
         data: {
@@ -562,18 +562,18 @@
               const { height } = chart;
               const ctx = chart.ctx;
               ctx.restore();
-  
+
               const fontSize = (height / 70).toFixed(2);
               ctx.font = `${fontSize}em sans-serif`;
               ctx.fillStyle = "white";
               ctx.textBaseline = "middle";
-  
+
               const text = `${((totals.covered / total) * 100).toFixed(0)}%`;
               const textX = Math.round(
                 (width - ctx.measureText(text).width) / 2
               );
               const textY = height / 2;
-  
+
               ctx.fillText(text, textX, textY);
               ctx.save();
             },
