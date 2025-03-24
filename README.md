@@ -71,8 +71,8 @@ git clone https://github.com/ucl-syseng-tools-for-vscode/example-codebases.git
 To build UnitPylot from source, follow these steps:
 1. Clone the repository:
   ```sh
-  git clone https://github.com/ucl-syseng-tools-for-vscode/MVP.git
-  cd MVP
+  git clone https://github.com/ucl-syseng-tools-for-vscode/UnitPylot.git
+  cd UnitPylot
   ```
 2. Install the dependencies:
   ```sh
