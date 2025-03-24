@@ -10,6 +10,7 @@ It offers a range of features to streamline unit testing, enhance code coverage,
 3. Usage Instructions 📖
 4. Settings Configuration ⚙️
 5. List of Commands 🗂
+6. Manuals (User and Deployment/Installation) 📁
 
 <br><br>  
 ## Features 🌟
@@ -158,3 +159,8 @@ Below are all the UnitPylot commands also accessible through the command palette
 - `UnitPylot: Show test pass-fail history graph`
 - `UnitPylot: Show coverage history graph`
 - `UnitPylot: Test Insights`
+
+## Manuals (User and Deployment/Installation) 📁
+Please find our User Manual here: https://drive.google.com/file/d/1vbBsLeV57opwqKB8SWiCx3SLCIn17_t1/view?usp=drive_link
+
+Please find our Deployment/Installation Manual here: https://drive.google.com/file/d/1LNctYDGiqrr84wNwlQs91dk-aHrXxTh_/view?usp=drive_link
