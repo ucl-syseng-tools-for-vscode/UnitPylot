@@ -1,6 +1,6 @@
-# ✨ TestPylot ✨
+# UnitPylot
 
-**TestPylot** is a Copilot-enabled Visual Studio Code (VS Code) extension designed to enhance the unit testing experience for Python developers wokring for Brownfield Codebases. Developers can use our extension on an existing codebase to get immediate insights into their testing suite. 
+**UnitPylot** is a Copilot-enabled Visual Studio Code (VS Code) extension designed to enhance the unit testing experience for Python developers wokring for Brownfield Codebases. Developers can use our extension on an existing codebase to get immediate insights into their testing suite. 
 
 It offers a range of features to streamline unit testing, enhance code coverage, and optimise test performance. The interactive dashboard visualises key test metrics and intelligent suggestions are provided to improve test quality.
 
@@ -10,6 +10,7 @@ It offers a range of features to streamline unit testing, enhance code coverage,
 3. Usage Instructions 📖
 4. Settings Configuration ⚙️
 5. List of Commands 🗂
+6. Manuals (User and Deployment/Installation) 📁
 
 <br><br>  
 ## Features 🌟
@@ -25,7 +26,7 @@ It offers a range of features to streamline unit testing, enhance code coverage,
 * **Exportable Logs**: saves test results and coverage trends into _json_ or _markdown_ formats.
 
 ### 🔁 Automated Test Optimisation & Debugging 
-TestPylot offers **AI assitance** that provides suggestions to improve the following metrics, allowing them to be **accepted directly into corresponding files**:
+UnitPylot offers **AI assitance** that provides suggestions to improve the following metrics, allowing them to be **accepted directly into corresponding files**:
 * **Fix Failing Tests**: detects failure points and suggests fixes to improve test reliability.
 * **Improve Coverage**: detects untested code such as edge cases or missed branches and suggests additional test cases.
 * **Optimise Slowest Tests**: detects the _n_ slowest tests and suggests explanations and improved test cases with faster execution time.
@@ -53,7 +54,7 @@ TestPylot offers **AI assitance** that provides suggestions to improve the follo
 ### Overview
 
 1. Make sure you have the GitHub Copilot activated in VS Code Follow the link above if you need assisstance. 
-2. Add our extension by searching for "TestPylot" in the VS Code Extension Marketplace or from Source.
+2. Add our extension by searching for "UnitPylot" in the VS Code Extension Marketplace or from Source.
 3. Download an example codebase as below to try out our extension!
 
 ### 🔬 For Testing: Clone the example-codebases Repository
@@ -63,15 +64,15 @@ git clone https://github.com/ucl-syseng-tools-for-vscode/example-codebases.git
 
 ### From the Marketplace
 1. Open VS Code.
-2. Search for **TestPylot** in the VS Code Marketplace.
+2. Search for **UnitPylot** in the VS Code Marketplace.
 3. Click Install to add the extension.
 
 ### 🛠 Build From Source
-To build TestPylot from source, follow these steps:
+To build UnitPylot from source, follow these steps:
 1. Clone the repository:
   ```sh
-  git clone https://github.com/ucl-syseng-tools-for-vscode/MVP.git
-  cd MVP
+  git clone https://github.com/ucl-syseng-tools-for-vscode/UnitPylot.git
+  cd UnitPylot
   ```
 2. Install the dependencies:
   ```sh
@@ -87,7 +88,7 @@ To build TestPylot from source, follow these steps:
   ```
 <br><br>  
 ### 🚀 Launch the Extension
-To begin using TestPylot, follow these steps:
+To begin using UnitPylot, follow these steps:
 1. Press `F5` _OR_ open the **Command Palette (Shift + Command + P)** and run **Debug: Start Debugging**.
 2. Open one of the projects within the **example-codebases** folder.
 3. Run the `make.sh` file to create a virtual environment (venv) to run the project within _OR_ ensure that you have the necessary dependencies installed by running: `pip install pytest pytest-cov pytest-json-report pytest-monitor`.
@@ -110,44 +111,56 @@ To begin using TestPylot, follow these steps:
 
 ### ✅ Commands for Optimising Tests
 - Locate the **Code Insights** button on the top right next to the run button to generate code insights. 
-- Right click and navigate to the **TestPylot Commands** to find:
+- Right click and navigate to the **UnitPylot Commands** to find:
   - the fix coverage command when in a src file.
   - the fix failing, optimise slowest, optimise memory, and generate pydoc commands when the current editor is in a test file.
 <br><br>  
 ## Settings Configuration ⚙️ 
-Navigate to the TestPylot **settings page** by clicking the ⚙️ icon on the top right of the expandable **dashboard view**.
-TestPylot provides several configuration options to customise its behavior. These can be accessed through the VSCode settings:
-- `test-pylot.runNecessaryTestsOnly`: Run only necessary tests instead of all tests.
-- `test-pylot.copilotEnabled`: Enable GitHub Copilot integration.
-- `test-pylot.codeCoverageHighlighting`: Enable code coverage highlighting.
-- `test-pylot.numberOfSlowestTests`: Number of slowest tests to display.
-- `test-pylot.snapshotInterval`: Snapshot interval in minutes.
-- `test-pylot.runTestsOnSave`: Run tests on any file save.
-- `test-pylot.runTestsInBackground`: Periodically run tests in the background.
-- `test-pylot.saveSnapshotOnTestRun`: Save snapshots when tests are run.
-- `test-pylot.saveSnapshotPeriodically`: Periodically save snapshots in the background.
-- `test-pylot.customLLM Endpoint`: Custom LLM endpoint to use if GitHub Copilot is not enabled.
-- `test-pylot.customLLM Model`: Custom LLM model to use if GitHub Copilot is not enabled.
-- `test-pylot.customLLM APIKey`: Custom LLM key to use if GitHub Copilot is not enabled.
-- `test-pylot.customLLM MaxTokens`: Custom LLM max tokens to use if GitHub Copilot is not enabled.
+Navigate to the UnitPylot **settings page** by clicking the ⚙️ icon on the top right of the expandable **dashboard view**.
+UnitPylot provides several configuration options to customise its behavior. These can be accessed through the VSCode settings:
+- `unit-pylot.runNecessaryTestsOnly`: Run only necessary tests instead of all tests.
+- `unit-pylot.copilotEnabled`: Enable GitHub Copilot integration.
+- `unit-pylot.codeCoverageHighlighting`: Enable code coverage highlighting.
+- `unit-pylot.numberOfSlowestTests`: Number of slowest tests to display.
+- `unit-pylot.snapshotInterval`: Snapshot interval in minutes.
+- `unit-pylot.runTestsOnSave`: Run tests on any file save.
+- `unit-pylot.runTestsInBackground`: Periodically run tests in the background.
+- `unit-pylot.saveSnapshotOnTestRun`: Save snapshots when tests are run.
+- `unit-pylot.saveSnapshotPeriodically`: Periodically save snapshots in the background.
+- `unit-pylot.customLLM Endpoint`: Custom LLM endpoint to use if GitHub Copilot is not enabled.
+- `unit-pylot.customLLM Model`: Custom LLM model to use if GitHub Copilot is not enabled.
+- `unit-pylot.customLLM APIKey`: Custom LLM key to use if GitHub Copilot is not enabled.
+- `unit-pylot.customLLM MaxTokens`: Custom LLM max tokens to use if GitHub Copilot is not enabled.
 
 ### 🔄 Custom, Third-Party LLM Support
 This extension **should** be used with GitHub Copilot, as this provides the best user experience for the developer. However there is the option to use a Third-party or Local LLM if the user wishes.
 
-TestPylot supports custom language models (LLMs) through an OpenAI-style API. This allows you to integrate your own LLMs for test writing and optimisation.
+UnitPylot supports custom language models (LLMs) through an OpenAI-style API. This allows you to integrate your own LLMs for test writing and optimisation.
 To configure a custom LLM, set the following options in the VSCode settings:
-- `test-pylot.customLLM Endpoint`: The endpoint URL for your custom LLM API (e.g., `http://xxxxxx/v1/chat/completions`).
-- `test-pylot.customLLM Model`: The model name to use with your custom LLM.
-- `test-pylot.customLLM APIKey`: The API key for authenticating with your custom LLM.
-- `test-pylot.customLLM MaxTokens`: The maximum number of tokens to use for each request to your custom LLM.
+- `unit-pylot.customLLM Endpoint`: The endpoint URL for your custom LLM API (e.g., `http://xxxxxx/v1/chat/completions`).
+- `unit-pylot.customLLM Model`: The model name to use with your custom LLM.
+- `unit-pylot.customLLM APIKey`: The API key for authenticating with your custom LLM.
+- `unit-pylot.customLLM MaxTokens`: The maximum number of tokens to use for each request to your custom LLM.
 
 ## List of Commands 🗂
-Below are all the TestPylot commands also accessible through the command palette:
-- `TestPylot: Test Insights`
-- `TestPylot: Fix Failing Tests`
-- `TestPylot: Fix Coverage`
-- `TestPylot: Show test pass-fail history graph`
-- `TestPylot: Show coverage history graph`
-- `TestPylot: Optimise Memory Usage of Tests`
-- `TestPylot: Optimise Slowest Tests`
-- `TestPylot: Generate Pydoc`
+Below are all the UnitPylot commands also accessible through the command palette:
+- `UnitPylot: Download Snapshot Report`
+- `UnitPylot: Fix Failing Tests`
+- `UnitPylot: Fix Coverage`
+- `UnitPylot: Focus on Dashboard View`
+- `UnitPylot: Focus on Graphs & Docs View`
+- `UnitPylot: Focus on Tests Overview View`
+- `UnitPylot: Generate Pydoc`
+- `UnitPylot: Optimise Memory Usage of Tests`
+- `UnitPylot: Optimise Slowest Tests`
+- `UnitPylot: Refresh Failing Tests`
+- `UnitPylot: Run All Tests`
+- `UnitPylot: Run Tests`
+- `UnitPylot: Show test pass-fail history graph`
+- `UnitPylot: Show coverage history graph`
+- `UnitPylot: Test Insights`
+
+## Manuals (User and Deployment/Installation) 📁
+Please find our User Manual here: https://drive.google.com/file/d/1vbBsLeV57opwqKB8SWiCx3SLCIn17_t1/view?usp=drive_link
+
+Please find our Deployment/Installation Manual here: https://drive.google.com/file/d/1LNctYDGiqrr84wNwlQs91dk-aHrXxTh_/view?usp=drive_link
