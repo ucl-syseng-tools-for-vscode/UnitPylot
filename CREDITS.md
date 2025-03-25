@@ -7,8 +7,6 @@ Thank you to all contributors, libraries, and resources that made this project p
 - **[Asmita Anand](https://github.com/aanand024)** – Developer 
 - **[Gughan Ramakrishnan](https://github.com/GughanR)** – Developer  
 - **[Swasti Jain](https://github.com/swasjn)** – Developer
-
-ADD PROFESSORS / TA !!!
   
 #### 📚 Open-Source Libraries & Dependencies  
 This project uses the following open-source projects:  
@@ -23,6 +21,7 @@ This project uses the following open-source projects:
 
 #### ❤️ Special Thanks  
 A big shoutout to:  
-- **Community Name** – For inspiration and support  
-- **Friends & Family** – For motivation  
-- _(Add any additional acknowledgments)_
+- **[Professor Graham Roberts](https://github.com/)** – Project Supervisor
+- **[Adamos Hadjivasiliou](https://github.com/)** – Teaching Assistant
+- **[Christopher Noring](https://github.com/softchris)** – Client
+- **[Lee Stott](https://github.com/)** – Client
