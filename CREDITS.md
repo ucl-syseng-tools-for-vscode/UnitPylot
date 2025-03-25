@@ -27,6 +27,8 @@ This project uses the following open-source projects:
 #### ❤️ Special Thanks  
 A big shoutout to:  
 - **[Professor Graham Roberts](https://github.com/grahamrucl)** – Project Supervisor
-- **[Adamos Hadjivasiliou](https://github.com/)** – Teaching Assistant
-- **[Christopher Noring](https://github.com/softchris)** – Client
-- **[Lee Stott](https://github.com/leestott/)** – Client
+- **[Dr Yun Fu](https://github.com/UCLYunFu)** – Supervisor
+- **[Professor Dean Mohamedally](https://github.com/doctordeano)** – Supervisor
+- **[Adamos Hadjivasiliou](https://github.com/adamoshadjivasiliou)** – Teaching Assistant
+- **[Christopher Noring](https://github.com/softchris)** – Client (Microsoft)
+- **[Lee Stott](https://github.com/leestott/)** – Client (Microsoft)
