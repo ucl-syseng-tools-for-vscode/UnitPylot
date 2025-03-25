@@ -18,6 +18,7 @@ Response Format:
 - Must include a **test_name** field to specify the name of the slowest test.
 - Please provide a **suggestion** field with a detailed recommendation on how to optimize the test along with.
 - Must include a **code_snippet** field with an optimized version of the test code.
+- Add a comma after each suggestion to separate multiple suggestions.
 
 Here is an example of the expected response format:
 

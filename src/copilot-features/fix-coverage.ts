@@ -16,6 +16,7 @@ Response Format:
 - Include a **line** field to specify the line where the change begins (if applicable).
 - Please provide a **suggestion** field detailing the issue related to the coverage.
 - Must include a **code_snippet** field with the corrected test code.
+- Add a comma after each suggestion to separate multiple suggestions.
 
 Here is an example of the expected response format:
 

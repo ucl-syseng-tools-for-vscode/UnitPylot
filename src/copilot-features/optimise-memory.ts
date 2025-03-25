@@ -16,6 +16,7 @@ It is important you do this for every test case provided. Recommend optimization
 - Include a **suggestion** field with clear and concise recommendations for optimization.
 - Must include a **code_snippet** field for the optimized version of the test code that must be changed.
 - Include a **bottleneck** field with an explanation of what is causing high memory usage.
+- Add a comma after each suggestion to separate multiple suggestions.
 
 ## Guidelines:
 - Ensure optimizations are actionable and focused on reducing memory usage.
