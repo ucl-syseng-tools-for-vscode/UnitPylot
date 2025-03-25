@@ -9,6 +9,8 @@ Response Format:
 - Include a **line** field to specify the line where the suggestion begins (if applicable).
 - Include a category field that specifies the type of suggestion (Test Impact, Dependency Impact, Test Quality).
 - Include a suggestion field that states if modifying a function could break or require changes in tests, mention which tests would be affected and how they would be affected.
+- Add a comma after each suggestion to separate multiple suggestions.
+
 
 Categories: 
 1. Test impact: For each function in the file, provide insights on whether modifying a given function may require updating or refactoring related test cases.
