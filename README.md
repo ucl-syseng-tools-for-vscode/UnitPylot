@@ -96,7 +96,7 @@ To begin using UnitPylot, follow these steps:
 <br><br>  
 ## Usage Instructions 📖
 ### 🖥️ Dashboard View
-- Locate and open the **🔧** icon on the left-side VSCode navigation bar.
+- Locate and open the icon on the left-side VSCode navigation bar.
 - Access the granular test suite view from the **dashboard view** under the **Tests Overview** collapsable view.
 - Access the test history graphs to analyse the pass/fail rates and coverage trends over time from the **dashboard view** under the **Graphs & Docs** collapsable view.
 
