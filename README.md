@@ -163,4 +163,4 @@ Below are all the UnitPylot commands also accessible through the command palette
 ## Manuals (User and Deployment/Installation) 📁
 Please find our User Manual here: https://drive.google.com/file/d/1vbBsLeV57opwqKB8SWiCx3SLCIn17_t1/view?usp=drive_link
 
-Please find our Deployment/Installation Manual here: https://drive.google.com/file/d/1LNctYDGiqrr84wNwlQs91dk-aHrXxTh_/view?usp=drive_link
+Please find our Deployment/Installation Manual here: [https://drive.google.com/file/d/1LNctYDGiqrr84wNwlQs91dk-aHrXxTh_/view?usp=drive_link](https://drive.google.com/file/d/1jZa8bfQmZsi4qeaeS8RqCnvOC97Md35k/view?usp=sharing)
